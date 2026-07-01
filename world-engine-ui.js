@@ -448,19 +448,19 @@ window.WORLD_ENGINE_UI = (function() {
 
   // [FIX] định nghĩa tab:label + bao gồm những đoạn nào. chỉ phân loại hiện có section，không thêm mới/không xoá tính năng.
   const SETTINGS_TABS = [
-    { key: 'common',    label: 'thường dùng' },
-    { key: 'advanced',  label: 'nâng cao' },
-    { key: 'archive',   label: 'bản lưu' },
+    { key: 'common',    label: 'Thường dùng' },
+    { key: 'advanced',  label: 'Nâng cao' },
+    { key: 'archive',   label: 'Bản lưu' },
     { key: 'worldbook', label: 'Worldbook' },
-    { key: 'debug',     label: 'gỡ lỗi' },
-    { key: 'about',     label: 'về' }
+    { key: 'debug',     label: 'Gỡ lỗi' },
+    { key: 'about',     label: 'Về' }
   ];
   let _settingsTab = 'common';
 
   function renderSettingsView(checkpoint, cpLayer) {
     const cpContent = checkpoint
       ? renderCheckpointSections(checkpoint, cpLayer)
-      : '<div class="we-empty">tạm thời không có điểm lưu</div>';
+      : '<div class="we-empty">Tạm thời không có điểm lưu</div>';
     const form = renderSettingsForm();              // {api,evolve,backfill,filter,display,chatcache,inject}
     const extra = renderSettingsAfterCheckpoint();  // {worldbook,data,tone}
 
@@ -471,14 +471,14 @@ window.WORLD_ENGINE_UI = (function() {
 
     // gỡ lỗi section（giữ nguyên, gồm nút gói chẩn đoán + renderDebug，chuyển vào tab 「gỡ lỗi」)
     const debugSection = '<div class="we-section we-debug-section">'
-      + '<div class="we-section-title"><span class="we-debug-toggle" title="mở rộng hoặc thu gọn thông tin gỡ lỗi"><span class="we-toggle-arrow">▶</span>gỡ lỗi</span></div>'
+      + '<div class="we-section-title"><span class="we-debug-toggle" title="mở rộng hoặc thu gọn thông tin gỡ lỗi"><span class="we-toggle-arrow">▶</span>Gỡ lỗi</span></div>'
       + '<div id="we-debug-body" style="display:none;">'
-      + '<button class="we-btn" id="we-export-diag" style="width:100%;margin-bottom:8px;">xuất gói chẩn đoán</button><!-- [FIX] gói chẩn đoán: không liên quan đến việc đã suy diễn hay chưa, luôn có thể xuất -->'
+      + '<button class="we-btn" id="we-export-diag" style="width:100%;margin-bottom:8px;">Xuất gói chẩn đoán</button><!-- [FIX] gói chẩn đoán: không liên quan đến việc đã suy diễn hay chưa, luôn có thể xuất -->'
       + '<div id="we-debug-render">' + renderDebug() + '</div>'
       // [MAP] Quản lý preset engine: Cùng với PR#12 hiển thị phân đoạn chỉ đọc ở cùng thẻ gỡ lỗi, đưa 4 đoạn hardcode nâng cấp thành có thể chỉnh sửa+preset hoá.
       // Điểm neo độc lập #we-preset-manage，làm mới cục bộ; lưu theo độc lập storage key，không vào we-save-settings。
       + '<div class="we-preset-section">'
-      + '<div class="we-section-title">Preset engine (suy diễn có thể chỉnh sửa prompt đoạn)</div>'
+      + '<div class="we-section-title">Preset Engine (suy diễn có thể chỉnh sửa prompt đoạn)</div>'
       + '<div id="we-preset-manage">' + renderPresetManage() + '</div>'
       + '</div>'
       + '</div></div>';
@@ -506,7 +506,7 @@ window.WORLD_ENGINE_UI = (function() {
 
     return '<div class="we-sub-topbar">'
       + '<button class="we-icon-btn" id="we-btn-back" title="trả về"><i class="fa-solid fa-arrow-left"></i></button>'
-      + '<span class="we-sub-title">cài đặt</span>'
+      + '<span class="we-sub-title">Cài đặt</span>'
       + '</div>'
       + tabBar
       + panels
@@ -1897,8 +1897,8 @@ window.WORLD_ENGINE_UI = (function() {
       <div class="we-input-group">
         <label>chế độ suy diễn</label>
         <select id="we-evolve-mode" style="width:100%;">
-          <option value="auto" ${mode === 'auto' ? 'selected' : ''}>tự động · Theo vòng (mỗi X vòng suy diễn một lần)</option>
-          <option value="time" ${mode === 'time' ? 'selected' : ''}>tự động · Theo thời gian (chênh lệch ngày trong văn bản đủ N ngày)</option>
+          <option value="auto" ${mode === 'auto' ? 'selected' : ''}>Tự động · Theo vòng (mỗi X vòng suy diễn một lần)</option>
+          <option value="time" ${mode === 'time' ? 'selected' : ''}>Tự động · Theo thời gian (chênh lệch ngày trong văn bản đủ N ngày)</option>
           <option value="manual" ${mode === 'manual' ? 'selected' : ''}>Thủ công (chỉ khi bấm 「suy diễn thủ công」 mới kích hoạt)</option>
         </select>
       </div>
@@ -2019,7 +2019,7 @@ window.WORLD_ENGINE_UI = (function() {
       <div class="we-hint" id="we-chatcache-status" style="margin:4px 0;"></div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0;">
         <button class="we-btn we-btn-primary" id="we-chatcache-save">Tạo mới bản lưu có tên</button>
-        <button class="we-btn" id="we-chatcache-import">nhập bản lưu</button>
+        <button class="we-btn" id="we-chatcache-import">Nhập bản lưu</button>
         <input type="file" id="we-chatcache-import-file" accept=".json" style="display:none;">
       </div>
       <div class="we-chatcache-list" id="we-chatcache-snapshots"><div class="we-empty">Chưa có bản lưu</div></div>`;
@@ -2031,27 +2031,27 @@ window.WORLD_ENGINE_UI = (function() {
       <div style="display:flex;gap:6px;flex-wrap:wrap;">
         <div class="we-input-group" style="flex:1;min-width:90px;margin-bottom:0;"><label>Mỗi lô AI số tầng</label>
           <input type="number" id="we-backfill-batch" min="1" step="1" value="${bf('backfillBatchSize', 5)}"></div>
-        <div class="we-input-group" style="flex:1;min-width:90px;margin-bottom:0;"><label>tầng kết thúc (0=tất cả)</label>
+        <div class="we-input-group" style="flex:1;min-width:90px;margin-bottom:0;"><label>Tầng kết thúc (0=tất cả)</label>
           <input type="number" id="we-backfill-end" min="0" step="1" value="${bf('backfillEndLayer', 0)}"></div>
-        <div class="we-input-group" style="flex:1;min-width:90px;margin-bottom:0;"><label>số lần thử lại mỗi lô</label>
+        <div class="we-input-group" style="flex:1;min-width:90px;margin-bottom:0;"><label>Số lần thử lại mỗi lô</label>
           <input type="number" id="we-backfill-retries" min="0" step="1" value="${bf('backfillRetries', 2)}"></div>
       </div>
       <div class="we-hint" id="we-backfill-status" style="margin:6px 0;"></div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0;">
-        <button class="we-btn we-btn-primary" id="we-backfill-start">▶ bắt đầu backfill suy diễn thế giới</button>
-        <button class="we-btn" id="we-backfill-stop">■ dừng</button>
+        <button class="we-btn we-btn-primary" id="we-backfill-start">▶ Bắt đầu backfill suy diễn thế giới</button>
+        <button class="we-btn" id="we-backfill-stop">■ Dừng</button>
       </div>`;
 
     // [FIX] Tab hoá: trả về theo section từ điển đoạn đã phân chia, do renderSettingsView đưa vào các tab.
     //   mỗi sec(...) gọi,body nội dung, trường id giữ nguyên không đổi một chữ so với ban đầu, chỉ là không còn ghép trực tiếp thành một chuỗi.
     return {
       api: sec('set-api', 'API cấu hình', apiBody),
-      evolve: sec('set-evolve', 'chế độ suy diễn', evolveBody),
-      backfill: sec('set-backfill', 'backfill hàng loạt suy diễn thế giới', backfillBody),
-      filter: sec('set-filter', 'bộ lọc đầu vào đầu ra', filterBody),
-      display: sec('set-display', 'hiển thị giao diện', displayBody),
-      chatcache: sec('set-chatcache', 'cache & bản lưu Tavern', chatcacheBody),
-      inject: sec('set-inject', 'tiêm nội dung chính', injectBody)
+      evolve: sec('set-evolve', 'Chế độ suy diễn', evolveBody),
+      backfill: sec('set-backfill', 'Backfill hàng loạt suy diễn thế giới', backfillBody),
+      filter: sec('set-filter', 'Bộ lọc đầu vào đầu ra', filterBody),
+      display: sec('set-display', 'Hiển thị giao diện', displayBody),
+      chatcache: sec('set-chatcache', 'Cache & bản lưu Tavern', chatcacheBody),
+      inject: sec('set-inject', 'Tiêm nội dung chính', injectBody)
     };
   }
 
@@ -2065,40 +2065,40 @@ window.WORLD_ENGINE_UI = (function() {
         <div class="we-input-group">
           <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
             <input type="checkbox" id="we-worldbook-trigger" ${settings.worldbookTrigger === true ? 'checked' : ''}>
-            bật kích hoạt đèn xanh/lam (theo Worldbook Tavern)
+            Bật kích hoạt đèn xanh/lam (theo Worldbook Tavern)
           </label>
           <div style="font-size:11px;color:var(--we-text3);margin-top:3px;">Khi tắt: tất cả mục đã chọn được tiêm vào suy diễn (hiện trạng). Sau khi bật:🔵mục thường trú luôn tiêm,🟢mục từ khoá chỉ tiêm khi hội thoại gần đây khớp từ khoá của nó; mỗi mục có thể ghi đè riêng. Việc quét từ khoá do extension này tự hoàn thành, tách rời với Tavern.</div>
         </div>
         <div class="we-worldbook-header">
-          <div><div class="we-worldbook-summary" id="we-worldbook-summary">đang đọc Worldbook chat hiện tại...</div></div>
-          <button class="we-icon-btn" id="we-worldbook-reload" title="đọc lại Worldbook chat hiện tại"><i class="fa-solid fa-rotate"></i></button>
+          <div><div class="we-worldbook-summary" id="we-worldbook-summary">Đang đọc Worldbook chat hiện tại...</div></div>
+          <button class="we-icon-btn" id="we-worldbook-reload" title="Đọc lại Worldbook chat hiện tại"><i class="fa-solid fa-rotate"></i></button>
         </div>
         <div class="we-worldbook-toolbar">
-          <button class="we-btn" id="we-worldbook-select-all">chọn tất cả</button>
-          <button class="we-btn" id="we-worldbook-clear-all">bỏ chọn tất cả</button>
-          <button class="we-btn we-btn-primary" id="we-worldbook-save">lưu lựa chọn Worldbook</button>
+          <button class="we-btn" id="we-worldbook-select-all">Chọn tất cả</button>
+          <button class="we-btn" id="we-worldbook-clear-all">Bỏ chọn tất cả</button>
+          <button class="we-btn we-btn-primary" id="we-worldbook-save">Lưu lựa chọn Worldbook</button>
         </div>
-        <div class="we-worldbook-list" id="we-worldbook-list"><div class="we-empty">đang đọc...</div></div>
+        <div class="we-worldbook-list" id="we-worldbook-list"><div class="we-empty">Đang đọc...</div></div>
       </div>`;
     const dataBody = `
       <div style="display:flex;gap:6px;flex-wrap:wrap;">
-        <button class="we-btn" id="we-export-data">xuất JSON</button>
-        <button class="we-btn" id="we-import-data">nhập JSON</button>
+        <button class="we-btn" id="we-export-data">Xuất JSON</button>
+        <button class="we-btn" id="we-import-data">Nhập JSON</button>
         <input type="file" id="we-import-file" accept=".json" style="display:none;">
       </div>`;
     const toneBody = `
       <div style="display:flex;gap:6px;flex-wrap:wrap;">
-        <button class="we-btn" id="we-tone-import">nhập</button>
-        <button class="we-btn" id="we-tone-export">xuất</button>
-        <button class="we-btn" id="we-tone-clear">xoá</button>
+        <button class="we-btn" id="we-tone-import">Nhập</button>
+        <button class="we-btn" id="we-tone-export">Xuất</button>
+        <button class="we-btn" id="we-tone-clear">Xoá</button>
         <input type="file" id="we-tone-file" accept=".txt" style="display:none;">
       </div>
       <div class="we-hint" id="we-tone-status" style="margin-top:6px;"></div>`;
     // [FIX] Tab hoá: tương tự trả về từ điển đoạn
     return {
-      worldbook: sec('set-worldbook', 'suy diễn Worldbook dưới nền', worldbookBody),
-      data: sec('set-data', 'nhập dữ liệu/xuất', dataBody),
-      tone: sec('set-tone', 'prompt bổ sung', toneBody)
+      worldbook: sec('set-worldbook', 'Suy diễn Worldbook dưới nền', worldbookBody),
+      data: sec('set-data', 'Nhập dữ liệu/xuất', dataBody),
+      tone: sec('set-tone', 'Prompt bổ sung', toneBody)
     };
   }
 
@@ -3466,7 +3466,7 @@ window.WORLD_ENGINE_UI = (function() {
             <div class="we-snapshot-actions">
               <button class="we-icon-btn" data-snap-action="restore" title="Khôi phục về chat hiện tại"><i class="fa-solid fa-rotate-left"></i></button>
               <button class="we-icon-btn" data-snap-action="rename" title="đổi tên"><i class="fa-solid fa-pen"></i></button>
-              <button class="we-icon-btn" data-snap-action="export" title="xuất JSON"><i class="fa-solid fa-download"></i></button>
+              <button class="we-icon-btn" data-snap-action="export" title="Xuất JSON"><i class="fa-solid fa-download"></i></button>
               <button class="we-icon-btn" data-snap-action="delete" title="xoá"><i class="fa-solid fa-trash"></i></button>
             </div>
           </div>`).join('');
