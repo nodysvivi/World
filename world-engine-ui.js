@@ -1,4 +1,4 @@
-// world-engine-ui.js — 完整 UI 面板
+// world-engine-ui.js — hoàn chỉnh UI bảng điều khiển
 window.WORLD_ENGINE_UI = (function() {
   const core = window.WORLD_ENGINE_CORE;
   const evolution = window.WORLD_ENGINE_EVOLUTION;
@@ -14,15 +14,15 @@ window.WORLD_ENGINE_UI = (function() {
   let editingEnemy = null;
   let editingInfluence = null;
   let editingRI = null;
-  // 秘密编辑器统一态：{ scope, list:'action'|'asset', index, view:'action'|'asset' }
-  //   list  = 条目当前所在的桶；index = 在该桶里的下标
-  //   view  = 当前显示的表单类型（切下拉只改 view，不动数据；转换延到保存）
+  // Trạng thái thống nhất của trình chỉnh sửa bí mật:{ scope, list:'action'|'asset', index, view:'action'|'asset' }
+  //   list  = Thùng hiện tại chứa mục;index = Chỉ số trong thùng đó
+  //   view  = Loại biểu mẫu hiển thị hiện tại (chuyển dropdown chỉ đổi view，không đổi dữ liệu; việc chuyển đổi hoãn đến khi lưu)
   let editingSecret = null;
   let listPagerCounter = 0;
   const listPageState = {};
   const sectionCollapsed = { 'checkpoint-section': true, 'set-filter': true };
   const expandedWorldbookGroups = new Set();
-  // 世界书缓存（模块级，跨 refresh() 存活）
+  // Cache Worldbook (cấp module, xuyên suốt refresh() tồn tại)
   let _wbCachedEntries = null;
   let _wbCachedSelectedIds = null;
   let _wbCachedOverrides = null;
@@ -36,7 +36,7 @@ window.WORLD_ENGINE_UI = (function() {
     }[m] || m));
   }
 
-  /** 渲染用户可见文本：将 {{user}} 替换为当前角色名，并转义 HTML */
+  /** Render văn bản hiển thị cho người dùng: thay thế {{user}} thành tên nhân vật hiện tại, và escape HTML */
   function u(text) {
     return h(core.renderUserName(text));
   }
@@ -53,19 +53,19 @@ window.WORLD_ENGINE_UI = (function() {
     if (duration !== 0) setTimeout(() => el.remove(), duration || 3000);
   }
 
-  // 各分页小标题的随附古文（去 cp- 前缀后查表；设置页等不在表中则无）
+  // Cổ văn đi kèm của các tiêu đề phụ từng trang (bỏ cp- tiền tố rồi tra bảng; trang cài đặt v.v. không có trong bảng thì không có)
   const SECTION_MOTTOS = {
-    trends: '天下之势，以渐而成',
-    regional: '一方有警，四面皆惊',
-    ledger: '毫厘皆有来历',
-    events: '牵一发而全身动',
-    winds: '风起于青萍之末',
-    influence: '牵枝而动叶',
-    reputation: '人之有誉，如影随形',
-    factions: '大树之下，草不沾霜',
-    enemies: '仇者快，亲者痛',
-    economy: '食者民之本，货者民用之资',
-    blackbox: '墙有耳，伏寇在侧'
+    trends: 'Thế của thiên hạ, dần dần mà thành',
+    regional: 'Một phương có biến, bốn bề đều kinh',
+    ledger: 'Từng ly từng tí đều có lai lịch',
+    events: 'Rút dây động rừng',
+    winds: 'Gió nổi từ ngọn cỏ thanh bình',
+    influence: 'Kéo cành động lá',
+    reputation: 'Người có danh tiếng, như hình với bóng',
+    factions: 'Dưới bóng cây lớn, cỏ không dính sương',
+    enemies: 'Kẻ thù hả hê, người thân đau xót',
+    economy: 'Cái ăn là gốc của dân, hàng hoá là vốn dùng của dân',
+    blackbox: 'Tường có vách tai, giặc nấp bên cạnh'
   };
 
   function sectionHeader(title, sectionId) {
@@ -91,8 +91,8 @@ window.WORLD_ENGINE_UI = (function() {
       <div class="we-panel-header">
         <div class="we-header-info">
           <div class="we-header-top">
-            <span class="we-panel-title">世界引擎</span>
-            <span class="we-panel-version" id="we-panel-version"></span><!-- [FIX] 版本号 -->
+            <span class="we-panel-title">World Engine</span>
+            <span class="we-panel-version" id="we-panel-version"></span><!-- [FIX] Số phiên bản -->
             <span class="we-header-round" id="we-header-round"></span>
           </div>
           <div class="we-header-mood" id="we-header-mood">
@@ -102,18 +102,18 @@ window.WORLD_ENGINE_UI = (function() {
         </div>
         <div class="we-panel-corner-actions">
           <button class="we-panel-close">✕</button>
-          <button class="we-panel-settings" id="we-btn-settings-open" title="设置"><i class="fa-solid fa-gear"></i></button>
+          <button class="we-panel-settings" id="we-btn-settings-open" title="cài đặt"><i class="fa-solid fa-gear"></i></button>
         </div>
       </div>
       <div class="we-panel-body" id="we-panel-body">
-        <div class="we-loading">加载中...</div>
+        <div class="we-loading">đang tải...</div>
       </div>
     `;
     document.body.appendChild(panel);
     panelElement = panel;
     panelBodyElement = panel.querySelector('#we-panel-body');
 
-    // [FIX] 显示扩展版本号（来自 manifest.json，读不到则隐藏）
+    // [FIX] Hiển thị số phiên bản tiện ích mở rộng (từ manifest.json，không đọc được thì ẩn)
     const verEl = panel.querySelector('#we-panel-version');
     if (verEl) {
       const v = window.WORLD_ENGINE_VERSION;
@@ -129,37 +129,37 @@ window.WORLD_ENGINE_UI = (function() {
     });
   }
 
-  // 当前视图：'home' | 'situation' | 'events' | 'relations' | 'resources' | 'settings'
+  // Chế độ xem hiện tại:'home' | 'situation' | 'events' | 'relations' | 'resources' | 'settings'
   let _currentView = 'home';
-  // 显示模式：'mask'=遮蔽（主页+分页）｜'expand'=展开（所有 section 平铺）
+  // Chế độ hiển thị:'mask'=Che khuất (trang chủ+phân trang) |'expand'=Mở rộng (tất cả section xếp lớp)
   function isExpandMode() {
     const s = window.WORLD_ENGINE_API
       ? window.WORLD_ENGINE_API.getSettings()
       : JSON.parse(window.WORLD_ENGINE_STORE.getItem('world_engine_settings') || '{}');
     return s.displayMode === 'expand';
   }
-  // 主页导航：单击选中的行（再次单击才进入）
+  // Điều hướng trang chủ: nhấp vào hàng đã chọn (nhấp lần nữa mới vào)
   let _selectedNavView = null;
-  // 推演进行中标志 + 本次推演的显示基底：
-  //   'checkpoint' = 重新推演（喂存档点 B，面板显示 B）
-  //   'state'      = 向前推演（喂当前状态 A，面板显示 A）
-  // 推演期间新结果还没写回，靠这俩决定面板显示哪份，等写回再翻新。
+  // Cờ đánh dấu đang suy diễn + Cơ sở hiển thị của lần suy diễn này:
+  //   'checkpoint' = Suy diễn lại (feed điểm lưu B，Hiển thị bảng điều khiển B）
+  //   'state'      = Suy diễn tới trước (feed trạng thái hiện tại A，Hiển thị bảng điều khiển A）
+  // Trong lúc suy diễn kết quả mới chưa ghi lại, dựa vào hai cái này để quyết định bảng điều khiển hiển thị bản nào, đợi ghi lại rồi mới làm mới.
   let _evolving = false;
   let _evolvingScope = 'state';
-  // 最近一次实际注入正文的状态桶；普通刷新必须跟随它，不能重新按瞬时楼层猜测。
+  // Thùng trạng thái thực tế tiêm vào chính văn gần nhất; làm mới thông thường phải theo nó, không thể đoán lại theo tầng tức thời.
   let _injectedScope = null;
 
   /**
-   * 计算此刻实际注入正文的那一份世界状态（与 world-engine.js
-   * applyInjectionForCurrentRound 用同一条楼层判断）：
-   *   对话层数 < 当前状态层数 且有存档点 → 注入/显示存档点（重 roll 回退）
-   *   否则 → 注入/显示当前状态
-   * 返回的 scope 同时决定编辑写回哪个存储桶。
+   * Tính toán bản trạng thái thế giới thực tế tiêm vào chính văn lúc này (cùng với world-engine.js
+   * applyInjectionForCurrentRound dùng chung một điều kiện tầng để phán đoán):
+   *   số tầng hội thoại < Số tầng trạng thái hiện tại và có điểm lưu → tiêm/hiển thị điểm lưu (reroll roll rollback)
+   *   nếu không thì → tiêm/hiển thị trạng thái hiện tại
+   * trả về scope đồng thời quyết định chỉnh sửa ghi lại vào bucket lưu trữ nào.
    */
   function getActiveInjected(state, checkpoint) {
-    // 推演进行中：新结果还没写回，按本次推演的基底显示——
-    //   重新推演（_evolvingScope='checkpoint'）→ 显示存档点 B；
-    //   向前推演（_evolvingScope='state'）   → 显示当前状态 A。
+    // đang suy diễn: kết quả mới chưa được ghi lại, hiển thị theo cơ sở của lần suy diễn này——
+    //   suy diễn lại (_evolvingScope='checkpoint'）→ hiển thị điểm lưu B；
+    //   suy diễn tới (_evolvingScope='state'）   → hiển thị trạng thái hiện tại A。
     if (_evolving) {
       if (_evolvingScope === 'checkpoint' && checkpoint) {
         return { state: checkpoint, scope: 'checkpoint', layer: getCheckpointLayer(checkpoint) };
@@ -180,9 +180,9 @@ window.WORLD_ENGINE_UI = (function() {
     return { state: state, scope: 'state', layer: Number.isFinite(Number(state.chatLayer)) ? Number(state.chatLayer) : getChatLayer() };
   }
 
-  // 按当前显示/编辑的存储桶读写：scope==='checkpoint' 读写存档点，其余读写主状态。
-  // 面板可能正在显示存档点（重 roll 回退）或设置页的存档点小节，此时所有编辑必须
-  // 写回存档点而非主状态，否则“数据变了、界面不动 / 点了没反应”（与风声同源的毛病）。
+  // theo hiển thị hiện tại/đọc ghi bucket lưu trữ đã chỉnh sửa:scope==='checkpoint' đọc ghi điểm lưu, phần còn lại đọc ghi trạng thái chính.
+  // bảng điều khiển có thể đang hiển thị điểm lưu (reroll roll rollback) hoặc phần điểm lưu của trang cài đặt, lúc này mọi chỉnh sửa phải
+  // ghi lại vào điểm lưu thay vì trạng thái chính, nếu không thì“dữ liệu thay đổi, giao diện không đổi / nhấn không phản hồi”（lỗi cùng nguồn gốc với có tiếng đồn).
   function loadScopedState(scope) {
     return scope === 'checkpoint' ? core.restoreCheckpoint() : core.loadState();
   }
@@ -193,7 +193,7 @@ window.WORLD_ENGINE_UI = (function() {
 
   function refresh(auto) {
     if (!panelElement || !panelVisible) return;
-    // 设置页是静态表单，后台自动刷新会清掉正在输入的内容
+    // trang cài đặt là form tĩnh, tự động làm mới dưới nền sẽ xoá nội dung đang nhập
     if (auto && _currentView === 'settings') return;
     const body = panelBodyElement;
     if (!body) return;
@@ -223,17 +223,17 @@ window.WORLD_ENGINE_UI = (function() {
   }
 
   /**
-   * 世界稳定度（纯 UI 现算，只读，不写存档/不进 prompt/不返 API）
-   * 稳定度 = clamp(100 - 世界压力, 0, 100)
+   * độ ổn định thế giới (thuần UI tính toán thời gian thực, chỉ đọc, không ghi bản lưu/không vào prompt/không trả về API）
+   * độ ổn định = clamp(100 - áp lực thế giới, 0, 100)
    */
   function computeWorldStability(state) {
     state = state || {};
     const round = Number(state.round) || 0;
     const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
-    // 事件链：仅 Lv3/4，单条封顶 60
-    const CONFLICT_BASE = { 萌芽:0, 发酵:1, 逼近:2, 已爆发:4, 已消散:0 };
-    const PROGRESS_BASE = { 筹备:0, 执行:1, 关键:2, 已完成:-2, 已失败:0 };
+    // chuỗi sự kiện: chỉ Lv3/4，giới hạn đơn lẻ 60
+    const CONFLICT_BASE = { 'manh nha':0, "ủ biến":1, "cận kề":2, "đã bùng phát":4, "đã tan biến":0 };
+    const PROGRESS_BASE = { "chuẩn bị":0, "thực thi":1, 'then chốt/quan trọng':2, "đã hoàn thành":-2, "đã thất bại":0 };
     let eventP = 0;
     for (const e of (state.events || [])) {
       const level = Number(e.level) || 1;
@@ -246,15 +246,15 @@ window.WORLD_ENGINE_UI = (function() {
         return clamp((keepTotal - (round - e._terminalSince)) / keepTotal, 0, 1);
       };
       let p;
-      if (e.stage === '已爆发') p = 4 * level * 0.5 * remainFactor();
-      else if (e.stage === '已完成') p = -2 * remainFactor();        // 不乘 level
-      else if (e.stage === '已消散' || e.stage === '已失败') p = 0;
+      if (e.stage === 'đã bùng phát') p = 4 * level * 0.5 * remainFactor();
+      else if (e.stage === 'đã hoàn thành') p = -2 * remainFactor();        // không nhân level
+      else if (e.stage === 'đã tan biến' || e.stage === 'đã thất bại') p = 0;
       else p = (base[e.stage] || 0) * level * 0.5;
       if (e.stall) p *= 0.65;
       eventP += clamp(p, -60, 60);
     }
 
-    // 风声：仅 Lv3/4，总封顶 25
+    // có tiếng đồn: chỉ Lv3/4，tổng giới hạn 25
     const WIND_BASE = { rumor:0.5, announcement:1, report:1.5, sentiment:2 };
     let windP = 0;
     for (const w of (state.winds || [])) {
@@ -264,14 +264,14 @@ window.WORLD_ENGINE_UI = (function() {
     }
     windP = Math.min(windP, 25);
 
-    // 天下大势：每条持续中 +6，总封顶 20
+    // đại thế thiên hạ: mỗi điều đang tiếp diễn +6，tổng giới hạn 20
     let trendP = 0;
-    for (const t of (state.worldTrends || [])) if (t.status !== '已结束') trendP += 6;
+    for (const t of (state.worldTrends || [])) if (t.status !== 'đã kết thúc') trendP += 6;
     trendP = Math.min(trendP, 20);
 
-    // 势力：关系值 × 状态系数，总封顶 35
-    const REL = { 血盟:-1.5, 盟友:-1, 友好:-0.5, 中立:0, 冷淡:0.5, 敌对:1, 世仇:1.5 };
-    const STAT = { 鼎盛:1.25, 稳固:1, 倾轧:0.75, 困顿:0.5, 衰落:0.25, 瓦解:0 };
+    // thế lực: giá trị quan hệ × hệ số trạng thái, tổng giới hạn 35
+    const REL = { 'huyết minh':-1.5, "đồng minh":-1, "thân thiện":-0.5, "trung lập":0, "lạnh nhạt":0.5, "thù địch":1, "thù truyền kiếp":1.5 };
+    const STAT = { "cực thịnh":1.25, "vững chắc":1, "chèn ép lẫn nhau":0.75, "khốn đốn":0.5, "suy tàn":0.25, "tan rã":0 };
     let factionP = 0;
     for (const f of (state.factions || [])) {
       const rel = REL[f.relation] !== undefined ? REL[f.relation] : 0;
@@ -280,50 +280,50 @@ window.WORLD_ENGINE_UI = (function() {
     }
     factionP = clamp(factionP, -35, 35);
 
-    // 经济：只看 climate
-    const CLIMATE = { 繁荣:-2, 平稳:0, 衰退:1, 动荡:2 };
+    // Kinh tế: chỉ xem climate
+    const CLIMATE = { "phồn vinh":-2, "ổn định":0, "suy thoái":1, "biến động":2 };
     const econP = CLIMATE[(state.economy || {}).climate] || 0;
 
-    // 区域突发：激活 +5
+    // Đột phát khu vực: kích hoạt +5
     const regionP = (state.regionalIncident && state.regionalIncident.active) ? 5 : 0;
 
-    // 仇敌、黑盒：按设定不计入世界稳定度
+    // Kẻ thù, "hộp đen": theo cài đặt không tính vào độ ổn định thế giới
 
     const pressure = eventP + windP + trendP + factionP + econP + regionP;
     const stability = Number(clamp(100 - pressure, 0, 100).toFixed(1));
     const tier =
-      stability >= 90 ? '天下太平' :
-      stability >= 70 ? '暗流浮动' :
-      stability >= 45 ? '局势紧张' :
-      stability >= 20 ? '动荡失序' : '崩坏边缘';
+      stability >= 90 ? 'Thiên hạ thái bình' :
+      stability >= 70 ? 'Sóng ngầm cuộn trào' :
+      stability >= 45 ? 'Cục diện căng thẳng' :
+      stability >= 20 ? 'Biến động mất trật tự' : 'Bờ vực sụp đổ';
 
     const r1 = v => Number(v.toFixed(1));
     return {
       stability, tier, pressure: r1(pressure),
       breakdown: {
-        事件: r1(eventP), 风声: r1(windP), 大势: r1(trendP), 势力: r1(factionP),
-        经济: r1(econP), 区域: r1(regionP)
+        "sự kiện": r1(eventP), "có tiếng đồn": r1(windP), "đại thế": r1(trendP), "thế lực": r1(factionP),
+        "kinh tế": r1(econP), "khu vực": r1(regionP)
       }
     };
   }
 
   const STABILITY_TIER_COLOR = {
-    天下太平: '#69b68e', 暗流浮动: '#58b8a9', 局势紧张: '#d0aa58',
-    动荡失序: '#d98a3d', 崩坏边缘: '#ff0000'
+    "Thiên hạ thái bình": '#69b68e', "Sóng ngầm cuộn trào": '#58b8a9', "Cục diện căng thẳng": '#d0aa58',
+    "Biến động mất trật tự": '#d98a3d', "Bờ vực sụp đổ": '#ff0000'
   };
 
-  // 稳定度档位 → 头部小字（诗句）
+  // Mức độ ổn định → Chữ nhỏ ở đầu (thơ)
   const STABILITY_TIER_MOOD = {
-    天下太平: '海静不扬波', 暗流浮动: '暗水带花流', 局势紧张: '云急风更恶',
-    动荡失序: '乾坤含疮痍', 崩坏边缘: '坤轴欹将折'
+    "Thiên hạ thái bình": 'Biển lặng không gợn sóng', "Sóng ngầm cuộn trào": 'Nước ngầm cuốn hoa trôi', "Cục diện căng thẳng": 'Mây cuộn gió thêm dữ',
+    "Biến động mất trật tự": 'Càn khôn đầy thương tích', "Bờ vực sụp đổ": 'Trục đất nghiêng sắp gãy'
   };
 
-  /** 刷新头部的「第X轮 + 稳定度小字」 */
+  /** Làm mới phần đầu của 「Thứ X  vòng +  chữ nhỏ độ ổn định」 */
   function updatePanelHeader(state, layer) {
     const roundEl = document.getElementById('we-header-round');
     if (roundEl) {
-      const layerText = (layer !== undefined && layer !== null && layer !== '-') ? ' · 第 ' + layer + ' 层' : '';
-      roundEl.textContent = '第 ' + ((state && state.round) || 0) + ' 轮' + layerText;
+      const layerText = (layer !== undefined && layer !== null && layer !== '-') ? ' · Thứ  ' + layer + '  tầng' : '';
+      roundEl.textContent = 'Thứ  ' + ((state && state.round) || 0) + '  vòng' + layerText;
     }
     const moodEl = document.getElementById('we-header-mood');
     if (moodEl) {
@@ -338,7 +338,7 @@ window.WORLD_ENGINE_UI = (function() {
   }
 
   const VIEW_TITLES = {
-    situation: '局势', events: '事件', relations: '关系', resources: '资源', settings: '设置'
+    situation: 'cục diện', events: 'sự kiện', relations: 'quan hệ', resources: 'tài nguyên', settings: 'cài đặt'
   };
 
   function renderSection(title, id, content) {
@@ -350,10 +350,10 @@ window.WORLD_ENGINE_UI = (function() {
     const tierColor = STABILITY_TIER_COLOR[stab.tier] || '#58b8a9';
 
     const rows = [
-      { view: 'situation', label: '局势', sub: '天下大势 · 区域事件 · 账本', poem: '天下云集响应' },
-      { view: 'events',    label: '事件', sub: '事件链 · 风声 · 影响链',     poem: '事至而应' },
-      { view: 'relations', label: '关系', sub: '声誉 · 势力 · 仇敌录',       poem: '同声相应，同气相求' },
-      { view: 'resources', label: '资源', sub: '经济 · 秘密',               poem: '地藏无尽藏' },
+      { view: 'situation', label: 'cục diện', sub: 'đại thế thiên hạ · sự kiện khu vực · sổ cái', poem: 'Thiên hạ vân tập hưởng ứng' },
+      { view: 'events',    label: 'sự kiện', sub: 'chuỗi sự kiện · có tiếng đồn · chuỗi ảnh hưởng',     poem: 'Việc đến thì ứng phó' },
+      { view: 'relations', label: 'quan hệ', sub: 'danh tiếng · thế lực · sổ kẻ thù',       poem: 'Đồng thanh tương ứng, đồng khí tương cầu' },
+      { view: 'resources', label: 'tài nguyên', sub: 'kinh tế · Bí mật',               poem: 'Địa Tạng Vô Tận Tạng' },
     ];
 
     const navRows = rows.map((r, i) => {
@@ -370,120 +370,120 @@ window.WORLD_ENGINE_UI = (function() {
 
     return renderWorldCore(s)
       + '<div class="we-nav-list" style="--we-tier-color:' + tierColor + ';">' + navRows + '</div>'
-      + '<div class="we-section" id="we-sec-digest"><div class="we-section-title">世界摘要</div><div class="we-digest">' + u(s.worldDigest) + '</div></div>';
+      + '<div class="we-section" id="we-sec-digest"><div class="we-section-title">tóm tắt thế giới</div><div class="we-digest">' + u(s.worldDigest) + '</div></div>';
   }
 
-  /** 展开模式主页：世界核心 + 世界摘要 + 所有 section 平铺（如存档点） */
+  /** Trang chủ chế độ mở rộng: Cốt lõi thế giới + tóm tắt thế giới + Tất cả section Trải phẳng (như điểm lưu) */
   function renderHomeViewExpanded(s, layer, scope) {
     return renderWorldCore(s)
-      + '<div class="we-section" id="we-sec-digest"><div class="we-section-title">世界摘要</div><div class="we-digest">' + u(s.worldDigest) + '</div></div>'
-      + renderSection('天下大势', 'trends', renderWorldTrends(s.worldTrends, scope))
-      + renderSection('区域事件', 'regional', renderRegionalIncident(s.regionalIncident, scope))
-      + renderSection('事件链', 'events', renderEventList(s.events, scope))
-      + renderSection('风声', 'winds', renderWindList(s.winds, scope))
-      + renderSection('影响链', 'influence', renderInfluenceChain(s.influenceChain, scope))
-      + renderSection('声誉', 'reputation', renderReputation(s.reputation, scope))
-      + renderSection('势力', 'factions', renderFactionList(s.factions, scope))
-      + renderSection('仇敌录', 'enemies', renderEnemies(s.enemies, scope))
-      + renderSection('经济', 'economy', renderEconomy(s.economy, scope))
-      + renderSection('秘密', 'blackbox', renderBlackbox(s.blackbox, scope))
-      + renderSection('事件账本', 'ledger', renderLedger(s.memories));
+      + '<div class="we-section" id="we-sec-digest"><div class="we-section-title">tóm tắt thế giới</div><div class="we-digest">' + u(s.worldDigest) + '</div></div>'
+      + renderSection('đại thế thiên hạ', 'trends', renderWorldTrends(s.worldTrends, scope))
+      + renderSection('sự kiện khu vực', 'regional', renderRegionalIncident(s.regionalIncident, scope))
+      + renderSection('chuỗi sự kiện', 'events', renderEventList(s.events, scope))
+      + renderSection('có tiếng đồn', 'winds', renderWindList(s.winds, scope))
+      + renderSection('chuỗi ảnh hưởng', 'influence', renderInfluenceChain(s.influenceChain, scope))
+      + renderSection('danh tiếng', 'reputation', renderReputation(s.reputation, scope))
+      + renderSection('thế lực', 'factions', renderFactionList(s.factions, scope))
+      + renderSection('sổ kẻ thù', 'enemies', renderEnemies(s.enemies, scope))
+      + renderSection('kinh tế', 'economy', renderEconomy(s.economy, scope))
+      + renderSection('Bí mật', 'blackbox', renderBlackbox(s.blackbox, scope))
+      + renderSection('Sổ cái sự kiện', 'ledger', renderLedger(s.memories));
   }
 
   function renderSubView(viewKey, s, layer, scope) {
     let content = '';
     if (viewKey === 'situation') {
-      content = renderSection('天下大势', 'trends', renderWorldTrends(s.worldTrends, scope))
-        + renderSection('区域事件', 'regional', renderRegionalIncident(s.regionalIncident, scope))
-        + renderSection('事件账本', 'ledger', renderLedger(s.memories));
+      content = renderSection('đại thế thiên hạ', 'trends', renderWorldTrends(s.worldTrends, scope))
+        + renderSection('sự kiện khu vực', 'regional', renderRegionalIncident(s.regionalIncident, scope))
+        + renderSection('Sổ cái sự kiện', 'ledger', renderLedger(s.memories));
     } else if (viewKey === 'events') {
-      content = renderSection('事件链', 'events', renderEventList(s.events, scope))
-        + renderSection('风声', 'winds', renderWindList(s.winds, scope))
-        + renderSection('影响链', 'influence', renderInfluenceChain(s.influenceChain, scope));
+      content = renderSection('chuỗi sự kiện', 'events', renderEventList(s.events, scope))
+        + renderSection('có tiếng đồn', 'winds', renderWindList(s.winds, scope))
+        + renderSection('chuỗi ảnh hưởng', 'influence', renderInfluenceChain(s.influenceChain, scope));
     } else if (viewKey === 'relations') {
-      content = renderSection('声誉', 'reputation', renderReputation(s.reputation, scope))
-        + renderSection('势力', 'factions', renderFactionList(s.factions, scope))
-        + renderSection('仇敌录', 'enemies', renderEnemies(s.enemies, scope));
+      content = renderSection('danh tiếng', 'reputation', renderReputation(s.reputation, scope))
+        + renderSection('thế lực', 'factions', renderFactionList(s.factions, scope))
+        + renderSection('sổ kẻ thù', 'enemies', renderEnemies(s.enemies, scope));
     } else if (viewKey === 'resources') {
-      content = renderSection('经济', 'economy', renderEconomy(s.economy, scope))
-        + renderSection('秘密', 'blackbox', renderBlackbox(s.blackbox, scope));
+      content = renderSection('kinh tế', 'economy', renderEconomy(s.economy, scope))
+        + renderSection('Bí mật', 'blackbox', renderBlackbox(s.blackbox, scope));
     }
     return '<div class="we-sub-topbar">'
-      + '<button class="we-icon-btn" id="we-btn-back" title="返回"><i class="fa-solid fa-arrow-left"></i></button>'
+      + '<button class="we-icon-btn" id="we-btn-back" title="trả về"><i class="fa-solid fa-arrow-left"></i></button>'
       + '<span class="we-sub-title">' + (VIEW_TITLES[viewKey] || viewKey) + '</span>'
       + '</div>' + content;
   }
 
-  /** 存档点小标题：青色默认小字 + 「- N轮 - M层」 */
+  /** Tiêu đề phụ điểm lưu: Chữ nhỏ mặc định màu lục lam + 「- N  vòng - M tầng」 */
   function checkpointTitle(checkpoint, cpLayer) {
-    if (!checkpoint) return '存档点';
+    if (!checkpoint) return 'điểm lưu';
     const round = checkpoint.round || 0;
     const layer = (cpLayer === undefined || cpLayer === null) ? '-' : cpLayer;
-    return '存档点 - ' + round + ' 轮 - ' + layer + ' 层';
+    return 'điểm lưu - ' + round + '  vòng - ' + layer + '  tầng';
   }
 
-  // 更新日志（纯数据；与渲染解耦。新版本发布时在数组头部加一项即可）。
-  //   version —— 版本选择条按钮文案 + 与 manifest 当前版本高亮匹配；
-  //   date    —— 可选，日期不确定的留月份/年份；
-  //   items   —— 该版本改动条目（每条一行，渲染时走 h() 转义）。
+  // Nhật ký cập nhật (dữ liệu thuần; tách rời với render. Khi phát hành phiên bản mới chỉ cần thêm một mục vào đầu mảng).
+  //   version —— Văn bản nút thanh chọn phiên bản + và manifest Khớp tô sáng phiên bản hiện tại;
+  //   date    —— Tuỳ chọn, ngày không chắc chắn thì để lại tháng/Năm;
+  //   items   —— Mục thay đổi của phiên bản này (mỗi mục một dòng, khi render chạy qua h() escape).
   const CHANGELOG = [
-    { version: '2.3.19', date: '2026-06-29', items: ['修复「没重 roll 却注入了存档点（旧轮次世界状态）」：v2.3.18 用纯数值 state.chatLayer===chatLayer 判重 roll，但酒馆 GENERATION_STARTED 在用户楼 push 进 chat **之前** emit——新一轮发消息时 chatLayer 仍 == 上一轮 state.chatLayer，被误判成重 roll、注入了上一轮存档点（与「蚀心入魔·数据库」等双生成插件叠加时每轮必现）。现重 roll 判据改用酒馆原生 type（GENERATION_STARTED 的 type=swipe/regenerate 才是真重 roll），不再靠楼层数值推断；dryRun（数据库类插件的预热/算 token 生成）一律跳过，杜绝「正文生成完又注入一遍」。', '注入自检查看器增强（只读）：「实际发出的消息链」现在每一条（system/user/assistant 全部）都可点击展开看完整内容，不再只显示字数；方便核对发给大模型的完整 prompt。诊断包仍只导 role+长度（不含正文，避免体积膨胀与泄露聊天上下文）。'] },
-    { version: '2.3.18', date: '2026-06-29', items: ['修复重 roll 推演轮次回退（解耦重 roll 与 redo）：自动推演把「重 roll（同楼 swipe 重新生成）」混为 redo（从存档点恢复基底重推）→ 重 roll 后推演轮次卡在存档点轮次而非当前轮。现 evolve 基底选择三分——forward（新轮次/从当前推）/ redo（手动卫星按钮回存档点）/ 自动重 roll（mode 未传且非新轮次→不恢复存档点，直接在当前 state 上推，轮次保持当前轮）。', '修复重 roll 注入走错分支（解耦注入判据与事件时序）：v2.3.17 的 _pendingReroll 闸门依赖酒馆 swipe 事件时序，易被 GENERATION_ENDED 提前清零 / 双生成插件撞窗口 → 重 roll 时注入了当前轮状态而非存档点。（注：v2.3.18 换的纯数值判据有新回归，已由 v2.3.19 的 type 判据彻底修正。）', '移除 _pendingReroll 闸门（v2.3.17 引入，现完全不需要），代码更简单'] },
-    { version: '2.3.17', date: '2026-06-28', items: ['修复与「会扰动楼层/双生成」类插件（如数据库类酒馆助手脚本）叠加时世界状态注入「时灵时不灵」：根因是 v2.3.14 的「同层重 roll 不注入」守卫判据 fingerprint==chatLayer 过于激进——fingerprint 在推演那刻被钉到当层，新一轮第①次生成（真正产出剧情正文那次）刚开始、新用户楼尚未落地时 chatLayer 恰好仍 == fingerprint，被误判成重 roll 而撤掉注入，导致真实正文拿不到世界状态。现给守卫加「真 swipe 闸门」：只在确实收到酒馆原生 MESSAGE_SWIPED 事件后（_pendingReroll=true）守卫才有资格触发，普通新生成不带 swipe 事件故照常注入当前状态；且触发时改为注入存档点（这层正文产生前的世界状态）而非完全不注入，更贴合「重 roll 注入存档点」本意（无存档点才退回不注入）。判据是酒馆原生事件，对任何插件通用、不含任何插件特判'] },
-    { version: '2.3.16', date: '2026-06-28', items: ['新增「注入自检」（调试卡顶部，只读）：很多客户反馈「注入不成功」却无从判断——根因是 registerInjection 的成功只代表「调酒馆接口没报错」，从不证明世界状态真进了发给大模型的正文。现订阅酒馆 prompt 组装完成事件（对话补全 chat_completion_prompt_ready / 文本补全 generate_after_combine_prompts），读取注入之后酒馆真正拼好的 prompt 链并按 role 分好展示，用大白话判定本轮：✅已进正文 / ❌注册了却没进正文(真失败) / ⏸按设计跳过(关了注入或同层重 roll) / —还没生成；纯只读、解耦成独立模块，不改注入逻辑、不动 eventData、忽略算 token 的预热轮，对推演零影响；诊断包同步补采该快照'] },
-    { version: '2.3.15', date: '2026-06-25', items: ['修复自动推演静默瘫痪：API 推演请求无超时，若落入网络黑洞（代理无响应/上游不返回也不报错）fetch 会永久挂起，evolution 的 _isRunning 永不复位，此后所有 GENERATION_ENDED 触发的自动推演被 isRunning() 守卫静默跳过、直到用户切一次聊天才解锁；现新增 apiTimeoutMs（默认 120s，0=不超时），超时按推演失败处理让 finally 正常复位并在状态栏报明确超时原因（用户主动中止/切聊天仍走原 AbortError 显示「已中止」）'] },
-    { version: '2.3.14', date: '2026-06-23', items: ['修复 redo 轮次虚增：点「重新推进」卫星按钮时 round 无条件 +1（在 isNew 判定之前）导致 redo 也涨轮次，与注释「redo 轮次不变」不符；现 round++ 移进 if(isNew)，只 forward / 自动新轮次涨', '修复 redo 无存档点静默退化：首次推演后无 checkpoint，点 redo 旧版整块跳过→无声退化为「在当前 state 上推」+ round++ 的伪 redo（白涨一轮无提示）；现 mode==="redo" 且无 cp 时 return false 并报错「无存档点，无法重新推进（redo）；请先『向前推进』至少一轮」，不再伪 forward', '修复重 roll 同层注入旧世界状态：重 roll 同层（chatLayer==stateLayer）旧版走 else 注入「基于旧正文推演出的当前状态」，干扰正在重写的新正文；现 applyInjectionForCurrentRound 加「同层已推演→不注入」分支，判据用 fingerprint（只在真正新轮次时更新，比 chatLayer 忠实）命中 unregisterInjection，避免新正文被旧世界状态带偏', '新增小地球（悬浮球）左侧第四卫星「插头」总开关：一键关闭/开启 推演与注入（联动 evolveMode + injectIntoPrompt 两个现有设置字段，不新增字段；关闭=切手动推演+关注入，开启=切自动推演+开注入；manual 模式自带拦 pending autoEvolveTimer，无需额外总开关注解）'] },
-    { version: '2.3.13', date: '2026-06-22', items: ['修复自动推演死锁：开了 syncToChat 的空壳聊天（从未推演过）首次 AI 楼层后状态行卡在「第 0/1 轮」永不自动推演', '修复火山方舟等自定义版本前缀（/api/v3、/api/coding/v3）API 无法拉取模型：URL 规整不再硬塞 /v1，版本前缀由用户填到完整，URL 框旁加格式提示', 'chatcache 跨设备同步护栏：云端缺少 checkpoint/fingerprint 时不随 exact 删除本地锚点，避免再次掉进死锁'] },
-    { version: '2.3.12', date: '2026-06-22', items: ['新增「关于」选项卡：内置更新日志，可下拉选择版本查看历次改动', '正则过滤「简单模式」：勾选标签自动生成删除正则'] },
-    { version: '2.3.11', date: '2026-06-22', items: ['正则过滤支持 /pattern/flags 写法、保存时校验、新增测试按钮'] },
-    { version: '2.3.10', date: '2026-06-21', items: ['引擎预设系统代码审查修复（性能与卡顿）', '诊断包补采预设系统与 prompt 分段'] },
-    { version: '2.3.9',  date: '2026-06',    items: ['引擎预设系统：推演 prompt 硬编码段可编辑、可保存、可切换'] },
-    { version: '2.3.8',  date: '2026-06',    items: ['推演 Prompt 全透明分段展示（只读）'] },
-    { version: '2.3.7',  date: '2026-06',    items: ['新增「经酒馆代理」连接方式，绕过第三方 API 的 CORS'] },
-    { version: '2.3.6',  date: '2026-06',    items: ['设置页选项卡化'] },
-    { version: '2.3.5',  date: '2026-06',    items: ['一键导出诊断包'] },
-    { version: '2.3.4',  date: '2026-06',    items: ['面板标题旁显示扩展版本号'] },
-    { version: '2.2.0',  date: '2026',       items: ['酒馆缓存与存档：跨设备同步 + 防丢失存档'] }
+    { version: '2.3.19', date: '2026-06-29', items: ['Sửa lỗi 「không reroll roll nhưng lại tiêm điểm lưu (trạng thái thế giới vòng trước)」:v2.3.18 Dùng giá trị thuần state.chatLayer===chatLayer phán đoán reroll roll，Nhưng Tavern GENERATION_STARTED ở tầng người dùng push vào chat **trước khi** emit——khi gửi tin nhắn vòng mới chatLayer vẫn == vòng trước state.chatLayer，bị phán đoán nhầm thành reroll roll、đã tiêm điểm lưu vòng trước (khi xếp chồng với plugin tạo kép như 「Thực Tâm Nhập Ma·Cơ sở dữ liệu」 thì vòng nào cũng xuất hiện). Hiện tại phán đoán reroll roll tiêu chí đổi sang dùng bản địa của Tavern type（GENERATION_STARTED của type=swipe/regenerate mới là reroll thật roll），không còn suy luận dựa trên giá trị số tầng nữa;dryRun（Khởi động của plugin loại cơ sở dữ liệu/tính là token tạo) đều bỏ qua, chấm dứt tình trạng 「tạo xong phần chính lại tiêm thêm một lần nữa」。', 'Tăng cường trình xem tự kiểm tra tiêm (chỉ đọc): 「Chuỗi tin nhắn thực tế gửi đi」 hiện tại mỗi một tin (system/user/assistant tất cả) đều có thể nhấp để mở rộng xem nội dung hoàn chỉnh, không chỉ hiển thị số chữ nữa; thuận tiện đối chiếu toàn bộ nội dung gửi cho mô hình lớn prompt。Gói chẩn đoán vẫn chỉ xuất role+độ dài (không bao gồm phần chính, tránh phình to dung lượng và rò rỉ ngữ cảnh trò chuyện).'] },
+    { version: '2.3.18', date: '2026-06-29', items: ['Sửa lỗi reroll roll Lùi vòng suy diễn (tách rời reroll roll và redo）：suy diễn tự động đem 「reroll roll（cùng tầng swipe tạo lại)」 nhầm thành redo（khôi phục cơ sở từ điểm lưu và suy diễn lại)→ lại roll sau đó vòng suy diễn bị kẹt ở vòng điểm lưu thay vì vòng hiện tại. Hiện tại evolve lựa chọn cơ sở chia ba——forward（vòng mới/suy diễn từ hiện tại)/ redo（nút vệ tinh thủ công về điểm lưu)/ tự động thử lại roll（mode chưa truyền và không phải vòng mới→không khôi phục điểm lưu, trực tiếp ở hiện tại state suy diễn tiếp, vòng giữ nguyên vòng hiện tại).', 'Sửa lỗi reroll roll tiêm đi sai nhánh (tách rời tiêu chí tiêm và trình tự sự kiện):v2.3.17 của _pendingReroll cổng phụ thuộc Tavern swipe trình tự sự kiện, dễ bị GENERATION_ENDED xoá về 0 sớm / plugin tạo kép đụng cửa sổ → lại roll khi đó đã tiêm trạng thái vòng hiện tại thay vì điểm lưu. (Chú ý:v2.3.18 tiêu chí thuần số được thay thế có hồi quy mới, đã được v2.3.19 của type tiêu chí sửa chữa triệt để.)', 'xoá bỏ _pendingReroll cổng (v2.3.17 đưa vào, hiện hoàn toàn không cần thiết), code đơn giản hơn'] },
+    { version: '2.3.17', date: '2026-06-28', items: ['sửa lỗi với plugin loại 「sẽ làm nhiễu tầng/tạo kép」 (như script trợ thủ Tavern loại cơ sở dữ liệu) khi xếp chồng thì việc tiêm trạng thái thế giới 「lúc được lúc không」: nguyên nhân gốc là v2.3.14 của 「cùng tầng lại roll không tiêm」 tiêu chí thủ vệ fingerprint==chatLayer quá khắt khe——fingerprint tại khoảnh khắc suy diễn bị ghim vào tầng hiện tại, vòng mới thứ①lần tạo (lần thực sự tạo ra chính văn cốt truyện) vừa bắt đầu, tầng người dùng mới chưa hạ cánh thì chatLayer vừa vặn vẫn == fingerprint，bị phán đoán nhầm thành reroll roll mà rút bỏ tiêm, dẫn đến chính văn thực sự không lấy được trạng thái thế giới. Hiện thêm cho thủ vệ 「thực swipe cổng」: chỉ khi thực sự nhận được nguyên bản của Tavern MESSAGE_SWIPED sau sự kiện (_pendingReroll=true）thủ vệ mới có tư cách kích hoạt, tạo mới thông thường không mang swipe sự kiện nên vẫn tiêm trạng thái hiện tại như thường; và khi kích hoạt đổi thành tiêm điểm lưu (trạng thái thế giới trước khi tạo ra chính văn tầng này) thay vì hoàn toàn không tiêm, bám sát hơn ý định ban đầu 「lại roll tiêm điểm lưu」 (không có điểm lưu mới lùi về không tiêm). Tiêu chí là sự kiện nguyên bản của Tavern, dùng chung cho mọi plugin, không chứa bất kỳ phán đoán đặc thù plugin nào'] },
+    { version: '2.3.16', date: '2026-06-28', items: ['thêm mới 「tự kiểm tra tiêm」 (đỉnh thẻ gỡ lỗi, chỉ đọc): nhiều khách hàng phản hồi 「tiêm không thành công」 nhưng không có cách nào phán đoán——nguyên nhân gốc là registerInjection thành công chỉ đại diện cho 「gọi API Tavern không báo lỗi」, chưa bao giờ chứng minh trạng thái thế giới thực sự đã vào chính văn gửi cho LLM. Hiện đăng ký Tavern prompt sự kiện lắp ráp hoàn tất (bổ sung hội thoại chat_completion_prompt_ready / bổ sung văn bản generate_after_combine_prompts），đọc những gì Tavern thực sự ghép xong sau khi tiêm prompt chuỗi và theo role phân loại hiển thị, "dùng lời nói dễ hiểu phán đoán vòng này":✅đã vào chính văn / ❌đã đăng ký nhưng chưa vào chính văn(thực sự thất bại) / ⏸bỏ qua theo thiết kế(đã tắt tiêm hoặc cùng tầng lại roll) / —vẫn chưa tạo; thuần chỉ đọc, tách rời thành module độc lập, không đổi logic tiêm, không động eventData、Bỏ qua tính token vòng khởi động, không ảnh hưởng đến suy diễn; gói chẩn đoán đồng bộ thu thập thêm snapshot này'] },
+    { version: '2.3.15', date: '2026-06-25', items: ['Sửa lỗi suy diễn tự động tê liệt trong im lặng:API Yêu cầu suy diễn không có timeout, nếu rơi vào hố đen mạng (proxy không phản hồi/upstream không trả về cũng không báo lỗi)fetch sẽ treo vĩnh viễn,evolution của _isRunning không bao giờ reset, sau đó tất cả GENERATION_ENDED suy diễn tự động được kích hoạt bị isRunning() thủ vệ bỏ qua trong im lặng, cho đến khi người dùng chuyển chat một lần mới mở khoá; nay thêm mới apiTimeoutMs（mặc định 120s，0=không timeout), timeout xử lý như suy diễn thất bại để finally reset bình thường và báo rõ lý do timeout trên dòng trạng thái (người dùng chủ động huỷ bỏ/chuyển chat vẫn đi theo đường cũ AbortError hiển thị 「đã huỷ bỏ」)'] },
+    { version: '2.3.14', date: '2026-06-23', items: ['sửa lỗi redo số vòng tăng ảo: khi bấm nút vệ tinh 「thúc đẩy lại」 round vô điều kiện +1（tại isNew trước khi phán đoán) dẫn đến redo cũng tăng số vòng, không khớp với comment 「redo vòng không đổi」; nay round++ chuyển vào if(isNew)，chỉ forward / vòng mới tự động tăng', 'sửa lỗi redo thoái hoá im lặng không có điểm lưu: sau lần suy diễn đầu tiên không có checkpoint，điểm redo phiên bản cũ bỏ qua toàn bộ khối→thoái hoá không tiếng động thành 「tại hiện tại state đẩy lên」+ round++ giả của redo（tăng không một vòng không nhắc nhở); nay mode==="redo" và không có cp khi return false và báo lỗi 「không có điểm lưu, không thể thúc đẩy lại (redo）；vui lòng 『thúc đẩy về phía trước』 ít nhất một vòng trước」, không còn giả forward', 'Sửa lỗi reroll roll tiêm trạng thái thế giới cũ cùng tầng: reroll roll cùng tầng (chatLayer==stateLayer）phiên bản cũ đi else tiêm 「trạng thái hiện tại suy diễn dựa trên chính văn cũ」, can thiệp vào chính văn mới đang viết lại; nay applyInjectionForCurrentRound thêm nhánh 「cùng tầng đã suy diễn→không tiêm」, tiêu chí dùng fingerprint（chỉ cập nhật khi thực sự là vòng mới, so với chatLayer trung thực) khớp unregisterInjection，tránh chính văn mới bị trạng thái thế giới cũ làm lệch hướng', 'thêm mới công tắc tổng vệ tinh thứ tư 「phích cắm」 bên trái quả đất nhỏ (bóng nổi): tắt bằng một cú nhấp/bật suy diễn và tiêm (liên kết evolveMode + injectIntoPrompt hai trường cài đặt hiện có, không thêm mới trường; tắt=chuyển suy diễn thủ công+tắt tiêm, bật=chuyển sang suy diễn tự động+bật tiêm;manual chế độ có sẵn chặn pending autoEvolveTimer，không cần chú thích công tắc tổng bổ sung)'] },
+    { version: '2.3.13', date: '2026-06-22', items: ['sửa lỗi deadlock suy diễn tự động: đã bật syncToChat chat rỗng (chưa từng suy diễn) lần đầu AI sau tầng, dòng trạng thái kẹt ở 「vòng 0/1 」không bao giờ tự động suy diễn', 'sửa lỗi tiền tố phiên bản tuỳ chỉnh như Volcengine (Ark) (/api/v3、/api/coding/v3）API không thể kéo mô hình:URL chuẩn hoá không còn nhét cứng /v1，tiền tố phiên bản do người dùng điền đầy đủ,URL thêm nhắc nhở định dạng bên cạnh ô', 'chatcache rào chắn đồng bộ đa thiết bị: đám mây thiếu checkpoint/fingerprint khi không theo exact xoá điểm neo cục bộ, tránh rơi vào deadlock lần nữa'] },
+    { version: '2.3.12', date: '2026-06-22', items: ['thêm mới tab 「về」: tích hợp nhật ký cập nhật, có thể chọn phiên bản từ dropdown để xem các thay đổi trước đây', 'lọc regex 「chế độ đơn giản」: tick chọn thẻ tự động tạo regex xoá'] },
+    { version: '2.3.11', date: '2026-06-22', items: ['lọc regex hỗ trợ /pattern/flags cách viết, xác thực khi lưu, thêm mới nút kiểm thử'] },
+    { version: '2.3.10', date: '2026-06-21', items: ['sửa lỗi code review hệ thống preset engine (hiệu suất và giật lag)', 'gói chẩn đoán thu thập bổ sung hệ thống preset và prompt phân đoạn'] },
+    { version: '2.3.9',  date: '2026-06',    items: ['hệ thống preset engine: suy diễn prompt đoạn hardcode có thể chỉnh sửa, có thể lưu, có thể chuyển đổi'] },
+    { version: '2.3.8',  date: '2026-06',    items: ['suy diễn Prompt hiển thị phân đoạn hoàn toàn minh bạch (chỉ đọc)'] },
+    { version: '2.3.7',  date: '2026-06',    items: ['thêm mới cách kết nối 「qua proxy của Tavern」, bỏ qua bên thứ ba API của CORS'] },
+    { version: '2.3.6',  date: '2026-06',    items: ['trang cài đặt dạng tab'] },
+    { version: '2.3.5',  date: '2026-06',    items: ['xuất gói chẩn đoán 1 click'] },
+    { version: '2.3.4',  date: '2026-06',    items: ['hiển thị số phiên bản extension bên cạnh tiêu đề bảng điều khiển'] },
+    { version: '2.2.0',  date: '2026',       items: ['cache & bản lưu Tavern: đồng bộ đa thiết bị + bản lưu chống mất mát'] }
   ];
 
-  // [FIX] 选项卡定义：label + 包含哪些片段。仅归类现有 section，不新增/不删功能。
+  // [FIX] định nghĩa tab:label + bao gồm những đoạn nào. chỉ phân loại hiện có section，không thêm mới/không xoá tính năng.
   const SETTINGS_TABS = [
-    { key: 'common',    label: '常用' },
-    { key: 'advanced',  label: '高级' },
-    { key: 'archive',   label: '存档' },
-    { key: 'worldbook', label: '世界书' },
-    { key: 'debug',     label: '调试' },
-    { key: 'about',     label: '关于' }
+    { key: 'common',    label: 'thường dùng' },
+    { key: 'advanced',  label: 'nâng cao' },
+    { key: 'archive',   label: 'bản lưu' },
+    { key: 'worldbook', label: 'Worldbook' },
+    { key: 'debug',     label: 'gỡ lỗi' },
+    { key: 'about',     label: 'về' }
   ];
   let _settingsTab = 'common';
 
   function renderSettingsView(checkpoint, cpLayer) {
     const cpContent = checkpoint
       ? renderCheckpointSections(checkpoint, cpLayer)
-      : '<div class="we-empty">暂无存档点</div>';
+      : '<div class="we-empty">tạm thời không có điểm lưu</div>';
     const form = renderSettingsForm();              // {api,evolve,backfill,filter,display,chatcache,inject}
     const extra = renderSettingsAfterCheckpoint();  // {worldbook,data,tone}
 
-    // 存档点 section（原样，移入「存档」卡）
+    // điểm lưu section（giữ nguyên, chuyển vào tab 「bản lưu」)
     const checkpointSection = '<div class="we-section" style="margin-top:16px;"><div class="we-section-title">'
       + sectionHeader(checkpointTitle(checkpoint, cpLayer), 'checkpoint-section') + '</div>'
       + sectionBody('checkpoint-section', cpContent) + '</div>';
 
-    // 调试 section（原样，含诊断包按钮 + renderDebug，移入「调试」卡）
+    // gỡ lỗi section（giữ nguyên, gồm nút gói chẩn đoán + renderDebug，chuyển vào tab 「gỡ lỗi」)
     const debugSection = '<div class="we-section we-debug-section">'
-      + '<div class="we-section-title"><span class="we-debug-toggle" title="展开或收起调试信息"><span class="we-toggle-arrow">▶</span>调试</span></div>'
+      + '<div class="we-section-title"><span class="we-debug-toggle" title="mở rộng hoặc thu gọn thông tin gỡ lỗi"><span class="we-toggle-arrow">▶</span>gỡ lỗi</span></div>'
       + '<div id="we-debug-body" style="display:none;">'
-      + '<button class="we-btn" id="we-export-diag" style="width:100%;margin-bottom:8px;">导出诊断包</button><!-- [FIX] 诊断包：与是否已推演无关，始终可导出 -->'
+      + '<button class="we-btn" id="we-export-diag" style="width:100%;margin-bottom:8px;">xuất gói chẩn đoán</button><!-- [FIX] gói chẩn đoán: không liên quan đến việc đã suy diễn hay chưa, luôn có thể xuất -->'
       + '<div id="we-debug-render">' + renderDebug() + '</div>'
-      // [MAP] 引擎预设管理：与 PR#12 只读分段展示同处调试卡，把 4 个硬编码段升级为可编辑+预设化。
-      // 独立锚点 #we-preset-manage，局部刷新；保存走独立 storage key，不进 we-save-settings。
+      // [MAP] Quản lý preset engine: Cùng với PR#12 hiển thị phân đoạn chỉ đọc ở cùng thẻ gỡ lỗi, đưa 4 đoạn hardcode nâng cấp thành có thể chỉnh sửa+preset hoá.
+      // Điểm neo độc lập #we-preset-manage，làm mới cục bộ; lưu theo độc lập storage key，không vào we-save-settings。
       + '<div class="we-preset-section">'
-      + '<div class="we-section-title">引擎预设（可编辑推演 prompt 段）</div>'
+      + '<div class="we-section-title">Preset engine (suy diễn có thể chỉnh sửa prompt đoạn)</div>'
       + '<div id="we-preset-manage">' + renderPresetManage() + '</div>'
       + '</div>'
       + '</div></div>';
 
-    // 各选项卡承载的片段（每个 section 恰好出现一次，零重复）
+    // Các đoạn được chứa trong từng thẻ (mỗi đoạn section xuất hiện đúng một lần, không trùng lặp)
     const panelContent = {
       common:    form.api + form.evolve + form.inject,
       advanced:  form.backfill + form.filter + form.display + extra.tone,
@@ -505,32 +505,32 @@ window.WORLD_ENGINE_UI = (function() {
       + (panelContent[t.key] || '') + '</div>').join('');
 
     return '<div class="we-sub-topbar">'
-      + '<button class="we-icon-btn" id="we-btn-back" title="返回"><i class="fa-solid fa-arrow-left"></i></button>'
-      + '<span class="we-sub-title">设置</span>'
+      + '<button class="we-icon-btn" id="we-btn-back" title="trả về"><i class="fa-solid fa-arrow-left"></i></button>'
+      + '<span class="we-sub-title">cài đặt</span>'
       + '</div>'
       + tabBar
       + panels
-      // 保存/重置：底部常驻（sticky），任何选项卡都能一键保存全部设置
+      // Lưu/Đặt lại: Thường trú ở dưới cùng (sticky），bất kỳ thẻ nào cũng có thể lưu toàn bộ cài đặt bằng một cú nhấp chuột
       + '<div class="we-settings-save-actions we-settings-save-sticky">'
-      + '<button class="we-btn" id="we-save-settings">保存设置</button>'
-      + '<button class="we-btn we-btn-danger" id="we-reset-world">重置世界</button>'
+      + '<button class="we-btn" id="we-save-settings">Lưu cài đặt</button>'
+      + '<button class="we-btn we-btn-danger" id="we-reset-world">Đặt lại thế giới</button>'
       + '</div>';
   }
 
-  // 「关于」选项卡：当前版本徽标 + 更新日志（下拉选择版本 + 每版本独立面板，纯 CSS 显隐切换）。
-  //   数据来自 CHANGELOG 常量（与渲染解耦）；版本下拉复用 #we-preset-select 范式——
-  //   点击弹出原生可滚动列表，版本再多也不撑爆布局。默认选中第一项（最新版）。
+  // 「Thẻ "Giới thiệu": Logo phiên bản hiện tại + Nhật ký cập nhật (chọn phiên bản từ menu thả xuống + mỗi phiên bản có bảng điều khiển độc lập, thuần CSS chuyển đổi hiển thị/ẩn).
+  //   Dữ liệu từ CHANGELOG hằng số (tách rời với render); menu thả xuống phiên bản tái sử dụng #we-preset-select mô hình——
+  //   nhấp để bật lên danh sách có thể cuộn gốc, dù có bao nhiêu phiên bản cũng không làm vỡ bố cục. Mặc định chọn mục đầu tiên (phiên bản mới nhất).
   function renderAbout() {
-    if (!CHANGELOG.length) return '<div class="we-empty">暂无更新日志</div>';
+    if (!CHANGELOG.length) return '<div class="we-empty">Tạm thời chưa có nhật ký cập nhật</div>';
     const cur = window.WORLD_ENGINE_VERSION;
-    const curBadge = cur ? '<span class="we-changelog-cur">当前版本 v' + h(cur) + '</span>' : '';
+    const curBadge = cur ? '<span class="we-changelog-cur">Phiên bản hiện tại v' + h(cur) + '</span>' : '';
 
     const optHtml = CHANGELOG.map(function (c, i) {
       const label = 'v' + c.version + (c.date ? '（' + c.date + '）' : '');
       return '<option value="' + h(c.version) + '"' + (i === 0 ? ' selected' : '') + '>' + h(label) + '</option>';
     }).join('');
     const verBar = '<div class="we-changelog-row">'
-      + '<label class="we-changelog-row-label">查看版本</label>'
+      + '<label class="we-changelog-row-label">Xem phiên bản</label>'
       + '<select id="we-changelog-select" class="we-changelog-select">' + optHtml + '</select>'
       + '</div>';
 
@@ -552,31 +552,31 @@ window.WORLD_ENGINE_UI = (function() {
   }
 
   function renderCheckpointSections(s, layer) {
-    return renderSection('天下大势', 'cp-trends', renderWorldTrends(s.worldTrends, 'checkpoint'))
-      + renderSection('事件链', 'cp-events', renderEventList(s.events, 'checkpoint'))
-      + renderSection('势力', 'cp-factions', renderFactionList(s.factions, 'checkpoint'))
-      + renderSection('风声', 'cp-winds', renderWindList(s.winds, 'checkpoint'))
-      + renderSection('声誉', 'cp-reputation', renderReputation(s.reputation, 'checkpoint'))
-      + renderSection('经济', 'cp-economy', renderEconomy(s.economy, 'checkpoint'))
-      + renderSection('仇敌录', 'cp-enemies', renderEnemies(s.enemies, 'checkpoint'))
-      + renderSection('影响链', 'cp-influence', renderInfluenceChain(s.influenceChain, 'checkpoint'))
-      + renderSection('区域事件', 'cp-regional', renderRegionalIncident(s.regionalIncident, 'checkpoint'))
-      + renderSection('秘密', 'cp-blackbox', renderBlackbox(s.blackbox, 'checkpoint'))
-      + renderSection('事件账本', 'cp-ledger', renderLedger(s.memories));
+    return renderSection('đại thế thiên hạ', 'cp-trends', renderWorldTrends(s.worldTrends, 'checkpoint'))
+      + renderSection('chuỗi sự kiện', 'cp-events', renderEventList(s.events, 'checkpoint'))
+      + renderSection('thế lực', 'cp-factions', renderFactionList(s.factions, 'checkpoint'))
+      + renderSection('có tiếng đồn', 'cp-winds', renderWindList(s.winds, 'checkpoint'))
+      + renderSection('danh tiếng', 'cp-reputation', renderReputation(s.reputation, 'checkpoint'))
+      + renderSection('kinh tế', 'cp-economy', renderEconomy(s.economy, 'checkpoint'))
+      + renderSection('sổ kẻ thù', 'cp-enemies', renderEnemies(s.enemies, 'checkpoint'))
+      + renderSection('chuỗi ảnh hưởng', 'cp-influence', renderInfluenceChain(s.influenceChain, 'checkpoint'))
+      + renderSection('sự kiện khu vực', 'cp-regional', renderRegionalIncident(s.regionalIncident, 'checkpoint'))
+      + renderSection('Bí mật', 'cp-blackbox', renderBlackbox(s.blackbox, 'checkpoint'))
+      + renderSection('Sổ cái sự kiện', 'cp-ledger', renderLedger(s.memories));
   }
 
-  /** 世界核心：环形稳定度仪表 + 四格关键计数 */
+  /** Lõi thế giới: Đồng hồ đo độ ổn định hình vòng + Bốn ô đếm then chốt */
   function renderWorldCore(s) {
     const stab = computeWorldStability(s);
     const tierColor = STABILITY_TIER_COLOR[stab.tier] || '#58b8a9';
     const detail = Object.entries(stab.breakdown)
       .filter(([, v]) => v !== 0)
-      .map(([k, v]) => `${k} ${v > 0 ? '+' : ''}${v}`).join('　') || '无压力来源';
+      .map(([k, v]) => `${k} ${v > 0 ? '+' : ''}${v}`).join('　') || 'Không có nguồn áp lực';
 
     const R = 66, C = 2 * Math.PI * R;
     const pct = Math.max(0, Math.min(1, stab.stability / 100));
     const dash = (pct * C).toFixed(1);
-    const theta = (pct * 360 - 90) * Math.PI / 180;       // 从正上方起、顺时针
+    const theta = (pct * 360 - 90) * Math.PI / 180;       // Bắt đầu từ phía trên cùng, theo chiều kim đồng hồ
     const dotX = (80 + R * Math.cos(theta)).toFixed(1);
     const dotY = (80 + R * Math.sin(theta)).toFixed(1);
     const dashNum = Number(dash);
@@ -620,15 +620,15 @@ window.WORLD_ENGINE_UI = (function() {
     }
 
     const stats = [
-      ['事件', (s.events || []).length],
-      ['势力', (s.factions || []).length],
-      ['风声', (s.winds || []).length],
-      ['大势', (s.worldTrends || []).length],
+      ['sự kiện', (s.events || []).length],
+      ['thế lực', (s.factions || []).length],
+      ['có tiếng đồn', (s.winds || []).length],
+      ['đại thế', (s.worldTrends || []).length],
     ].map(([k, v]) => `<div class="we-core-stat"><div class="we-core-stat-k">${k}</div><div class="we-core-stat-v">${v}</div></div>`).join('');
 
     return `
       <div class="we-section we-core-section">
-        <div class="we-core" title="各来源压力（仅 Lv3/4 计入）：${detail}　|　压力 ${stab.pressure}">
+        <div class="we-core" title="Áp lực từ các nguồn (chỉ Lv3/4 tính vào):${detail}　|　Áp lực ${stab.pressure}">
           <div class="we-core-ring">
             <svg viewBox="0 0 160 160" width="160" height="160">
               <defs>
@@ -651,8 +651,8 @@ window.WORLD_ENGINE_UI = (function() {
               <circle class="we-core-dot-core" cx="${dotX}" cy="${dotY}" r="2.5" fill="#ffffff" opacity="0.95"/>
             </svg>
             <div class="we-core-center">
-              <div class="we-core-title">世界核心</div>
-              <div class="we-core-sub">稳定度</div>
+              <div class="we-core-title">Lõi thế giới</div>
+              <div class="we-core-sub">độ ổn định</div>
               <div class="we-core-pct" style="color:${tierColor};">${stab.stability.toFixed(1)}<span>%</span></div>
               <div class="we-core-tier" style="color:${tierColor};">${stab.tier}</div>
             </div>
@@ -662,7 +662,7 @@ window.WORLD_ENGINE_UI = (function() {
       </div>`;
   }
 
-  /** 获取存档点的对话层数 */
+  /** Lấy số tầng hội thoại của điểm lưu */
   function getCheckpointLayer(cp) {
     if (!cp) return '-';
     return Number.isFinite(Number(cp.chatLayer)) ? Number(cp.chatLayer) : '-';
@@ -687,21 +687,21 @@ window.WORLD_ENGINE_UI = (function() {
   }
 
   function renderEventList(events, scope) {
-    if (!events || !events.length) return '<div class="we-empty">暂无事件链</div>';
+    if (!events || !events.length) return '<div class="we-empty">Tạm thời chưa có chuỗi sự kiện</div>';
     const curRound = (core.loadState() || {}).round || 0;
     return renderPagedList(events, 'events-' + scope, (e, eventIndex) => {
       const stageColors = {
-        萌芽:'#d6b85a',
-        发酵:'#d98a3d',
-        逼近:'#cf5f3f',
-        已爆发:'#b93f3f',
-        已消散:'#888888',
-        筹备:'#7de9d9',
-        执行:'#58e8b3',
-        关键:'#2a8a5d',
-        已完成:'#1b5e3b',
-        已失败:'#888888',
-        停滞:'#6688aa'
+        'manh nha':'#d6b85a',
+        "ủ biến":'#d98a3d',
+        "cận kề":'#cf5f3f',
+        "đã bùng phát":'#b93f3f',
+        "đã tan biến":'#888888',
+        "chuẩn bị":'#7de9d9',
+        "thực thi":'#58e8b3',
+        'then chốt/quan trọng':'#2a8a5d',
+        "đã hoàn thành":'#1b5e3b',
+        "đã thất bại":'#888888',
+        "Đình trệ":'#6688aa'
       };
       const levelColors = {
         1: '#c0c0c0',
@@ -712,62 +712,62 @@ window.WORLD_ENGINE_UI = (function() {
       const color = stageColors[e.stage] || '#888';
       const levelColor = levelColors[e.level] || '#9aa6b2';
       let extras = '';
-      const terminalStages = e.type === 'progress' ? ['已完成', '已失败'] : ['已爆发', '已消散'];
+      const terminalStages = e.type === 'progress' ? ['đã hoàn thành', 'đã thất bại'] : ['đã bùng phát', 'đã tan biến'];
       const isTerminal = terminalStages.includes(e.stage);
       if (e.consecutiveFails > 0 && !isTerminal) {
         const maxFails = e.type === 'progress' ? 2 + (e.level || 1) : 6 - (e.level || 1);
         extras += ` <span class="we-badge" style="background:#6662;color:#888;">${e.consecutiveFails}/${maxFails}</span>`;
       }
       if (e.stall && !isTerminal) {
-        extras += ' <span class="we-badge" style="background:#6688aa22;color:#6688aa;">停滞</span>';
+        extras += ' <span class="we-badge" style="background:#6688aa22;color:#6688aa;">Đình trệ</span>';
       }
       let metaExtra = '';
       if (e.evolveResult && !isTerminal) {
-        const resultColors = { '成功':'#7a9a7a', '保持':'#b8a070', '受挫':'#c46a6a' };
+        const resultColors = { 'thành công':'#7a9a7a', 'giữ nguyên':'#b8a070', 'thất bại/chùn bước':'#c46a6a' };
         const color = resultColors[e.evolveResult] || '#888';
         metaExtra = ` <span class="we-badge" style="background:${color}22;color:${color};">${e.evolveResult}</span>`;
       }
-      // 阶段进度条
+      // Thanh tiến trình giai đoạn
       let progressHtml = '';
       if (!isTerminal) {
         const pct = Math.round((e.stageRound / 9) * 100);
 
         const progressMotionClass = {
-          '成功': 'we-event-progress-success',
-          '保持': 'we-event-progress-hold',
-          '受挫': 'we-event-progress-fail'
+          'thành công': 'we-event-progress-success',
+          'giữ nguyên': 'we-event-progress-hold',
+          'thất bại/chùn bước': 'we-event-progress-fail'
         }[e.evolveResult] || '';
 
         progressHtml = `<div class="we-event-progress ${progressMotionClass}">
           <div style="width:${pct}%;background:${color};"></div>
         </div>`;
       }
-      const typeName = e.type === 'progress' ? '推进型' : '冲突型';
+      const typeName = e.type === 'progress' ? 'loại thúc đẩy' : 'loại xung đột';
       const typeColor = e.type === 'progress' ? '#57b7a8' : '#cf5f3f';
-      // 正面终局倒计时徽标（已爆发/已完成，保留 2+level*2 轮后自动清退）
+      // Logo đếm ngược kết cục chính diện (đã bùng phát/đã hoàn thành, giữ lại 2+level*2 vòng sau tự động xoá)
       let countdownHtml = '';
-      const POSITIVE_TERMINALS = ['已爆发', '已完成'];
+      const POSITIVE_TERMINALS = ['đã bùng phát', 'đã hoàn thành'];
       if (POSITIVE_TERMINALS.includes(e.stage) && e._terminalSince !== undefined) {
         const keepRounds = 2 + (e.level || 1) * 2;
         const left = keepRounds - (curRound - e._terminalSince) + 1;
         if (left >= 1) {
-          const cdColor = e.stage === '已完成' ? '#58e8b3' : '#e07465';
-          countdownHtml = ` <span class="we-badge we-event-countdown" style="color:${cdColor};" title="该事件在 ${left} 轮后自动清退"><i class="fa-regular fa-clock"></i>剩余${left}轮</span>`;
+          const cdColor = e.stage === 'đã hoàn thành' ? '#58e8b3' : '#e07465';
+          countdownHtml = ` <span class="we-badge we-event-countdown" style="color:${cdColor};" title="Sự kiện này ở ${left} vòng sau tự động xoá"><i class="fa-regular fa-clock"></i>Còn lại${left} vòng</span>`;
         }
       }
       const terminalStamp = {
-        已完成: { text: '完成', color: '#58e8b3' },
-        已爆发: { text: '爆发', color: '#e07465' },
-        已消散: { text: '消散', color: '#a6a6ad' },
-        已失败: { text: '失败', color: '#c08aaa' }
+        "đã hoàn thành": { text: 'hoàn thành', color: '#58e8b3' },
+        "đã bùng phát": { text: 'bùng phát', color: '#e07465' },
+        "đã tan biến": { text: 'tan biến', color: '#a6a6ad' },
+        "đã thất bại": { text: 'thất bại', color: '#c08aaa' }
       }[e.stage];
       const isEditing = editingEvent?.scope === scope && editingEvent?.index === eventIndex;
-      // 颜色作为 CSS 变量下放，描边/底色/光效全交由样式层处理（不再内联左色条）
+      // màu sắc làm CSS biến được truyền xuống, viền/màu nền/hiệu ứng ánh sáng hoàn toàn do lớp style xử lý (không còn inline thanh màu bên trái)
       const itemStyle = `--event-accent:${color};--event-type:${typeColor};--event-level:${levelColor};`;
       const stageClassMap = {
-        萌芽: 'we-stage-sprout', 发酵: 'we-stage-ferment', 逼近: 'we-stage-loom',
-        已爆发: 'we-stage-erupt', 已消散: 'we-stage-fade',
-        已完成: 'we-stage-done', 已失败: 'we-stage-failed',
+        'manh nha': 'we-stage-sprout', "ủ biến": 'we-stage-ferment', "cận kề": 'we-stage-loom',
+        "đã bùng phát": 'we-stage-erupt', "đã tan biến": 'we-stage-fade',
+        "đã hoàn thành": 'we-stage-done', "đã thất bại": 'we-stage-failed',
       };
       const stageClass = stageClassMap[e.stage] || '';
       const itemClass = (isTerminal ? 'we-event-item we-event-item-terminal' : 'we-event-item') + (stageClass ? ' ' + stageClass : '');
@@ -783,9 +783,9 @@ window.WORLD_ENGINE_UI = (function() {
         : '';
       const actionHtml = isEditing ? '' : `
         <div class="we-event-actions">
-          <button class="we-icon-btn we-event-delete" data-event-scope="${scope}" data-event-index="${eventIndex}" title="删除事件"><i class="fa-solid fa-trash-can"></i></button>
-          <button class="we-icon-btn we-event-copy" data-event-scope="${scope}" data-event-index="${eventIndex}" title="复制事件"><i class="fa-solid fa-copy"></i></button>
-          <button class="we-icon-btn we-event-edit" data-event-scope="${scope}" data-event-index="${eventIndex}" title="修改事件"><i class="fa-solid fa-pen"></i></button>
+          <button class="we-icon-btn we-event-delete" data-event-scope="${scope}" data-event-index="${eventIndex}" title="xoá sự kiện"><i class="fa-solid fa-trash-can"></i></button>
+          <button class="we-icon-btn we-event-copy" data-event-scope="${scope}" data-event-index="${eventIndex}" title="sao chép sự kiện"><i class="fa-solid fa-copy"></i></button>
+          <button class="we-icon-btn we-event-edit" data-event-scope="${scope}" data-event-index="${eventIndex}" title="sửa đổi sự kiện"><i class="fa-solid fa-pen"></i></button>
         </div>`;
       const editHtml = isEditing ? renderEventEditor(e, scope, eventIndex) : '';
       return `<div class="${itemClass}" style="${itemStyle}">
@@ -801,14 +801,14 @@ window.WORLD_ENGINE_UI = (function() {
 
   function renderEventEditor(event, scope, eventIndex) {
     const stages = event.type === 'progress'
-      ? ['筹备', '执行', '关键', '已完成', '已失败']
-      : ['萌芽', '发酵', '逼近', '已爆发', '已消散'];
+      ? ['chuẩn bị', 'thực thi', 'then chốt/quan trọng', 'đã hoàn thành', 'đã thất bại']
+      : ['manh nha', 'ủ biến', 'cận kề', 'đã bùng phát', 'đã tan biến'];
     const levelOptions = [1, 2, 3, 4].map(level =>
       `<option value="${level}" ${Number(event.level) === level ? 'selected' : ''}>Lv.${level}</option>`
     ).join('');
     const typeOptions = [
-      ['conflict', '冲突型'],
-      ['progress', '推进型']
+      ['conflict', 'loại xung đột'],
+      ['progress', 'loại thúc đẩy']
     ].map(([type, label]) =>
       `<option value="${type}" ${event.type === type ? 'selected' : ''}>${label}</option>`
     ).join('');
@@ -816,8 +816,8 @@ window.WORLD_ENGINE_UI = (function() {
       `<option value="${stage}" ${event.stage === stage ? 'selected' : ''}>${stage}</option>`
     ).join('');
 
-    // 正面终局倒计时：默认值取当前剩余，非终局事件留空
-    const POSITIVE_TERMINALS = ['已爆发', '已完成'];
+    // Đếm ngược kết cục tích cực: giá trị mặc định lấy phần còn lại hiện tại, sự kiện không phải kết cục thì để trống
+    const POSITIVE_TERMINALS = ['đã bùng phát', 'đã hoàn thành'];
     const keepRounds = 2 + (Number(event.level) || 1) * 2;
     let leftValue = '';
     if (POSITIVE_TERMINALS.includes(event.stage)) {
@@ -830,30 +830,30 @@ window.WORLD_ENGINE_UI = (function() {
 
     return `
       <div class="we-event-editor" data-event-scope="${scope}" data-event-index="${eventIndex}">
-        <button class="we-event-editor-close" title="取消修改"><i class="fa-solid fa-xmark"></i></button>
+        <button class="we-event-editor-close" title="huỷ sửa đổi"><i class="fa-solid fa-xmark"></i></button>
         <div class="we-event-editor-grid">
-          <label class="we-event-editor-wide">事件名字<input class="we-event-edit-name" type="text" value="${u(event.name || '')}"></label>
-          <label>等级<select class="we-event-edit-level">${levelOptions}</select></label>
-          <label>类型<select class="we-event-edit-type">${typeOptions}</select></label>
-          <label>阶段<select class="we-event-edit-stage">${stageOptions}</select></label>
-          <label>阶段进度<input class="we-event-edit-round" type="number" min="1" max="9" value="${event.stageRound || 1}"></label>
-          <label title="仅正面终局（已爆发/已完成）生效，到期自动清退；非终局留空">剩余轮数<input class="we-event-edit-left" type="number" min="1" placeholder="终局专用" value="${leftValue}"></label>
-          <label class="we-event-editor-wide">描述<textarea class="we-event-edit-desc" rows="3">${u(event.desc || '')}</textarea></label>
+          <label class="we-event-editor-wide">tên sự kiện<input class="we-event-edit-name" type="text" value="${u(event.name || '')}"></label>
+          <label>cấp độ<select class="we-event-edit-level">${levelOptions}</select></label>
+          <label>loại<select class="we-event-edit-type">${typeOptions}</select></label>
+          <label>giai đoạn<select class="we-event-edit-stage">${stageOptions}</select></label>
+          <label>tiến độ giai đoạn<input class="we-event-edit-round" type="number" min="1" max="9" value="${event.stageRound || 1}"></label>
+          <label title="chỉ kết cục tích cực (đã bùng phát/đã hoàn thành) có hiệu lực, đến hạn tự động xoá; không phải kết cục thì để trống">số vòng còn lại<input class="we-event-edit-left" type="number" min="1" placeholder="chuyên dùng cho kết cục" value="${leftValue}"></label>
+          <label class="we-event-editor-wide">mô tả<textarea class="we-event-edit-desc" rows="3">${u(event.desc || '')}</textarea></label>
         </div>
         <div class="we-event-editor-footer">
-          <button class="we-btn we-btn-primary we-event-editor-save"><i class="fa-solid fa-floppy-disk"></i> 保存</button>
+          <button class="we-btn we-btn-primary we-event-editor-save"><i class="fa-solid fa-floppy-disk"></i> Lưu</button>
         </div>
       </div>`;
   }
 
   function renderFactionList(factions, scope) {
-    if (!factions || !factions.length) return '<div class="we-empty">暂无势力</div>';
+    if (!factions || !factions.length) return '<div class="we-empty">tạm thời không có thế lực</div>';
     return renderPagedList(factions, 'factions', (f, factionIndex) => {
       const relationColors = {
-        血盟:'#2563eb', 盟友:'#0ea5e9', 友好:'#06b6d4', 中立:'#94a3b8',
-        冷淡:'#f59e0b', 紧张:'#f59e0b', 敌对:'#ef4444', 世仇:'#991b1b'
+        'huyết minh':'#2563eb', "đồng minh":'#0ea5e9', "thân thiện":'#06b6d4', "trung lập":'#94a3b8',
+        "lạnh nhạt":'#f59e0b', "căng thẳng":'#f59e0b', "thù địch":'#ef4444', "thù truyền kiếp":'#991b1b'
       };
-      const statusColors = { 鼎盛:'#d0aa58', 稳固:'#69b68e', 倾轧:'#cf5f3f', 困顿:'#70a8d2', 衰落:'#a6a6ad', 瓦解:'#888888' };
+      const statusColors = { "cực thịnh":'#d0aa58', "vững chắc":'#69b68e', "chèn ép lẫn nhau":'#cf5f3f', "khốn đốn":'#70a8d2', "suy tàn":'#a6a6ad', "tan rã":'#888888' };
       const relColor = relationColors[f.relation] || '#888';
       const stColor = statusColors[f.status] || '#888';
 
@@ -861,26 +861,26 @@ window.WORLD_ENGINE_UI = (function() {
 
       let pillarsHtml = '';
       if (f.powerPillars && f.powerPillars.length) {
-        pillarsHtml = '<div class="we-faction-meta">权力支柱: ' + f.powerPillars.map(p => '<span class="we-pillar-tag">' + u(p) + '</span>').join('') + '</div>';
+        pillarsHtml = '<div class="we-faction-meta">trụ cột quyền lực: ' + f.powerPillars.map(p => '<span class="we-pillar-tag">' + u(p) + '</span>').join('') + '</div>';
       }
 
       const actionHtml = isEditing ? '' : `
         <div class="we-event-actions">
-          <button class="we-icon-btn we-faction-delete" data-faction-scope="${scope}" data-faction-index="${factionIndex}" title="删除势力"><i class="fa-solid fa-trash-can"></i></button>
-          <button class="we-icon-btn we-faction-copy" data-faction-scope="${scope}" data-faction-index="${factionIndex}" title="复制势力"><i class="fa-solid fa-copy"></i></button>
-          <button class="we-icon-btn we-faction-edit" data-faction-scope="${scope}" data-faction-index="${factionIndex}" title="编辑势力"><i class="fa-solid fa-pen"></i></button>
+          <button class="we-icon-btn we-faction-delete" data-faction-scope="${scope}" data-faction-index="${factionIndex}" title="xoá thế lực"><i class="fa-solid fa-trash-can"></i></button>
+          <button class="we-icon-btn we-faction-copy" data-faction-scope="${scope}" data-faction-index="${factionIndex}" title="sao chép thế lực"><i class="fa-solid fa-copy"></i></button>
+          <button class="we-icon-btn we-faction-edit" data-faction-scope="${scope}" data-faction-index="${factionIndex}" title="chỉnh sửa thế lực"><i class="fa-solid fa-pen"></i></button>
         </div>`;
       const editHtml = isEditing ? renderFactionEditor(f, factionIndex, scope) : '';
 
       return `<div class="we-faction-item">
         <div class="we-faction-name">${u(f.name)}</div>
         <div class="we-faction-tags">
-          <span class="we-tag" style="border-color:${stColor};color:${stColor};">${f.status||'稳固'}</span>
-          <span class="we-tag" style="border-color:${relColor};color:${relColor};">${f.relation||'中立'}</span>
+          <span class="we-tag" style="border-color:${stColor};color:${stColor};">${f.status||'vững chắc'}</span>
+          <span class="we-tag" style="border-color:${relColor};color:${relColor};">${f.relation||'trung lập'}</span>
           ${f.scope ? '<span class="we-tag">' + u(f.scope) + '</span>' : ''}
         </div>
         ${f.currentGoal ? `<div class="we-faction-goal">${u(f.currentGoal)}</div>` : ''}
-        ${f.core_person ? `<div class="we-faction-meta">核心人物: ${u(f.core_person)}</div>` : ''}
+        ${f.core_person ? `<div class="we-faction-meta">nhân vật trọng yếu: ${u(f.core_person)}</div>` : ''}
         ${pillarsHtml}
         ${actionHtml}
         ${editHtml}
@@ -889,9 +889,9 @@ window.WORLD_ENGINE_UI = (function() {
   }
 
   function renderFactionEditor(f, index, scope) {
-    const statusOptions = ['鼎盛','稳固','倾轧','困顿','衰落','瓦解'].map(s =>
+    const statusOptions = ['cực thịnh','vững chắc','chèn ép lẫn nhau','khốn đốn','suy tàn','tan rã'].map(s =>
       `<option value="${s}" ${f.status === s ? 'selected' : ''}>${s}</option>`).join('');
-    const relationOptions = ['血盟','盟友','友好','中立','冷淡','敌对','世仇'].map(r =>
+    const relationOptions = ['huyết minh','đồng minh','thân thiện','trung lập','lạnh nhạt','thù địch','thù truyền kiếp'].map(r =>
       `<option value="${r}" ${f.relation === r ? 'selected' : ''}>${r}</option>`).join('');
     const pillars = [];
     for (let i = 0; i < 3; i++) pillars.push(f.powerPillars?.[i] || '');
@@ -900,88 +900,88 @@ window.WORLD_ENGINE_UI = (function() {
       <div class="we-event-editor" data-faction-scope="${scope}" data-faction-index="${index}">
         <button class="we-event-editor-close we-faction-editor-close"><i class="fa-solid fa-xmark"></i></button>
         <div class="we-event-editor-grid">
-          <label class="we-event-editor-wide">势力名称<input class="we-faction-edit-name" type="text" value="${u(f.name||'')}"></label>
-          <label>运势<select class="we-faction-edit-status">${statusOptions}</select></label>
-          <label>关系<select class="we-faction-edit-relation">${relationOptions}</select></label>
-          <label>范围<input class="we-faction-edit-scope" type="text" value="${u(f.scope||'')}"></label>
-          <label>目标<input class="we-faction-edit-goal" type="text" value="${u(f.currentGoal||'')}"></label>
-          <label>核心人物<input class="we-faction-edit-core" type="text" value="${u(f.core_person||'')}"></label>
-          ${[0,1,2].map(i => `<label>权力支柱${i+1}<input class="we-faction-edit-pillar" data-pillar-idx="${i}" type="text" value="${u(pillars[i])}" maxlength="4" placeholder="最多4字"></label>`).join('')}
+          <label class="we-event-editor-wide">tên thế lực<input class="we-faction-edit-name" type="text" value="${u(f.name||'')}"></label>
+          <label>vận thế<select class="we-faction-edit-status">${statusOptions}</select></label>
+          <label>quan hệ<select class="we-faction-edit-relation">${relationOptions}</select></label>
+          <label>phạm vi<input class="we-faction-edit-scope" type="text" value="${u(f.scope||'')}"></label>
+          <label>mục tiêu<input class="we-faction-edit-goal" type="text" value="${u(f.currentGoal||'')}"></label>
+          <label>nhân vật trọng yếu<input class="we-faction-edit-core" type="text" value="${u(f.core_person||'')}"></label>
+          ${[0,1,2].map(i => `<label>trụ cột quyền lực${i+1}<input class="we-faction-edit-pillar" data-pillar-idx="${i}" type="text" value="${u(pillars[i])}" maxlength="4" placeholder="tối đa 4 chữ"></label>`).join('')}
         </div>
         <div class="we-event-editor-footer">
-          <button class="we-btn we-btn-primary we-faction-editor-save"><i class="fa-solid fa-floppy-disk"></i> 保存</button>
+          <button class="we-btn we-btn-primary we-faction-editor-save"><i class="fa-solid fa-floppy-disk"></i> Lưu</button>
         </div>
       </div>`;
   }
 
   function renderWorldTrends(trends, scope) {
-    if (!trends || !trends.length) return '<div class="we-empty">暂无天下大势</div>';
+    if (!trends || !trends.length) return '<div class="we-empty">tạm thời không có đại thế thiên hạ</div>';
     return renderPagedList(trends, 'world-trends', (trend, trendIndex) => {
-      const ended = trend.status === '已结束';
+      const ended = trend.status === 'đã kết thúc';
       const color = ended ? '#888888' : '#c9a45c';
       const isEditing = editingTrend?.scope === scope && editingTrend?.index === trendIndex;
       const actionHtml = isEditing ? '' : `
         <div class="we-event-actions">
-          <button class="we-icon-btn we-trend-delete" data-trend-scope="${scope}" data-trend-index="${trendIndex}" title="删除天下大势"><i class="fa-solid fa-trash-can"></i></button>
-          <button class="we-icon-btn we-trend-copy" data-trend-scope="${scope}" data-trend-index="${trendIndex}" title="复制天下大势"><i class="fa-solid fa-copy"></i></button>
-          <button class="we-icon-btn we-trend-edit" data-trend-scope="${scope}" data-trend-index="${trendIndex}" title="编辑天下大势"><i class="fa-solid fa-pen"></i></button>
+          <button class="we-icon-btn we-trend-delete" data-trend-scope="${scope}" data-trend-index="${trendIndex}" title="xoá đại thế thiên hạ"><i class="fa-solid fa-trash-can"></i></button>
+          <button class="we-icon-btn we-trend-copy" data-trend-scope="${scope}" data-trend-index="${trendIndex}" title="sao chép đại thế thiên hạ"><i class="fa-solid fa-copy"></i></button>
+          <button class="we-icon-btn we-trend-edit" data-trend-scope="${scope}" data-trend-index="${trendIndex}" title="chỉnh sửa đại thế thiên hạ"><i class="fa-solid fa-pen"></i></button>
         </div>`;
       const editHtml = isEditing ? renderTrendEditor(trend, scope, trendIndex) : '';
       return `<div class="we-trend-item${ended ? ' we-trend-ended' : ''}" style="border-left-color:${color};">
         ${actionHtml}
         <div class="we-trend-header">
           <span class="we-trend-name">${u(trend.name)}</span>
-          <span class="we-badge" style="background:${color}22;color:${color};">${u(trend.status || '持续中')}</span>
+          <span class="we-badge" style="background:${color}22;color:${color};">${u(trend.status || 'đang tiếp diễn')}</span>
         </div>
-        <div class="we-trend-scope">${u(trend.scope || '天下')}</div>
+        <div class="we-trend-scope">${u(trend.scope || 'thiên hạ')}</div>
         <div class="we-trend-description">${u(trend.description || '?')}</div>
-        <div class="we-trend-source"><span>来源</span>${u(trend.source || '?')}</div>
+        <div class="we-trend-source"><span>nguồn</span>${u(trend.source || '?')}</div>
         ${editHtml}
       </div>`;
     });
   }
 
   function renderTrendEditor(trend, scope, index) {
-    const statusOptions = ['持续中', '已结束'].map(s =>
+    const statusOptions = ['đang tiếp diễn', 'đã kết thúc'].map(s =>
       `<option value="${s}" ${trend.status === s ? 'selected' : ''}>${s}</option>`).join('');
     return `
       <div class="we-event-editor" data-trend-scope="${scope}" data-trend-index="${index}">
         <button class="we-event-editor-close we-trend-editor-close"><i class="fa-solid fa-xmark"></i></button>
         <div class="we-event-editor-grid">
-          <label class="we-event-editor-wide">大势名称<input class="we-trend-edit-name" type="text" value="${u(trend.name||'')}"></label>
-          <label>状态<select class="we-trend-edit-status">${statusOptions}</select></label>
-          <label>范围<input class="we-trend-edit-scope" type="text" value="${u(trend.scope||'')}"></label>
-          <label>来源<input class="we-trend-edit-source" type="text" value="${u(trend.source||'')}"></label>
-          <label class="we-event-editor-wide">描述<textarea class="we-trend-edit-desc" rows="3">${u(trend.description||'')}</textarea></label>
+          <label class="we-event-editor-wide">tên đại thế<input class="we-trend-edit-name" type="text" value="${u(trend.name||'')}"></label>
+          <label>trạng thái<select class="we-trend-edit-status">${statusOptions}</select></label>
+          <label>phạm vi<input class="we-trend-edit-scope" type="text" value="${u(trend.scope||'')}"></label>
+          <label>nguồn<input class="we-trend-edit-source" type="text" value="${u(trend.source||'')}"></label>
+          <label class="we-event-editor-wide">mô tả<textarea class="we-trend-edit-desc" rows="3">${u(trend.description||'')}</textarea></label>
         </div>
         <div class="we-event-editor-footer">
-          <button class="we-btn we-btn-primary we-trend-editor-save"><i class="fa-solid fa-floppy-disk"></i> 保存</button>
+          <button class="we-btn we-btn-primary we-trend-editor-save"><i class="fa-solid fa-floppy-disk"></i> Lưu</button>
         </div>
       </div>`;
   }
 
   function renderWindList(winds, scope) {
-    if (!winds || !winds.length) return '<div class="we-empty">暂无风声</div>';
-    const typeNames = { announcement:'公告', report:'消息', rumor:'流言', sentiment:'舆情' };
+    if (!winds || !winds.length) return '<div class="we-empty">tạm thời không có tiếng đồn</div>';
+    const typeNames = { announcement:'thông báo', report:'thông báo/tin nhắn', rumor:'tin đồn', sentiment:'dư luận' };
     const typeColors = { announcement:'#c94b4b', report:'#4a8ab5', rumor:'#9178a0', sentiment:'#c17a35' };
     return renderPagedList(winds, 'winds', (w, windIndex) => {
       const typeColor = typeColors[w.type] || '#888';
-      // 等级徽章：Lv1/2 中性灰，Lv3/4 取类型本色（与风声四态配色统一）
+      // Huy hiệu cấp độ:Lv1/2 Xám trung tính,Lv3/4 Lấy màu gốc của loại (thống nhất phối màu với 4 trạng thái của có tiếng đồn)
       const levelColor = (w.level >= 3) ? typeColor : (w.level === 2 ? '#7a828c' : '#5a6270');
       const isEditing = editingWind && editingWind.scope === scope && editingWind.index === windIndex;
 
       const actionHtml = isEditing ? '' : `
         <div class="we-event-actions">
-          <button class="we-icon-btn we-wind-delete" data-wind-scope="${scope}" data-wind-index="${windIndex}" title="删除风声"><i class="fa-solid fa-trash-can"></i></button>
-          <button class="we-icon-btn we-wind-copy" data-wind-scope="${scope}" data-wind-index="${windIndex}" title="复制风声"><i class="fa-solid fa-copy"></i></button>
-          <button class="we-icon-btn we-wind-edit" data-wind-scope="${scope}" data-wind-index="${windIndex}" title="编辑风声"><i class="fa-solid fa-pen"></i></button>
+          <button class="we-icon-btn we-wind-delete" data-wind-scope="${scope}" data-wind-index="${windIndex}" title="Xoá có tiếng đồn"><i class="fa-solid fa-trash-can"></i></button>
+          <button class="we-icon-btn we-wind-copy" data-wind-scope="${scope}" data-wind-index="${windIndex}" title="Sao chép có tiếng đồn"><i class="fa-solid fa-copy"></i></button>
+          <button class="we-icon-btn we-wind-edit" data-wind-scope="${scope}" data-wind-index="${windIndex}" title="Chỉnh sửa có tiếng đồn"><i class="fa-solid fa-pen"></i></button>
         </div>`;
       const editHtml = isEditing ? renderWindEditor(w, windIndex, scope) : '';
 
       const windTypeClass = { announcement:'we-wind-announcement', report:'we-wind-report', rumor:'we-wind-rumor', sentiment:'we-wind-sentiment' }[w.type] || '';
       const windLvClass = 'we-wind-lv' + (w.level || 1);
       let html = '<div class="we-wind-item ' + windTypeClass + ' ' + windLvClass + '" style="--wind-accent:' + typeColor + ';--wind-level-color:' + levelColor + ';">';
-      // Lv4 专属装饰元素：公告双冲击环 / 流言双焦点多圈涟漪
+      // Lv4 Yếu tố trang trí độc quyền: Vòng xung kích kép thông báo / Gợn sóng nhiều vòng tiêu điểm kép tin đồn
       if (w.level === 4) {
         if (w.type === 'announcement') {
           html += '<span class="we-wind-ring"></span><span class="we-wind-ring we-wind-ring2"></span>';
@@ -990,13 +990,13 @@ window.WORLD_ENGINE_UI = (function() {
         }
       }
       html += '<div class="we-wind-header">';
-      html += '<span class="we-wind-topic">' + u(w.topic || '未命名风声') + '</span>';
-      html += '<span class="we-badge" style="background:' + typeColor + '22;color:' + typeColor + ';">' + (typeNames[w.type] || '风声') + '</span>';
+      html += '<span class="we-wind-topic">' + u(w.topic || 'Có tiếng đồn chưa đặt tên') + '</span>';
+      html += '<span class="we-badge" style="background:' + typeColor + '22;color:' + typeColor + ';">' + (typeNames[w.type] || 'có tiếng đồn') + '</span>';
       html += '<span class="we-badge" style="background:' + levelColor + '22;color:' + levelColor + ';">Lv.' + (w.level || 1) + '</span>';
       html += '</div>';
-      html += '<div class="we-wind-field we-wind-content"><span class="we-wind-label">内容</span><span>' + u(w.content || '?') + '</span></div>';
-      html += '<div class="we-wind-field"><span class="we-wind-label">范围</span><span>' + u(w.scope || '?') + '</span></div>';
-      html += '<div class="we-wind-field"><span class="we-wind-label">来源</span><span>' + u(w.source || '?') + '</span></div>';
+      html += '<div class="we-wind-field we-wind-content"><span class="we-wind-label">Nội dung</span><span>' + u(w.content || '?') + '</span></div>';
+      html += '<div class="we-wind-field"><span class="we-wind-label">phạm vi</span><span>' + u(w.scope || '?') + '</span></div>';
+      html += '<div class="we-wind-field"><span class="we-wind-label">nguồn</span><span>' + u(w.source || '?') + '</span></div>';
       html += editHtml;
       html += actionHtml;
       html += '</div>';
@@ -1005,7 +1005,7 @@ window.WORLD_ENGINE_UI = (function() {
   }
 
   function renderWindEditor(w, index, scope) {
-    const typeOptions = [['announcement','公告'],['report','消息'],['rumor','流言'],['sentiment','舆情']].map(([v,label]) =>
+    const typeOptions = [['announcement','thông báo'],['report','thông báo/tin nhắn'],['rumor','tin đồn'],['sentiment','dư luận']].map(([v,label]) =>
       `<option value="${v}" ${w.type === v ? 'selected' : ''}>${label}</option>`).join('');
     const levelOptions = [1,2,3,4].map(l =>
       `<option value="${l}" ${w.level === l ? 'selected' : ''}>Lv.${l}</option>`).join('');
@@ -1014,31 +1014,31 @@ window.WORLD_ENGINE_UI = (function() {
       <div class="we-event-editor" data-wind-index="${index}" data-wind-scope="${scope}">
         <button class="we-event-editor-close we-wind-editor-close"><i class="fa-solid fa-xmark"></i></button>
         <div class="we-event-editor-grid">
-          <label class="we-event-editor-wide">主题<input class="we-wind-edit-topic" type="text" value="${u(w.topic||'')}"></label>
-          <label>类型<select class="we-wind-edit-type">${typeOptions}</select></label>
-          <label>等级<select class="we-wind-edit-level">${levelOptions}</select></label>
-          <label>范围<input class="we-wind-edit-scope" type="text" value="${u(w.scope||'')}"></label>
-          <label>来源<input class="we-wind-edit-source" type="text" value="${u(w.source||'')}"></label>
-          <label class="we-event-editor-wide">内容<textarea class="we-wind-edit-content" rows="3">${u(w.content||'')}</textarea></label>
+          <label class="we-event-editor-wide">Chủ đề<input class="we-wind-edit-topic" type="text" value="${u(w.topic||'')}"></label>
+          <label>loại<select class="we-wind-edit-type">${typeOptions}</select></label>
+          <label>cấp độ<select class="we-wind-edit-level">${levelOptions}</select></label>
+          <label>phạm vi<input class="we-wind-edit-scope" type="text" value="${u(w.scope||'')}"></label>
+          <label>nguồn<input class="we-wind-edit-source" type="text" value="${u(w.source||'')}"></label>
+          <label class="we-event-editor-wide">Nội dung<textarea class="we-wind-edit-content" rows="3">${u(w.content||'')}</textarea></label>
         </div>
         <div class="we-event-editor-footer">
-          <button class="we-btn we-btn-primary we-wind-editor-save"><i class="fa-solid fa-floppy-disk"></i> 保存</button>
+          <button class="we-btn we-btn-primary we-wind-editor-save"><i class="fa-solid fa-floppy-disk"></i> Lưu</button>
         </div>
       </div>`;
   }
 
   function renderReputation(rep, scope) {
-    if (!rep) return '<div class="we-empty">暂无声誉数据</div>';
-    const levels = ['天怒人怨','声名狼藉','默默无闻','受人尊敬','万众敬仰'];
-    const levelColors = { '天怒人怨':'#e05555', '声名狼藉':'#d97a5a', '默默无闻':'#7a8a9a', '受人尊敬':'#6cae8e', '万众敬仰':'#c9a45c' };
-    const legacyMap = { '小有名气':'受人尊敬' };
-    const dimLabels = { authority:'朝堂', common:'市井', shadow:'草莽', circuit:'同道' };
-    // 各维度 × 各等级的随附古文（出处略）
+    if (!rep) return '<div class="we-empty">Tạm thời không có dữ liệu danh tiếng</div>';
+    const levels = ['trời giận người oán','tai tiếng khắp nơi','vô danh','được kính trọng','được vạn người ngưỡng mộ'];
+    const levelColors = { 'trời giận người oán':'#e05555', 'tai tiếng khắp nơi':'#d97a5a', 'vô danh':'#7a8a9a', 'được kính trọng':'#6cae8e', 'được vạn người ngưỡng mộ':'#c9a45c' };
+    const legacyMap = { 'có chút danh tiếng':'được kính trọng' };
+    const dimLabels = { authority:'triều đình', common:'thị tứ', shadow:'giang hồ', circuit:'đồng đạo' };
+    // Các chiều × Cổ văn đính kèm các cấp độ (lược bỏ xuất xứ)
     const quotes = {
-      authority: { '天怒人怨':'上下疾之如仇', '声名狼藉':'在位皆言其恶', '默默无闻':'沉于下寮不见知', '受人尊敬':'群臣莫不敬惮', '万众敬仰':'天下想望其风采' },
-      common:    { '天怒人怨':'行人指目相戒', '声名狼藉':'里中无赖子亦耻之', '默默无闻':'出入市廛人莫识', '受人尊敬':'闾里称其长者', '万众敬仰':'儿童走卒皆知其名' },
-      shadow:    { '天怒人怨':'绿林亦不肯纳', '声名狼藉':'豪杰闻而鄙之', '默默无闻':'混迹渔樵无人问', '受人尊敬':'江湖豪杰多归之', '万众敬仰':'四海之内皆称其侠' },
-      circuit:   { '天怒人怨':'同辈羞与为伍', '声名狼藉':'友朋面斥其非', '默默无闻':'独行无人与语', '受人尊敬':'同门推为领袖', '万众敬仰':'吾辈望之如泰山' }
+      authority: { 'trời giận người oán':'Trên dưới ghét như kẻ thù', 'tai tiếng khắp nơi':'Người tại vị đều nói về cái ác của hắn', 'vô danh':'Chìm trong hạ liêu không ai biết', 'được kính trọng':'Quần thần không ai không kính sợ', 'được vạn người ngưỡng mộ':'Thiên hạ mong ngóng phong thái' },
+      common:    { 'trời giận người oán':'Người đi đường chỉ trỏ răn đe nhau', 'tai tiếng khắp nơi':'Kẻ vô lại trong làng cũng lấy làm xấu hổ', 'vô danh':'Ra vào chợ búa không ai nhận ra', 'được kính trọng':'Hàng xóm gọi là bậc trưởng giả', 'được vạn người ngưỡng mộ':'Trẻ con kẻ hầu đều biết tên' },
+      shadow:    { 'trời giận người oán':'Lục lâm cũng không chịu nhận', 'tai tiếng khắp nơi':'Hào kiệt nghe mà khinh bỉ', 'vô danh':'Lẫn lộn cùng ngư tiều không ai hỏi', 'được kính trọng':'Hào kiệt giang hồ phần nhiều quy phục', 'được vạn người ngưỡng mộ':'Trong bốn biển đều xưng là hiệp' },
+      circuit:   { 'trời giận người oán':'Đồng bối xấu hổ khi làm bạn', 'tai tiếng khắp nơi':'Bạn bè mắng thẳng mặt cái sai', 'vô danh':'Độc hành không ai nói chuyện cùng', 'được kính trọng':'Đồng môn tôn làm lãnh tụ', 'được vạn người ngưỡng mộ':'Bọn ta nhìn lên như Thái Sơn' }
     };
     return '<div class="we-rep-grid">' + Object.entries(rep).filter(([k]) => k !== 'lastChange').map(([key, rawVal]) => {
       const val = legacyMap[rawVal] || rawVal;
@@ -1060,12 +1060,12 @@ window.WORLD_ENGINE_UI = (function() {
   }
 
   function renderEconomy(econ, scope) {
-    if (!econ) return '<div class="we-empty">暂无经济数据</div>';
+    if (!econ) return '<div class="we-empty">Tạm thời không có dữ liệu kinh tế</div>';
     const sc = scope || 'state';
-    const climates = ['繁荣','平稳','衰退','动荡'];
-    const climateColors = { '繁荣': '#3ecf8e', '平稳': '#7a8a9a', '衰退': '#d9a34a', '动荡': '#e05555' };
-    const climateBg = { '繁荣': 'rgba(62,207,142,0.08)', '平稳': 'rgba(122,138,154,0.06)', '衰退': 'rgba(217,163,74,0.08)', '动荡': 'rgba(224,85,85,0.08)' };
-    const climate = econ.climate || '平稳';
+    const climates = ['phồn vinh','ổn định','suy thoái','biến động'];
+    const climateColors = { 'phồn vinh': '#3ecf8e', 'ổn định': '#7a8a9a', 'suy thoái': '#d9a34a', 'biến động': '#e05555' };
+    const climateBg = { 'phồn vinh': 'rgba(62,207,142,0.08)', 'ổn định': 'rgba(122,138,154,0.06)', 'suy thoái': 'rgba(217,163,74,0.08)', 'biến động': 'rgba(224,85,85,0.08)' };
+    const climate = econ.climate || 'ổn định';
     const cColor = climateColors[climate] || '#7a8a9a';
     let html = '<div class="we-climate-bar" style="background:' + (climateBg[climate]||'rgba(122,138,154,0.06)') + ';">';
     html += '<span class="we-climate-dot" style="background:' + cColor + ';box-shadow:0 0 8px ' + cColor + '88;"></span>';
@@ -1080,79 +1080,79 @@ window.WORLD_ENGINE_UI = (function() {
         '<div class="we-signal-item" data-sig-scope="' + sc + '">' +
         '<span class="we-signal-summary">' + u(s.summary||s) + '</span>' +
         '<span class="we-signal-scope">' + u(s.scope||'?') + '</span>' +
-        '<span class="we-signal-del" data-sig-scope="' + sc + '" data-sigidx="' + i + '" title="删除信号">✕</span>' +
+        '<span class="we-signal-del" data-sig-scope="' + sc + '" data-sigidx="' + i + '" title="Xoá tín hiệu">✕</span>' +
         '</div>'
       );
     } else {
-      html += '<div class="we-empty" style="margin-top:4px;">暂无市场信号</div>';
+      html += '<div class="we-empty" style="margin-top:4px;">Tạm thời không có tín hiệu thị trường</div>';
     }
-    html += '<div class="we-signal-add" data-sig-scope="' + sc + '"><i class="fa-solid fa-plus"></i> 添加信号</div>';
+    html += '<div class="we-signal-add" data-sig-scope="' + sc + '"><i class="fa-solid fa-plus"></i> Thêm tín hiệu</div>';
     return html;
   }
 
   function renderEnemies(enemiesList, scope) {
-    if (!enemiesList || !enemiesList.length) return '<div class="we-empty">暂无仇敌</div>';
+    if (!enemiesList || !enemiesList.length) return '<div class="we-empty">Tạm thời không có kẻ thù</div>';
     return renderPagedList(enemiesList, 'enemies', (en, enemyIndex) => {
       const isEditing = editingEnemy?.scope === scope && editingEnemy?.index === enemyIndex;
       const actionHtml = isEditing ? '' : `
         <div class="we-event-actions">
-          <button class="we-icon-btn we-enemy-delete" data-enemy-scope="${scope}" data-enemy-index="${enemyIndex}" title="删除仇敌"><i class="fa-solid fa-trash-can"></i></button>
-          <button class="we-icon-btn we-enemy-copy" data-enemy-scope="${scope}" data-enemy-index="${enemyIndex}" title="复制仇敌"><i class="fa-solid fa-copy"></i></button>
-          <button class="we-icon-btn we-enemy-edit" data-enemy-scope="${scope}" data-enemy-index="${enemyIndex}" title="编辑仇敌"><i class="fa-solid fa-pen"></i></button>
+          <button class="we-icon-btn we-enemy-delete" data-enemy-scope="${scope}" data-enemy-index="${enemyIndex}" title="Xoá kẻ thù"><i class="fa-solid fa-trash-can"></i></button>
+          <button class="we-icon-btn we-enemy-copy" data-enemy-scope="${scope}" data-enemy-index="${enemyIndex}" title="Sao chép kẻ thù"><i class="fa-solid fa-copy"></i></button>
+          <button class="we-icon-btn we-enemy-edit" data-enemy-scope="${scope}" data-enemy-index="${enemyIndex}" title="Chỉnh sửa kẻ thù"><i class="fa-solid fa-pen"></i></button>
         </div>`;
       const editHtml = isEditing ? renderEnemyEditor(en, enemyIndex, scope) : '';
       return `<div class="we-blood-item">
         ${actionHtml}
-        <div class="we-blood-title">${u(en.name)} <span class="we-badge we-badge-danger">${en.status||'追踪中'}</span><span class="we-badge" style="background:var(--we-purple);font-size:10px;">${en.type==='blood'?'血仇':'恩怨'}</span></div>
-        <div class="we-blood-meta">原因: ${u(en.reason||'?')}</div>
+        <div class="we-blood-title">${u(en.name)} <span class="we-badge we-badge-danger">${en.status||'Đang theo dõi'}</span><span class="we-badge" style="background:var(--we-purple);font-size:10px;">${en.type==='blood'?'huyết cừu':'Ân oán'}</span></div>
+        <div class="we-blood-meta">lý do: ${u(en.reason||'?')}</div>
         ${editHtml}
       </div>`;
     });
   }
 
   function renderEnemyEditor(en, index, scope) {
-    const typeOptions = [['blood','血仇'],['grudge','恩怨']].map(([v,label]) =>
+    const typeOptions = [['blood','huyết cừu'],['grudge','Ân oán']].map(([v,label]) =>
       `<option value="${v}" ${en.type === v ? 'selected' : ''}>${label}</option>`).join('');
-    const statusOptions = ['追踪中','策划中','执行中','已终结'].map(s =>
+    const statusOptions = ['Đang theo dõi','Đang lên kế hoạch','Đang thực thi','Đã kết thúc'].map(s =>
       `<option value="${s}" ${en.status === s ? 'selected' : ''}>${s}</option>`).join('');
     return `
       <div class="we-event-editor" data-enemy-scope="${scope}" data-enemy-index="${index}">
         <button class="we-event-editor-close we-enemy-editor-close"><i class="fa-solid fa-xmark"></i></button>
         <div class="we-event-editor-grid">
-          <label class="we-event-editor-wide">仇敌名称<input class="we-enemy-edit-name" type="text" value="${u(en.name||'')}"></label>
-          <label>类型<select class="we-enemy-edit-type">${typeOptions}</select></label>
-          <label>状态<select class="we-enemy-edit-status">${statusOptions}</select></label>
-          <label class="we-event-editor-wide">原因<textarea class="we-enemy-edit-reason" rows="2">${u(en.reason||'')}</textarea></label>
+          <label class="we-event-editor-wide">Tên kẻ thù<input class="we-enemy-edit-name" type="text" value="${u(en.name||'')}"></label>
+          <label>loại<select class="we-enemy-edit-type">${typeOptions}</select></label>
+          <label>trạng thái<select class="we-enemy-edit-status">${statusOptions}</select></label>
+          <label class="we-event-editor-wide">lý do<textarea class="we-enemy-edit-reason" rows="2">${u(en.reason||'')}</textarea></label>
         </div>
         <div class="we-event-editor-footer">
-          <button class="we-btn we-btn-primary we-enemy-editor-save"><i class="fa-solid fa-floppy-disk"></i> 保存</button>
+          <button class="we-btn we-btn-primary we-enemy-editor-save"><i class="fa-solid fa-floppy-disk"></i> Lưu</button>
         </div>
       </div>`;
   }
 
   function renderInfluenceChain(chain, scope) {
-    if (!chain || !chain.length) return '<div class="we-empty">暂无影响链</div>';
+    if (!chain || !chain.length) return '<div class="we-empty">Tạm thời không có chuỗi ảnh hưởng</div>';
     return renderPagedList(chain, 'influence', (item, infIndex) => {
       const isEditing = editingInfluence?.scope === scope && editingInfluence?.index === infIndex;
       const actionHtml = isEditing ? '' : `
         <div class="we-event-actions">
-          <button class="we-icon-btn we-influence-delete" data-influence-scope="${scope}" data-influence-index="${infIndex}" title="删除影响链"><i class="fa-solid fa-trash-can"></i></button>
-          <button class="we-icon-btn we-influence-copy" data-influence-scope="${scope}" data-influence-index="${infIndex}" title="复制影响链"><i class="fa-solid fa-copy"></i></button>
-          <button class="we-icon-btn we-influence-edit" data-influence-scope="${scope}" data-influence-index="${infIndex}" title="编辑影响链"><i class="fa-solid fa-pen"></i></button>
+          <button class="we-icon-btn we-influence-delete" data-influence-scope="${scope}" data-influence-index="${infIndex}" title="Xoá chuỗi ảnh hưởng"><i class="fa-solid fa-trash-can"></i></button>
+          <button class="we-icon-btn we-influence-copy" data-influence-scope="${scope}" data-influence-index="${infIndex}" title="Sao chép chuỗi ảnh hưởng"><i class="fa-solid fa-copy"></i></button>
+          <button class="we-icon-btn we-influence-edit" data-influence-scope="${scope}" data-influence-index="${infIndex}" title="Chỉnh sửa chuỗi ảnh hưởng"><i class="fa-solid fa-pen"></i></button>
         </div>`;
       const editHtml = isEditing ? renderInfluenceEditor(item, infIndex, scope) : '';
       return `<div class="we-influence-item">
         ${actionHtml}
         <div class="we-influence-step we-influence-trigger">
-          <span class="we-influence-label">触发源</span>
+          <span class="we-influence-label">Nguồn kích hoạt</span>
           <span class="we-influence-text">${u(item.trigger)}</span>
         </div>
         <div class="we-influence-step we-influence-impact">
-          <span class="we-influence-label">直接影响</span>
+          <span class="we-influence-label">Ảnh hưởng trực tiếp</span>
           <span class="we-influence-text">${u(item.impact)}</span>
         </div>
         ${item.fallout ? `<div class="we-influence-step we-influence-fallout">
-          <span class="we-influence-label">后续余波</span>
+          <span class="we-influence-label">Dư âm tiếp theo</span>
           <span class="we-influence-text">${u(item.fallout)}</span>
         </div>` : ''}
         ${editHtml}
@@ -1165,43 +1165,43 @@ window.WORLD_ENGINE_UI = (function() {
       <div class="we-event-editor" data-influence-index="${index}" data-influence-scope="${scope}">
         <button class="we-event-editor-close we-influence-editor-close"><i class="fa-solid fa-xmark"></i></button>
         <div class="we-event-editor-grid">
-          <label class="we-event-editor-wide">触发源<textarea class="we-influence-edit-trigger" rows="2">${u(item.trigger||'')}</textarea></label>
-          <label class="we-event-editor-wide">直接影响<textarea class="we-influence-edit-impact" rows="2">${u(item.impact||'')}</textarea></label>
-          <label class="we-event-editor-wide">后续余波<textarea class="we-influence-edit-fallout" rows="2">${u(item.fallout||'')}</textarea></label>
+          <label class="we-event-editor-wide">Nguồn kích hoạt<textarea class="we-influence-edit-trigger" rows="2">${u(item.trigger||'')}</textarea></label>
+          <label class="we-event-editor-wide">Ảnh hưởng trực tiếp<textarea class="we-influence-edit-impact" rows="2">${u(item.impact||'')}</textarea></label>
+          <label class="we-event-editor-wide">Dư âm tiếp theo<textarea class="we-influence-edit-fallout" rows="2">${u(item.fallout||'')}</textarea></label>
         </div>
         <div class="we-event-editor-footer">
-          <button class="we-btn we-btn-primary we-influence-editor-save"><i class="fa-solid fa-floppy-disk"></i> 保存</button>
+          <button class="we-btn we-btn-primary we-influence-editor-save"><i class="fa-solid fa-floppy-disk"></i> Lưu</button>
         </div>
       </div>`;
   }
 
   function getRegionalIncidentTypeLabel(type) {
     const labels = {
-      banditry: '盗匪劫掠',
-      fire: '大火',
-      massacre: '恶性凶案',
-      flood: '洪涝',
-      infrastructure: '道路水利崩坏',
-      plague: '疫病',
-      famine: '饥荒粮荒',
-      riot: '骚乱暴动',
-      rebellion: '民变叛乱',
-      military: '军务突变',
-      earthquake: '地震山崩',
-      storm: '风暴雪灾',
-      other: '其他'
+      banditry: 'cướp bóc',
+      fire: 'hoả hoạn',
+      massacre: 'án mạng nghiêm trọng',
+      flood: 'lũ lụt',
+      infrastructure: 'đường sá thuỷ lợi sụp đổ',
+      plague: 'dịch bệnh',
+      famine: 'nạn đói thiếu lương',
+      riot: 'bạo loạn',
+      rebellion: 'dân biến nổi loạn',
+      military: 'Quân vụ đột biến',
+      earthquake: 'Động đất lở núi',
+      storm: 'Bão tuyết',
+      other: 'Khác'
     };
-    return labels[type] || '其他';
+    return labels[type] || 'Khác';
   }
 
   function renderRegionalIncident(ri, scope) {
-    if (!ri) return '<div class="we-empty">尚未进行区域事件判定</div>';
+    if (!ri) return '<div class="we-empty">Chưa tiến hành phán định sự kiện khu vực</div>';
     const isEditing = editingRI?.active === true && editingRI?.scope === scope;
     const actionHtml = isEditing ? '' : `
       <div class="we-event-actions">
-        <button class="we-icon-btn we-ri-delete" data-ri-scope="${scope}" title="清除区域事件"><i class="fa-solid fa-trash-can"></i></button>
-        <button class="we-icon-btn we-ri-copy" data-ri-scope="${scope}" title="复制区域事件"><i class="fa-solid fa-copy"></i></button>
-        <button class="we-icon-btn we-ri-edit" data-ri-scope="${scope}" title="编辑区域事件"><i class="fa-solid fa-pen"></i></button>
+        <button class="we-icon-btn we-ri-delete" data-ri-scope="${scope}" title="Xoá sự kiện khu vực"><i class="fa-solid fa-trash-can"></i></button>
+        <button class="we-icon-btn we-ri-copy" data-ri-scope="${scope}" title="Sao chép sự kiện khu vực"><i class="fa-solid fa-copy"></i></button>
+        <button class="we-icon-btn we-ri-edit" data-ri-scope="${scope}" title="Chỉnh sửa sự kiện khu vực"><i class="fa-solid fa-pen"></i></button>
       </div>`;
     const editHtml = isEditing ? renderRIEditor(ri, scope) : '';
 
@@ -1209,22 +1209,22 @@ window.WORLD_ENGINE_UI = (function() {
       return `<div class="we-accident-item we-regional-incident-item we-accident-triggered">
         ${actionHtml}
         ${u(ri.title)}<br>
-        <span style="font-size:11px;color:var(--we-text3);">类型: ${u(getRegionalIncidentTypeLabel(ri.type))} | 范围: ${u(ri.scope||'?')} | 剩余: ${ri.duration||0}轮</span><br>
+        <span style="font-size:11px;color:var(--we-text3);">loại: ${u(getRegionalIncidentTypeLabel(ri.type))} | phạm vi: ${u(ri.scope||'?')} | Còn lại: ${ri.duration||0} vòng</span><br>
         <span style="font-size:11px;color:var(--we-text2);">${u(ri.impact||'')}</span>
         ${editHtml}
       </div>`;
     }
-    if (ri.title && ri.title.includes('重试')) {
+    if (ri.title && ri.title.includes('thử lại')) {
       return `<div class="we-accident-item we-regional-incident-item" style="border-left:3px solid var(--we-gold);">
         ${actionHtml}
-        ${u(ri.title)}（类型: ${u(getRegionalIncidentTypeLabel(ri.type))}）
+        ${u(ri.title)}（loại: ${u(getRegionalIncidentTypeLabel(ri.type))}）
         ${editHtml}
       </div>`;
     }
     if (ri.cooldown > 0) {
-      return `<div class="we-accident-item we-regional-incident-item">${actionHtml}本轮无区域事件（剩余冷却 ${ri.cooldown} 轮）${editHtml}</div>`;
+      return `<div class="we-accident-item we-regional-incident-item">${actionHtml}Vòng này không có sự kiện khu vực (thời gian hồi còn lại ${ri.cooldown} vòng)${editHtml}</div>`;
     }
-    return `<div class="we-accident-item we-regional-incident-item">${actionHtml}本轮无区域事件${editHtml}</div>`;
+    return `<div class="we-accident-item we-regional-incident-item">${actionHtml}Vòng này không có sự kiện khu vực${editHtml}</div>`;
   }
 
   function renderRIEditor(ri, scope) {
@@ -1236,141 +1236,141 @@ window.WORLD_ENGINE_UI = (function() {
       <div class="we-event-editor" data-ri-edit="1" data-ri-scope="${scope}">
         <button class="we-event-editor-close we-ri-editor-close"><i class="fa-solid fa-xmark"></i></button>
         <div class="we-event-editor-grid">
-          <label>状态<select class="we-ri-edit-active">
-            <option value="true" ${ri.active ? 'selected' : ''}>激活并显示事件</option>
-            <option value="false" ${!ri.active ? 'selected' : ''}>未激活</option>
+          <label>trạng thái<select class="we-ri-edit-active">
+            <option value="true" ${ri.active ? 'selected' : ''}>Kích hoạt và hiển thị sự kiện</option>
+            <option value="false" ${!ri.active ? 'selected' : ''}>Chưa kích hoạt</option>
           </select></label>
-          <label class="we-event-editor-wide">标题<input class="we-ri-edit-title" type="text" value="${u(ri.title||'')}"></label>
-          <label>类型<select class="we-ri-edit-type">${typeOptions}</select></label>
-          <label>范围<input class="we-ri-edit-scope" type="text" value="${u(ri.scope||'')}"></label>
-          <label>剩余轮数<input class="we-ri-edit-duration" type="number" min="0" max="99" value="${ri.duration||0}"></label>
-          <label>冷却<input class="we-ri-edit-cooldown" type="number" min="0" max="99" value="${ri.cooldown||0}"></label>
-          <label class="we-event-editor-wide">影响<textarea class="we-ri-edit-impact" rows="3">${u(ri.impact||'')}</textarea></label>
+          <label class="we-event-editor-wide">tiêu đề<input class="we-ri-edit-title" type="text" value="${u(ri.title||'')}"></label>
+          <label>loại<select class="we-ri-edit-type">${typeOptions}</select></label>
+          <label>phạm vi<input class="we-ri-edit-scope" type="text" value="${u(ri.scope||'')}"></label>
+          <label>số vòng còn lại<input class="we-ri-edit-duration" type="number" min="0" max="99" value="${ri.duration||0}"></label>
+          <label>Thời gian hồi<input class="we-ri-edit-cooldown" type="number" min="0" max="99" value="${ri.cooldown||0}"></label>
+          <label class="we-event-editor-wide">Ảnh hưởng<textarea class="we-ri-edit-impact" rows="3">${u(ri.impact||'')}</textarea></label>
         </div>
         <div class="we-event-editor-footer">
-          <button class="we-btn we-btn-primary we-ri-editor-save"><i class="fa-solid fa-floppy-disk"></i> 保存</button>
+          <button class="we-btn we-btn-primary we-ri-editor-save"><i class="fa-solid fa-floppy-disk"></i> Lưu</button>
         </div>
       </div>`;
   }
 
-  const SECRET_STATUS_COLOR = { '有效': 'var(--we-green)', '过期': 'var(--we-text3)', '暴露': 'var(--we-red)', '失效': 'var(--we-text3)' };
+  const SECRET_STATUS_COLOR = { 'hợp lệ': 'var(--we-green)', 'Hết hạn': 'var(--we-text3)', 'Bộc lộ': 'var(--we-red)', 'Hết hiệu lực': 'var(--we-text3)' };
 
   function isEditingSecret(scope, list, index) {
     return editingSecret && editingSecret.scope === scope && editingSecret.list === list && editingSecret.index === index;
   }
 
   function renderBlackbox(blackbox, scope) {
-    if (!blackbox) return '<div class="we-empty">暂无黑盒信息</div>';
+    if (!blackbox) return '<div class="we-empty">Tạm thời không có thông tin hộp đen</div>';
     let html = '';
     const actions = blackbox.secretActions || [];
     const assets = blackbox.secretAssets || [];
 
     if (actions.length) {
-      html += '<div class="we-secret-group-label we-secret-action">隐秘行为</div>';
+      html += '<div class="we-secret-group-label we-secret-action">hành vi bí mật</div>';
       html += renderPagedList(actions, 'secret-actions', (raw, idx) => {
         const a = (typeof raw === 'string') ? { action: raw } : raw;
         if (isEditingSecret(scope, 'action', idx)) return renderSecretEditor(a, 'action', idx, scope);
         return `<div class="we-secret-card we-secret-action">
           <div class="we-secret-ops">
-            <button class="we-icon-btn we-secret-edit" data-secret-scope="${scope}" data-secret-list="action" data-secret-index="${idx}" title="编辑"><i class="fa-solid fa-pen"></i></button>
-            <button class="we-icon-btn we-secret-copy" data-secret-scope="${scope}" data-secret-list="action" data-secret-index="${idx}" title="复制"><i class="fa-solid fa-copy"></i></button>
-            <button class="we-icon-btn we-secret-del" data-secret-scope="${scope}" data-secret-list="action" data-secret-index="${idx}" title="删除"><i class="fa-solid fa-trash-can"></i></button>
+            <button class="we-icon-btn we-secret-edit" data-secret-scope="${scope}" data-secret-list="action" data-secret-index="${idx}" title="Chỉnh sửa"><i class="fa-solid fa-pen"></i></button>
+            <button class="we-icon-btn we-secret-copy" data-secret-scope="${scope}" data-secret-list="action" data-secret-index="${idx}" title="Sao chép"><i class="fa-solid fa-copy"></i></button>
+            <button class="we-icon-btn we-secret-del" data-secret-scope="${scope}" data-secret-list="action" data-secret-index="${idx}" title="xoá"><i class="fa-solid fa-trash-can"></i></button>
           </div>
           <div class="we-secret-body">
-            <div class="we-secret-title">${u(a.action || '未命名行为')}</div>
-            <div class="we-secret-meta">知情者 · ${u(a.witnesses || '无')}</div>
+            <div class="we-secret-title">${u(a.action || 'hành vi chưa đặt tên')}</div>
+            <div class="we-secret-meta">người biết chuyện · ${u(a.witnesses || 'không')}</div>
           </div>
         </div>`;
       });
     }
 
     if (assets.length) {
-      html += '<div class="we-secret-group-label we-secret-asset">隐秘资产</div>';
+      html += '<div class="we-secret-group-label we-secret-asset">tài sản bí mật</div>';
       html += renderPagedList(assets, 'secret-assets', (raw, idx) => {
         const a = (typeof raw === 'string') ? { name: raw } : raw;
         if (isEditingSecret(scope, 'asset', idx)) return renderSecretEditor(a, 'asset', idx, scope);
         const expo = Math.min(100, Math.max(0, Number(a.exposure) || 0));
-        const status = a.status || '有效';
+        const status = a.status || 'hợp lệ';
         const stColor = SECRET_STATUS_COLOR[status] || 'var(--we-text3)';
         return `<div class="we-secret-card we-secret-asset">
           <div class="we-secret-ops">
-            <button class="we-icon-btn we-secret-edit" data-secret-scope="${scope}" data-secret-list="asset" data-secret-index="${idx}" title="编辑"><i class="fa-solid fa-pen"></i></button>
-            <button class="we-icon-btn we-secret-copy" data-secret-scope="${scope}" data-secret-list="asset" data-secret-index="${idx}" title="复制"><i class="fa-solid fa-copy"></i></button>
-            <button class="we-icon-btn we-secret-del" data-secret-scope="${scope}" data-secret-list="asset" data-secret-index="${idx}" title="删除"><i class="fa-solid fa-trash-can"></i></button>
+            <button class="we-icon-btn we-secret-edit" data-secret-scope="${scope}" data-secret-list="asset" data-secret-index="${idx}" title="Chỉnh sửa"><i class="fa-solid fa-pen"></i></button>
+            <button class="we-icon-btn we-secret-copy" data-secret-scope="${scope}" data-secret-list="asset" data-secret-index="${idx}" title="Sao chép"><i class="fa-solid fa-copy"></i></button>
+            <button class="we-icon-btn we-secret-del" data-secret-scope="${scope}" data-secret-list="asset" data-secret-index="${idx}" title="xoá"><i class="fa-solid fa-trash-can"></i></button>
           </div>
           <div class="we-secret-body">
-            <div class="we-secret-title">${u(a.name || '未命名资产')}<span class="we-secret-status" style="color:${stColor};border-color:${stColor};">${u(status)}</span></div>
+            <div class="we-secret-title">${u(a.name || 'tài sản chưa đặt tên')}<span class="we-secret-status" style="color:${stColor};border-color:${stColor};">${u(status)}</span></div>
             <div class="we-secret-expo">
               <div class="we-secret-expo-track"><div class="we-secret-expo-fill" style="width:${expo}%;"></div></div>
-              <span class="we-secret-expo-num">暴露 ${expo}%</span>
+              <span class="we-secret-expo-num">Bộc lộ ${expo}%</span>
             </div>
           </div>
         </div>`;
       });
     }
 
-    if (!html) html = '<div class="we-empty">无暗面信息</div>';
+    if (!html) html = '<div class="we-empty">không có thông tin mặt tối</div>';
     return html;
   }
 
-  /** 秘密统一编辑器：顶部「类型」下拉只切表单(view)，转换延到保存才落库 */
+  /** Trình chỉnh sửa thống nhất bí mật: Dropdown 「loại」 ở trên cùng chỉ chuyển đổi biểu mẫu(view)，chuyển đổi trì hoãn đến khi lưu mới ghi ra đĩa */
   function renderSecretEditor(a, list, index, scope, view) {
     view = view || (editingSecret && editingSecret.view) || list;
-    const typeSelect = `<label>类型<select class="we-secret-type">
-        <option value="action" ${view === 'action' ? 'selected' : ''}>隐秘行为</option>
-        <option value="asset" ${view === 'asset' ? 'selected' : ''}>隐秘资产</option>
+    const typeSelect = `<label>loại<select class="we-secret-type">
+        <option value="action" ${view === 'action' ? 'selected' : ''}>hành vi bí mật</option>
+        <option value="asset" ${view === 'asset' ? 'selected' : ''}>tài sản bí mật</option>
       </select></label>`;
-    // 跨类型预填：行为↔资产 标题字段互通（action.action ↔ asset.name）
+    // Điền trước xuyên suốt các loại: hành vi↔tài sản trường tiêu đề liên thông (action.action ↔ asset.name）
     const titleText = u(a.action || a.name || '');
     let fields;
     if (view === 'action') {
       fields = `${typeSelect}
-        <label class="we-event-editor-wide">行为描述<textarea class="we-secret-f-action" rows="2">${titleText}</textarea></label>
-        <label class="we-event-editor-wide">目击者<input class="we-secret-f-witnesses" type="text" value="${u(a.witnesses || '无')}"></label>`;
+        <label class="we-event-editor-wide">mô tả hành vi<textarea class="we-secret-f-action" rows="2">${titleText}</textarea></label>
+        <label class="we-event-editor-wide">nhân chứng<input class="we-secret-f-witnesses" type="text" value="${u(a.witnesses || 'không')}"></label>`;
     } else {
-      const statusOptions = ['有效','过期','暴露','失效'].map(s =>
+      const statusOptions = ['hợp lệ','Hết hạn','Bộc lộ','Hết hiệu lực'].map(s =>
         `<option value="${s}" ${a.status === s ? 'selected' : ''}>${s}</option>`).join('');
       fields = `${typeSelect}
-        <label class="we-event-editor-wide">资产名称<input class="we-secret-f-name" type="text" value="${titleText}"></label>
-        <label>暴露度<input class="we-secret-f-exposure" type="number" min="0" max="100" value="${Number(a.exposure) || 0}"></label>
-        <label>状态<select class="we-secret-f-status">${statusOptions}</select></label>`;
+        <label class="we-event-editor-wide">tên tài sản<input class="we-secret-f-name" type="text" value="${titleText}"></label>
+        <label>mức độ lộ diện<input class="we-secret-f-exposure" type="number" min="0" max="100" value="${Number(a.exposure) || 0}"></label>
+        <label>trạng thái<select class="we-secret-f-status">${statusOptions}</select></label>`;
     }
     return `
       <div class="we-event-editor we-secret-editor" data-secret-scope="${scope}" data-secret-list="${list}" data-secret-index="${index}" data-secret-view="${view}">
         <button class="we-event-editor-close we-secret-editor-close"><i class="fa-solid fa-xmark"></i></button>
         <div class="we-event-editor-grid">${fields}</div>
         <div class="we-event-editor-footer">
-          <button class="we-btn we-btn-primary we-secret-save"><i class="fa-solid fa-floppy-disk"></i> 保存</button>
+          <button class="we-btn we-btn-primary we-secret-save"><i class="fa-solid fa-floppy-disk"></i> Lưu</button>
         </div>
       </div>`;
   }
 
   function renderLedger(memories) {
     const entries = (memories || []).filter(m => m.type === 'ledger').reverse();
-    if (!entries.length) return '<div class="we-empty">暂无重大事件记录</div>';
+    if (!entries.length) return '<div class="we-empty">tạm thời không có ghi chép sự kiện trọng đại</div>';
     return renderPagedList(entries, 'ledger', entry => {
       const lines = [];
       for (const c of (entry.changes || [])) {
         if (c.type === 'event_new') {
-          const tn = { conflict: '冲突型', progress: '推进型' }[c.eventType] || c.eventType;
-          lines.push(`[新增Lv${c.level}${tn}] ${u(c.name)} - ${u(c.stage)} - ${u(c.desc||'')}`);
+          const tn = { conflict: 'loại xung đột', progress: 'loại thúc đẩy' }[c.eventType] || c.eventType;
+          lines.push(`[thêm mới Lv${c.level}${tn}] ${u(c.name)} - ${u(c.stage)} - ${u(c.desc||'')}`);
         } else if (c.type === 'event_advance') {
-          lines.push(`[推进] ${u(c.name)}(Lv${c.level}) ${u(c.fromStage)}->${u(c.toStage)} - ${u(c.desc||'')}`);
+          lines.push(`[thúc đẩy] ${u(c.name)}(Lv${c.level}) ${u(c.fromStage)}->${u(c.toStage)} - ${u(c.desc||'')}`);
         } else if (c.type === 'event_terminal') {
           const transition = c.fromStage ? `${u(c.fromStage)}->${u(c.stage||c.toStage)}` : u(c.stage||c.toStage);
-          lines.push(`[终局] ${u(c.name)}(Lv${c.level}) ${transition} - ${u(c.desc||'')}`);
+          lines.push(`[chung cuộc] ${u(c.name)}(Lv${c.level}) ${transition} - ${u(c.desc||'')}`);
         } else if (c.type === 'wind_new') {
-          lines.push(`[新增Lv${c.level}风声] ${u(c.topic)} - ${u(c.content||'')}`);
+          lines.push(`[thêm mới Lv${c.level}có tiếng đồn] ${u(c.topic)} - ${u(c.content||'')}`);
         }
       }
       return `<div class="we-ledger-item">
-        <span class="we-ledger-round">第${entry.round}轮</span>
+        <span class="we-ledger-round">Thứ ${entry.round} vòng</span>
         <div class="we-ledger-changes">${lines.map(l => `<div class="we-ledger-line">${l}</div>`).join('')}</div>
       </div>`;
     });
   }
 
-  // [FIX] 推演 prompt 分段卡片折叠绑定（模块级，供装配 + 局部刷新复用）。事件委托。
+  // [FIX] suy diễn prompt Ràng buộc gập thẻ phân đoạn (cấp module, để lắp ráp + tái sử dụng làm mới cục bộ). Ủy thác sự kiện.
   function bindPromptSegToggle(root) {
     if (!root) return;
     root.addEventListener('click', function(e) {
@@ -1386,26 +1386,26 @@ window.WORLD_ENGINE_UI = (function() {
     });
   }
 
-  // [FIX] 局部刷新调试卡的 renderDebug 部分：只替换 #we-debug-render 内容并重绑段折叠，
-  // 不动其它选项卡 DOM（保护用户在其它 tab 未保存的输入）。切到调试 tab 时调。
+  // [FIX] làm mới cục bộ của thẻ gỡ lỗi renderDebug phần: chỉ thay thế #we-debug-render nội dung và ràng buộc lại gập đoạn,
+  // không chạm vào các tab khác DOM（bảo vệ người dùng ở các tab đầu vào chưa lưu). Chuyển sang gỡ lỗi tab khi gọi.
   function refreshDebugRender() {
     const box = document.getElementById('we-debug-render');
     if (!box) return;
     box.innerHTML = renderDebug();
     bindPromptSegToggle(box.querySelector('.we-prompt-debug'));
-    // 导出按钮在 renderDebug 输出内，重绑
+    // nút xuất ở renderDebug trong đầu ra, ràng buộc lại
     const exportPromptBtn = document.getElementById('we-export-prompt');
     if (exportPromptBtn) {
       exportPromptBtn.onclick = () => {
         const evo = window.WORLD_ENGINE_EVOLUTION;
         if (!evo || !evo.getLastDebug) return;
         const dbg = evo.getLastDebug();
-        if (!dbg.prompt) { showToast('无 Prompt 可导出', true); return; }
+        if (!dbg.prompt) { showToast('không Prompt có thể xuất', true); return; }
         const blob = new Blob([dbg.prompt], { type: 'text/plain;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a'); a.href = url; a.download = 'prompt-' + Date.now() + '.txt'; a.click();
         URL.revokeObjectURL(url);
-        showToast('Prompt 已导出');
+        showToast('Prompt đã xuất');
       };
     }
     const exportRawBtn = document.getElementById('we-export-raw-result');
@@ -1414,32 +1414,32 @@ window.WORLD_ENGINE_UI = (function() {
         const evo = window.WORLD_ENGINE_EVOLUTION;
         if (!evo || !evo.getLastDebug) return;
         const dbg = evo.getLastDebug();
-        if (!dbg.rawResult) { showToast('无 API 返回可导出', true); return; }
+        if (!dbg.rawResult) { showToast('không API trả về có thể xuất', true); return; }
         const blob = new Blob([dbg.rawResult], { type: 'text/plain;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a'); a.href = url; a.download = 'api-raw-' + Date.now() + '.txt'; a.click();
         URL.revokeObjectURL(url);
-        showToast('API 返回已导出');
+        showToast('API trả về đã xuất');
       };
     }
   }
 
   // ═══════════════════════════════════════════════════════════
-  // [MAP] 引擎预设管理 UI（与 PR#12 只读分段展示同处调试卡）
-  // 把推演 prompt 的 4 个硬编码段（①引擎角色/②因果10步/⑦JSON输出说明/⑧JSON示例）
-  // 升级为可编辑、可保存、可切换、可导入导出的预设。保存走独立 storage key，
-  // 不进 we-save-settings、不进 world_engine_settings。
+  // [MAP] quản lý preset engine UI（và PR#12 hiển thị phân đoạn chỉ đọc ở cùng thẻ gỡ lỗi)
+  // đưa suy diễn prompt của 4 đoạn hardcode (①vai trò engine/②nhân quả 10 bước/⑦JSON hướng dẫn đầu ra/⑧JSON ví dụ)
+  // nâng cấp thành preset có thể chỉnh sửa, có thể lưu, có thể chuyển đổi, có thể nhập xuất. Lưu đi theo độc lập storage key，
+  // không vào we-save-settings、không vào world_engine_settings。
   // ═══════════════════════════════════════════════════════════
   function getPresetMod() {
     return (window.WORLD_ENGINE_PRESET && typeof window.WORLD_ENGINE_PRESET.getAllPresets === 'function')
       ? window.WORLD_ENGINE_PRESET : null;
   }
 
-  // 生成预设管理 HTML（选择器 + 操作按钮 + 4 段可编辑折叠卡 + 提示）。
-  // 每段 textarea 初值 = 当前生效文本（有覆写用覆写，否则默认硬编码原文）。
+  // tạo quản lý preset HTML（bộ chọn + nút thao tác + 4 thẻ gập có thể chỉnh sửa đoạn + nhắc nhở).
+  // mỗi đoạn textarea giá trị ban đầu = Văn bản có hiệu lực hiện tại (nếu có ghi đè thì dùng ghi đè, nếu không thì mặc định dùng văn bản gốc hardcode).
   function renderPresetManage() {
     const P = getPresetMod();
-    if (!P) return '<div class="we-empty">预设系统未加载</div>';
+    if (!P) return '<div class="we-empty">Hệ thống preset chưa tải</div>';
 
     const all = P.getAllPresets();
     const activeId = P.getActivePresetId();
@@ -1450,12 +1450,12 @@ window.WORLD_ENGINE_UI = (function() {
 
     const optHtml = all.map(p =>
       '<option value="' + h(p.id) + '"' + (p.id === activeId ? ' selected' : '') + '>'
-      + h(p.name) + (p.builtin ? '（内置）' : '') + '</option>').join('');
+      + h(p.name) + (p.builtin ? '（tích hợp sẵn)' : '') + '</option>').join('');
 
     const segCards = keys.map(k => {
       const text = P.getSegmentDisplayText(k) || '';
       const isOver = overridden.indexOf(k) >= 0;
-      const meta = isOver ? '已自定义' : '默认（未改）';
+      const meta = isOver ? 'đã tuỳ chỉnh' : 'mặc định (chưa sửa)';
       return '<div class="we-prompt-seg-card we-preset-seg-card' + (isOver ? ' we-preset-seg-card-over' : '') + '">'
         + '<div class="we-prompt-seg-head" data-we-preset-toggle>'
         + '<span class="we-prompt-seg-arrow">▶</span>'
@@ -1463,9 +1463,9 @@ window.WORLD_ENGINE_UI = (function() {
         + '<span class="we-prompt-seg-meta">' + meta + '</span>'
         + '</div>'
         + '<div class="we-prompt-seg-body we-preset-seg-body" style="display:none;">'
-        + '<textarea class="we-preset-textarea" data-we-preset-seg="' + h(k) + '" rows="14" spellcheck="false" placeholder="留空则使用默认硬编码原文">'
+        + '<textarea class="we-preset-textarea" data-we-preset-seg="' + h(k) + '" rows="14" spellcheck="false" placeholder="Để trống thì sử dụng văn bản gốc hardcode mặc định">'
         + h(text) + '</textarea>'
-        + '<div class="we-preset-seg-hint">留空保存后回退默认原文。改 ⑦⑧ 可能导致推演解析失败，自行负责。可保留 {{user}}。</div>'
+        + '<div class="we-preset-seg-hint">Để trống lưu lại sẽ trả về văn bản gốc mặc định. Sửa ⑦⑧ có thể dẫn đến phân tích suy diễn thất bại, tự chịu trách nhiệm. Có thể giữ lại {{user}}。</div>'
         + '</div>'
         + '</div>';
     }).join('');
@@ -1474,27 +1474,27 @@ window.WORLD_ENGINE_UI = (function() {
 
     return '<div class="we-preset-manage">'
       + '<div class="we-preset-row">'
-      + '<label class="we-preset-select-label">当前预设</label>'
+      + '<label class="we-preset-select-label">Preset hiện tại</label>'
       + '<select id="we-preset-select" class="we-preset-select">' + optHtml + '</select>'
       + '</div>'
       + '<div class="we-preset-active-desc">' + h(active && active.description || '') + '</div>'
       + '<div class="we-preset-actions">'
-      + '<button class="we-btn we-btn-primary" id="we-preset-save">保存</button>'
-      + '<button class="we-btn" id="we-preset-saveas">另存为</button>'
-      + (builtinActive ? '' : '<button class="we-btn we-btn-danger" id="we-preset-delete">删除</button>')
-      + '<button class="we-btn" id="we-preset-export">导出</button>'
-      + '<button class="we-btn" id="we-preset-import">导入</button>'
+      + '<button class="we-btn we-btn-primary" id="we-preset-save">Lưu</button>'
+      + '<button class="we-btn" id="we-preset-saveas">Lưu thành</button>'
+      + (builtinActive ? '' : '<button class="we-btn we-btn-danger" id="we-preset-delete">xoá</button>')
+      + '<button class="we-btn" id="we-preset-export">xuất</button>'
+      + '<button class="we-btn" id="we-preset-import">nhập</button>'
       + '<input type="file" id="we-preset-import-file" accept=".json,application/json" style="display:none;">'
       + '</div>'
       + '<div class="we-preset-hint">'
-      + '此处编辑的是「世界推演引擎」发给推演 AI 的 prompt 硬编码段。改了会改变推演行为本身，'
-      + '请自行负责。内置「默认」预设不可删，编辑内置预设点「保存」会提示另存为副本。'
+      + 'Chỗ này chỉnh sửa là nội dung "World Engine" gửi cho suy diễn AI của prompt đoạn hardcode. Sửa sẽ làm thay đổi bản thân hành vi suy diễn,'
+      + 'vui lòng tự chịu trách nhiệm. Preset "mặc định" tích hợp sẵn không thể xoá, chỉnh sửa preset tích hợp sẵn bấm "lưu" sẽ nhắc nhở lưu thành bản sao.'
       + '</div>'
       + '<div class="we-prompt-seg-list">' + segCards + '</div>'
       + '</div>';
   }
 
-  // [FIX] 局部刷新预设管理：只替换 #we-preset-manage 内容并重绑事件，不动其它 tab 输入。
+  // [FIX] Làm mới cục bộ quản lý preset: chỉ thay thế #we-preset-manage nội dung và bind lại sự kiện, không động đến cái khác tab nhập.
   function refreshPresetManage() {
     const box = document.getElementById('we-preset-manage');
     if (!box) return;
@@ -1502,7 +1502,7 @@ window.WORLD_ENGINE_UI = (function() {
     bindPresetEvents(box);
   }
 
-  // 收集 4 个 textarea 的当前文本 → segments 对象（空串→null 表示回退默认）。
+  // thu thập 4 cái textarea văn bản hiện tại của → segments đối tượng (chuỗi rỗng→null biểu thị trả về mặc định).
   function collectPresetSegmentsFromDOM() {
     const P = getPresetMod();
     if (!P) return {};
@@ -1516,22 +1516,22 @@ window.WORLD_ENGINE_UI = (function() {
     return out;
   }
 
-  // 简单的属性值转义（用于 querySelector 选择器里拼 seg key，key 全是固定小写带连字符，安全兜底）。
+  // Escape giá trị thuộc tính đơn giản (dùng cho querySelector ghép trong selector seg key，key toàn bộ là chữ thường cố định có dấu gạch nối, fallback an toàn).
   function cssEscape(s) {
     return String(s).replace(/["\\]/g, '\\$&');
   }
 
-  // 绑定预设管理事件（选择器切换 + 保存/另存/删除/导入/导出 + 段折叠委托）。
+  // Bind sự kiện quản lý preset (chuyển đổi selector + Lưu/lưu thành/xoá/nhập/xuất + uỷ quyền gập đoạn).
   function bindPresetEvents(root) {
     const P = getPresetMod();
     if (!P) return;
     root = root || document.getElementById('we-preset-manage');
     if (!root) return;
 
-    // 段折叠（事件委托，独立 data-attr，不与 bindPromptSegToggle 的 data-we-seg-toggle 冲突）。
-    // [FIX] 委托只需绑一次：refreshPresetManage 每次只换 root.innerHTML（子节点全新），
-    // root 节点本身不变，委托靠冒泡一直有效。用守卫避免每次刷新都 addEventListener 导致
-    // 监听累积（点 10 次保存就会在同一个 root 上叠 10 层 click，折叠头点一次触发 10 次）。
+    // Gập đoạn (uỷ quyền sự kiện, độc lập data-attr，không cùng bindPromptSegToggle của data-we-seg-toggle xung đột).
+    // [FIX] Uỷ quyền chỉ cần bind một lần:refreshPresetManage mỗi lần chỉ đổi root.innerHTML（node con hoàn toàn mới),
+    // root bản thân node không đổi, uỷ quyền dựa vào bubbling luôn hợp lệ. Dùng thủ vệ tránh mỗi lần làm mới đều addEventListener dẫn đến
+    // tích luỹ listener (bấm 10 lần lưu sẽ ở trên cùng một root chồng lên 10  tầng click，tiêu đề gập bấm một lần kích hoạt 10 lần).
     if (!root.__wePresetDelegated) {
       root.__wePresetDelegated = true;
       root.addEventListener('click', function (e) {
@@ -1547,18 +1547,18 @@ window.WORLD_ENGINE_UI = (function() {
       });
     }
 
-    // 切换预设
+    // Chuyển đổi preset
     const sel = root.querySelector('#we-preset-select');
     if (sel) {
       sel.onchange = () => {
         const id = sel.value;
         P.setActivePreset(id);
-        showToast('已切换预设');
+        showToast('Đã chuyển đổi preset');
         refreshPresetManage();
       };
     }
 
-    // 保存：内置预设 → 提示另存为副本；自定义 → 更新当前。
+    // Lưu: preset tích hợp sẵn → nhắc nhở lưu thành bản sao; tuỳ chỉnh → cập nhật hiện tại.
     const saveBtn = root.querySelector('#we-preset-save');
     if (saveBtn) {
       saveBtn.onclick = () => {
@@ -1566,63 +1566,63 @@ window.WORLD_ENGINE_UI = (function() {
         const active = P.getActivePreset();
         const segs = collectPresetSegmentsFromDOM();
         if (active && active.builtin) {
-          // 内置预设不可覆盖：走另存为副本流程
-          const name = prompt('当前是内置预设，保存会另存为新预设副本。请输入新预设名称：', active.name + ' 副本');
+          // Preset tích hợp sẵn không thể ghi đè: đi theo quy trình lưu thành bản sao
+          const name = prompt('Hiện tại là preset mặc định, "lưu sẽ lưu thành bản sao preset mới. Vui lòng nhập tên preset mới":', active.name + ' bản sao');
           if (name == null) return;
-          const np = P.saveAsCustomPreset({ name: name || (active.name + ' 副本'), description: active.description, segments: segs });
+          const np = P.saveAsCustomPreset({ name: name || (active.name + ' bản sao'), description: active.description, segments: segs });
           P.setActivePreset(np.id);
-          showToast('已另存为新预设：' + np.name);
+          showToast('Đã lưu thành preset mới:' + np.name);
           refreshPresetManage();
           return;
         }
         P.saveCustomPreset({ id: activeId, name: active.name, description: active.description, segments: segs });
-        showToast('预设已保存');
+        showToast('Đã lưu preset');
         refreshPresetManage();
       };
     }
 
-    // 另存为：强制新 id
+    // Lưu thành: buộc tạo mới id
     const saveAsBtn = root.querySelector('#we-preset-saveas');
     if (saveAsBtn) {
       saveAsBtn.onclick = () => {
         const active = P.getActivePreset();
         const segs = collectPresetSegmentsFromDOM();
-        const name = prompt('请输入新预设名称：', active.name + ' 副本');
+        const name = prompt('Vui lòng nhập tên preset mới:', active.name + ' bản sao');
         if (name == null) return;
-        const np = P.saveAsCustomPreset({ name: name || (active.name + ' 副本'), description: active.description, segments: segs });
+        const np = P.saveAsCustomPreset({ name: name || (active.name + ' bản sao'), description: active.description, segments: segs });
         P.setActivePreset(np.id);
-        showToast('已另存为新预设：' + np.name);
+        showToast('Đã lưu thành preset mới:' + np.name);
         refreshPresetManage();
       };
     }
 
-    // 删除：仅自定义
+    // Xoá: chỉ tuỳ chỉnh
     const delBtn = root.querySelector('#we-preset-delete');
     if (delBtn) {
       delBtn.onclick = () => {
         const activeId = P.getActivePresetId();
         const active = P.getActivePreset();
-        if (!active || active.builtin) { showToast('内置预设不可删除', true); return; }
-        if (!confirm('确认删除预设「' + active.name + '」？此操作不可撤销。')) return;
+        if (!active || active.builtin) { showToast('Không thể xoá preset mặc định', true); return; }
+        if (!confirm('Xác nhận xoá preset「' + active.name + '」？Thao tác này không thể hoàn tác.')) return;
         P.deleteCustomPreset(activeId);
-        showToast('已删除预设');
+        showToast('Đã xoá preset');
         refreshPresetManage();
       };
     }
 
-    // 导出当前预设
+    // Xuất preset hiện tại
     const expBtn = root.querySelector('#we-preset-export');
     if (expBtn) {
       expBtn.onclick = () => {
         const json = P.exportPreset(P.getActivePresetId());
-        if (!json) { showToast('无预设可导出', true); return; }
+        if (!json) { showToast('Không có preset để xuất', true); return; }
         const name = (P.getActivePreset().name || 'preset').replace(/[\\/:*?"<>|]/g, '_');
         setupDownload(json, 'world-engine-preset-' + name + '-' + Date.now() + '.json');
-        showToast('预设已导出');
+        showToast('Đã xuất preset');
       };
     }
 
-    // 导入：触发文件选择
+    // Nhập: kích hoạt chọn tệp
     const impBtn = root.querySelector('#we-preset-import');
     const impFile = root.querySelector('#we-preset-import-file');
     if (impBtn && impFile) {
@@ -1634,25 +1634,25 @@ window.WORLD_ENGINE_UI = (function() {
         reader.onload = () => {
           try {
             const np = P.importPreset(String(reader.result || ''));
-            showToast('已导入预设：' + np.name);
+            showToast('Đã nhập preset:' + np.name);
             refreshPresetManage();
           } catch (e) {
-            showToast('导入失败: ' + (e && e.message || e), true);
+            showToast('Nhập thất bại: ' + (e && e.message || e), true);
           }
         };
-        reader.onerror = () => showToast('读取文件失败', true);
+        reader.onerror = () => showToast('Đọc tệp thất bại', true);
         reader.readAsText(f, 'utf-8');
-        // 清空 value 以便重复选同一文件
+        // Xoá sạch value để có thể chọn lại cùng một tệp
         impFile.value = '';
       };
     }
   }
 
 
-  // ── 注入自检卡（只读）：读 WORLD_ENGINE_INJECT_INSPECTOR 最后一份快照，
-  //    用大白话+role 分好的消息链回答「世界状态到底有没有真进发给大模型的 prompt」。
-  //    数据全来自 inspector 只读快照；本函数纯拼 HTML，不触发任何副作用。
-  //    返回的是 .we-prompt-debug 内部片段（折叠头复用 data-we-seg-toggle，由 bindPromptSegToggle 统一接管）。
+  // ── Thẻ tự kiểm tra tiêm (chỉ đọc): đọc WORLD_ENGINE_INJECT_INSPECTOR bản snapshot cuối cùng,
+  //    bằng ngôn ngữ dễ hiểu+role chuỗi tin nhắn đã phân chia để trả lời 'trạng thái thế giới rốt cuộc có thực sự được gửi cho mô hình lớn không' prompt」。
+  //    dữ liệu hoàn toàn từ inspector snapshot chỉ đọc; hàm này chỉ ghép HTML，không kích hoạt bất kỳ tác dụng phụ nào.
+  //    trả về là .we-prompt-debug đoạn nội bộ (tái sử dụng header gập data-we-seg-toggle，bởi bindPromptSegToggle tiếp quản thống nhất).
   function renderInjectInspector() {
     const insp = window.WORLD_ENGINE_INJECT_INSPECTOR;
     if (!insp || !insp.getLastSnapshot) return '';
@@ -1671,25 +1671,25 @@ window.WORLD_ENGINE_UI = (function() {
     const p = palette[status] || palette.NOT_YET;
 
     let html = '<div class="we-inject-inspector" style="border:1px solid var(--we-border);border-radius:8px;padding:10px;margin-bottom:12px;background:' + p.bg + ';">';
-    html += '<div style="font-weight:600;color:' + p.color + ';margin-bottom:4px;">' + p.icon + ' 注入自检 · ' + h(text) + '</div>';
+    html += '<div style="font-weight:600;color:' + p.color + ';margin-bottom:4px;">' + p.icon + ' Tự kiểm tra tiêm · ' + h(text) + '</div>';
 
     if (!snap) {
-      html += '<div style="font-size:11px;color:var(--we-text3);">发一条消息触发生成后，这里会显示「世界状态」有没有真正进入发给大模型的正文 prompt（与上方推演 prompt 不是一回事）。</div>';
+      html += '<div style="font-size:11px;color:var(--we-text3);">Sau khi gửi một tin nhắn để kích hoạt tạo, ở đây sẽ hiển thị ‘trạng thái thế giới’ có thực sự đi vào phần thân gửi cho mô hình lớn hay không prompt（với suy diễn phía trên prompt không phải là một).</div>';
       return html + '</div>';
     }
 
-    // 元信息行
-    const apiLabel = snap.apiType === 'chat' ? '对话补全' : '文本补全';
+    // Dòng thông tin meta
+    const apiLabel = snap.apiType === 'chat' ? 'Hoàn thành hội thoại' : 'bổ sung văn bản';
     let when = '';
     try { when = snap.ts ? new Date(snap.ts).toLocaleTimeString() : ''; } catch (e) {}
     html += '<div style="font-size:11px;color:var(--we-text3);margin-bottom:6px;">'
-      + 'API：' + apiLabel + ' · 轮次：' + (snap.round != null ? h(String(snap.round)) : '?')
-      + ' · 已注册：' + (snap.registeredAtSend ? '是' : '否')
-      + ' · 进正文：' + (snap.landed ? '是' : '否')
+      + 'API：' + apiLabel + ' · Vòng:' + (snap.round != null ? h(String(snap.round)) : '?')
+      + ' · Đã đăng ký:' + (snap.registeredAtSend ? 'Có' : 'Không')
+      + ' · Vào phần thân:' + (snap.landed ? 'Có' : 'Không')
       + (when ? ' · ' + h(when) : '')
       + '</div>';
 
-    // role 徽标
+    // role Logo
     const roleColor = { system: '#a371f7', user: '#58a6ff', assistant: '#3fb950', tool: '#d29922' };
     const roleBadge = (role) => {
       const c = roleColor[role] || 'var(--we-text3)';
@@ -1697,24 +1697,24 @@ window.WORLD_ENGINE_UI = (function() {
     };
 
     if (snap.apiType === 'chat' && Array.isArray(snap.messages)) {
-      html += '<div style="font-size:11px;color:var(--we-text2);margin-bottom:4px;">实际发出的消息链（共 ' + h(String(snap.messageCount)) + ' 条，按 role 分；点击任意条展开看完整内容）：</div>';
+      html += '<div style="font-size:11px;color:var(--we-text2);margin-bottom:4px;">Chuỗi tin nhắn thực tế được gửi (tổng cộng ' + h(String(snap.messageCount)) + ' mục, theo role phân chia; nhấp vào mục bất kỳ để mở rộng xem nội dung hoàn chỉnh):</div>';
       html += snap.messages.map((m) => {
-        const meta = (m.length != null ? m.length + ' 字' : '');
+        const meta = (m.length != null ? m.length + ' chữ' : '');
         const hasBody = (m.content != null && m.content.length > 0);
         if (m.isOurs) {
-          // 本扩展注入那条：可折叠，展开看完整世界状态（证明确实在 prompt 里）
+          // Mục do extension này tiêm: có thể gập lại, mở rộng để xem trạng thái thế giới hoàn chỉnh (chứng minh thực sự ở trong prompt trong)
           const body = '<pre class="we-prompt-seg-pre">' + u(m.content || snap.ourContent || '') + '</pre>';
           return '<div class="we-prompt-seg-card" style="margin:3px 0;">'
             + '<div class="we-prompt-seg-head" data-we-seg-toggle style="display:flex;align-items:center;gap:6px;">'
             + '<span class="we-prompt-seg-arrow">▶</span>'
             + roleBadge(m.role)
-            + '<span class="we-prompt-seg-label" style="color:#3fb950;">✅ 含本扩展注入</span>'
+            + '<span class="we-prompt-seg-label" style="color:#3fb950;">✅ chứa tiêm của extension này</span>'
             + '<span class="we-prompt-seg-meta">' + meta + '</span>'
             + '</div>'
             + '<div class="we-prompt-seg-body" style="display:none;">' + body + '</div>'
             + '</div>';
         }
-        // 其它消息：也可折叠展开看完整内容（只读，不写任何存储）
+        // Tin nhắn khác: cũng có thể gập mở rộng để xem nội dung hoàn chỉnh (chỉ đọc, không ghi bất kỳ lưu trữ nào)
         if (hasBody) {
           const body = '<pre class="we-prompt-seg-pre">' + u(m.content) + '</pre>';
           return '<div class="we-prompt-seg-card" style="margin:3px 0;">'
@@ -1726,20 +1726,20 @@ window.WORLD_ENGINE_UI = (function() {
             + '<div class="we-prompt-seg-body" style="display:none;">' + body + '</div>'
             + '</div>';
         }
-        // 空内容：只读一行
+        // Nội dung trống: chỉ đọc một dòng
         return '<div style="display:flex;align-items:center;gap:6px;padding:2px 0;font-size:11px;color:var(--we-text3);">'
           + roleBadge(m.role)
           + '<span>' + meta + '</span>'
           + '</div>';
       }).join('');
     } else if (snap.apiType === 'text') {
-      html += '<div style="font-size:11px;color:var(--we-text2);margin-bottom:4px;">文本补全 prompt 共 ' + h(String(snap.promptLength || 0)) + ' 字（已 flatten 成单串，无 role 之分）：</div>';
+      html += '<div style="font-size:11px;color:var(--we-text2);margin-bottom:4px;">bổ sung văn bản prompt Tổng cộng ' + h(String(snap.promptLength || 0)) + ' chữ (đã flatten thành chuỗi đơn, không có role phân biệt):</div>';
       if (snap.landed && snap.ourExcerpt) {
         const body = '<pre class="we-prompt-seg-pre">' + u(snap.ourExcerpt) + '</pre>';
         html += '<div class="we-prompt-seg-card" style="margin:3px 0;">'
           + '<div class="we-prompt-seg-head" data-we-seg-toggle style="display:flex;align-items:center;gap:6px;">'
           + '<span class="we-prompt-seg-arrow">▶</span>'
-          + '<span class="we-prompt-seg-label" style="color:#3fb950;">✅ 哨兵命中处摘录</span>'
+          + '<span class="we-prompt-seg-label" style="color:#3fb950;">✅ Trích xuất chỗ khớp lính gác</span>'
           + '</div>'
           + '<div class="we-prompt-seg-body" style="display:none;">' + body + '</div>'
           + '</div>';
@@ -1749,35 +1749,35 @@ window.WORLD_ENGINE_UI = (function() {
     return html + '</div>';
   }
 
-  // [FIX] renderDebug：推演 prompt 全透明分段展示（只读，不改可编辑）。
-  // 把推演 API 收到的整块 prompt 按 10 段拆开折叠展示 + AI 返回 JSON 高亮，只看最新一轮。
-  // 数据源 evo.getLastDebug().segments（evolution.js 拼装侧镜像，与实际发出 prompt 字节级一致）。
+  // [FIX] renderDebug：suy diễn prompt Hiển thị phân đoạn hoàn toàn trong suốt (chỉ đọc, không thể chỉnh sửa).
+  // đưa suy diễn API Toàn bộ khối nhận được prompt theo 10 phân đoạn tách ra hiển thị dạng gập + AI trả về JSON tô sáng, chỉ xem vòng mới nhất.
+  // Nguồn dữ liệu evo.getLastDebug().segments（evolution['js Bản sao phía lắp ráp'], với thực tế gửi đi prompt nhất quán cấp byte).
   function renderDebug() {
-    // 注入自检卡独立于推演数据：每次生成都会更新，故即便尚未推演也要先展示它。
-    //   整块仍包在 .we-prompt-debug 里，复用 bindPromptSegToggle 的单一委托接管折叠。
+    // Thẻ tự kiểm tra tiêm độc lập với dữ liệu suy diễn: mỗi lần tạo đều sẽ cập nhật, do đó dù chưa suy diễn cũng phải hiển thị nó trước.
+    //   Toàn bộ khối vẫn được bọc trong .we-prompt-debug trong, tái sử dụng bindPromptSegToggle uỷ thác đơn lẻ tiếp quản gập.
     const injectCard = renderInjectInspector();
     const evo = window.WORLD_ENGINE_EVOLUTION;
     const wrap = (inner) => '<div class="we-prompt-debug">' + injectCard + inner + '</div>';
-    if (!evo || !evo.getLastDebug) return wrap('<div class="we-empty">调试数据不可用</div>');
+    if (!evo || !evo.getLastDebug) return wrap('<div class="we-empty">Dữ liệu gỡ lỗi không khả dụng</div>');
     const dbg = evo.getLastDebug();
-    if (!dbg || !dbg.prompt) return wrap('<div class="we-empty">尚未推演，暂无调试数据</div>');
+    if (!dbg || !dbg.prompt) return wrap('<div class="we-empty">Chưa suy diễn, tạm thời không có dữ liệu gỡ lỗi</div>');
 
     const segments = Array.isArray(dbg.segments) ? dbg.segments : [];
     const totalLen = dbg.prompt.length || 0;
-    // 段占比微条：每段宽度按字数占比
+    // Thanh tỷ lệ phân đoạn: chiều rộng mỗi đoạn theo tỷ lệ số chữ
     const barHtml = segments.length
       ? '<div class="we-prompt-seg-bar">' + segments.map(seg => {
           const len = (seg.content || '').length;
           const pct = totalLen ? (len / totalLen * 100) : 0;
-          return '<span class="we-prompt-seg-bar-cell" style="width:' + pct.toFixed(2) + '%" title="' + u(seg.label) + ' ' + len + '字"></span>';
+          return '<span class="we-prompt-seg-bar-cell" style="width:' + pct.toFixed(2) + '%" title="' + u(seg.label) + ' ' + len + 'chữ"></span>';
         }).join('') + '</div>'
       : '';
 
-    // 尝试把 content 里第一个 JSON 对象 pretty-print（用于状态段/示例段高亮）
+    // Thử đưa content đầu tiên trong JSON đối tượng pretty-print（dùng cho đoạn trạng thái/tô sáng đoạn ví dụ)
     const tryPrettyJson = (text) => {
       if (!text) return null;
       const api = window.WORLD_ENGINE_API;
-      // 直接 JSON.parse 失败则用 api.parseJSON 容错
+      // trực tiếp JSON.parse thất bại thì dùng api['parseJSON chịu lỗi']
       let obj = null;
       try { obj = JSON.parse(text); } catch (e) {
         if (api && api.parseJSON) { try { obj = api.parseJSON(text); } catch (e2) {} }
@@ -1786,16 +1786,16 @@ window.WORLD_ENGINE_UI = (function() {
       try { return JSON.stringify(obj, null, 2); } catch (e) { return null; }
     };
 
-    // 单段折叠卡片
+    // Thẻ gập đoạn đơn
     const segCard = (idx, seg) => {
       const content = seg.content || '';
       const len = content.length;
       const pct = totalLen ? (len / totalLen * 100).toFixed(1) : '0.0';
       const isEmpty = len === 0;
-      // 状态段/示例段尝试 JSON 高亮
+      // Đoạn trạng thái/Thử đoạn ví dụ JSON tô sáng
       let bodyHtml;
       if (isEmpty) {
-        bodyHtml = '<div class="we-prompt-seg-empty">本轮未启用</div>';
+        bodyHtml = '<div class="we-prompt-seg-empty">Vòng này chưa bật</div>';
       } else {
         const pretty = tryPrettyJson(content);
         const shown = pretty !== null ? pretty : content;
@@ -1805,13 +1805,13 @@ window.WORLD_ENGINE_UI = (function() {
         + '<div class="we-prompt-seg-head" data-we-seg-toggle>'
         + '<span class="we-prompt-seg-arrow">▶</span>'
         + '<span class="we-prompt-seg-label">' + u(seg.label) + '</span>'
-        + '<span class="we-prompt-seg-meta">' + (isEmpty ? '空' : (len + '字 · ' + pct + '%')) + '</span>'
+        + '<span class="we-prompt-seg-meta">' + (isEmpty ? 'Trống' : (len + 'chữ · ' + pct + '%')) + '</span>'
         + '</div>'
         + '<div class="we-prompt-seg-body" style="display:none;">' + bodyHtml + '</div>'
         + '</div>';
     };
 
-    // AI 返回卡
+    // AI Thẻ trả về
     const rawResult = dbg.rawResult || '';
     const rawLen = rawResult.length;
     const parsedJson = tryPrettyJson(rawResult);
@@ -1819,12 +1819,12 @@ window.WORLD_ENGINE_UI = (function() {
       ? (parsedJson !== null
           ? '<pre class="we-prompt-seg-pre we-prompt-seg-pre-json">' + u(parsedJson) + '</pre>'
           : '<pre class="we-prompt-seg-pre">' + u(rawResult) + '</pre>')
-      : '<div class="we-prompt-seg-empty">无 API 返回</div>';
+      : '<div class="we-prompt-seg-empty">không API trả về</div>';
     const rawCard = '<div class="we-prompt-seg-card we-prompt-seg-card-raw">'
       + '<div class="we-prompt-seg-head" data-we-seg-toggle>'
       + '<span class="we-prompt-seg-arrow">▶</span>'
-      + '<span class="we-prompt-seg-label">AI 返回（推演 API 原始结果）</span>'
-      + '<span class="we-prompt-seg-meta">' + (rawLen ? (rawLen + '字' + (parsedJson !== null ? ' · JSON 已解析' : ' · 未能解析为 JSON')) : '空') + '</span>'
+      + '<span class="we-prompt-seg-label">AI trả về (suy diễn API kết quả gốc)</span>'
+      + '<span class="we-prompt-seg-meta">' + (rawLen ? (rawLen + 'chữ' + (parsedJson !== null ? ' · JSON Đã phân tích' : ' · Không thể phân tích thành JSON')) : 'Trống') + '</span>'
       + '</div>'
       + '<div class="we-prompt-seg-body" style="display:none;">' + rawBodyHtml + '</div>'
       + '</div>';
@@ -1832,13 +1832,13 @@ window.WORLD_ENGINE_UI = (function() {
     return ''
       + '<div class="we-prompt-debug">'
       + injectCard
-      + '<div class="we-prompt-debug-summary">发送给推演 API 的 Prompt 共 ' + totalLen + ' 字，分 ' + segments.length + ' 段（只读展示，与实际发出字节一致）</div>'
+      + '<div class="we-prompt-debug-summary">Gửi cho suy diễn API của Prompt Tổng cộng ' + totalLen + ' chữ, chia ' + segments.length + ' đoạn (hiển thị chỉ đọc, nhất quán với byte thực tế gửi đi)</div>'
       + barHtml
       + '<div class="we-prompt-seg-list">' + segments.map((seg, i) => segCard(i, seg)).join('') + '</div>'
       + rawCard
       + '<div style="display:flex;gap:6px;margin-top:8px;">'
-      + '<button class="we-btn" id="we-export-prompt" style="flex:1;">导出完整 Prompt</button>'
-      + '<button class="we-btn" id="we-export-raw-result" style="flex:1;">导出 API 返回</button>'
+      + '<button class="we-btn" id="we-export-prompt" style="flex:1;">Xuất hoàn chỉnh Prompt</button>'
+      + '<button class="we-btn" id="we-export-raw-result" style="flex:1;">xuất API trả về</button>'
       + '</div>'
       + '</div>';
   }
@@ -1850,7 +1850,7 @@ window.WORLD_ENGINE_UI = (function() {
     const mode = (settings.evolveMode === 'manual' || settings.evolveMode === 'time') ? settings.evolveMode : 'auto';
     const everyX = Math.max(1, parseInt(settings.evolveEveryX) || 1);
     const readRounds = Math.min(everyX, Math.max(1, parseInt(settings.evolveReadRounds) || 1));
-    // 按时间模式的当前值
+    // Giá trị hiện tại của chế độ theo thời gian
     const _stForTime = core.hasState() ? core.loadState() : null;
     const _cpForTime = core.restoreCheckpoint();
     const stTimeVal = (_stForTime && _stForTime.time != null) ? _stForTime.time : '';
@@ -1864,17 +1864,17 @@ window.WORLD_ENGINE_UI = (function() {
 
     const apiBody = `
       <div class="we-input-group">
-        <label>连接方式</label>
+        <label>Phương thức kết nối</label>
         <select id="we-connection-mode" style="width:100%;">
-          <option value="direct" ${settings.connectionMode !== 'proxy' ? 'selected' : ''}>直连（默认）</option>
-          <option value="proxy" ${settings.connectionMode === 'proxy' ? 'selected' : ''}>经酒馆代理（解决跨域 CORS）</option>
+          <option value="direct" ${settings.connectionMode !== 'proxy' ? 'selected' : ''}>Kết nối trực tiếp (mặc định)</option>
+          <option value="proxy" ${settings.connectionMode === 'proxy' ? 'selected' : ''}>Qua proxy của Tavern (giải quyết cross-domain CORS）</option>
         </select>
-        <div style="font-size:11px;color:#888;margin-top:3px;">连不上 / 控制台报 CORS 错误时，切到「经酒馆代理」由酒馆服务端转发。</div>
+        <div style="font-size:11px;color:#888;margin-top:3px;">Không thể kết nối / Console báo CORS Khi lỗi, chuyển sang 「qua proxy của Tavern」 để server Tavern chuyển tiếp.</div>
       </div>
       <div class="we-input-group">
-        <label>API URL（OpenAI 兼容）</label>
+        <label>API URL（OpenAI tương thích)</label>
         <input type="text" id="we-api-url" value="${u(settings.apiUrl||'')}" placeholder="https://api.openai.com/v1">
-        <div style="font-size:11px;color:#888;margin-top:3px;">填到「版本前缀」一级即可，/chat/completions 可加可不加（会自动补）。例：OpenAI <span style="color:#aaa;">https://api.openai.com/v1</span>；火山方舟 <span style="color:#aaa;">https://ark.cn-beijing.volces.com/api/v3</span>（或 <span style="color:#aaa;">.../api/coding/v3</span>）。务必带上自己的版本前缀。</div>
+        <div style="font-size:11px;color:#888;margin-top:3px;">Điền đến cấp 「tiền tố phiên bản」 là được,/chat/completions Có thể thêm hoặc không (sẽ tự động bổ sung). Ví dụ:OpenAI <span style="color:#aaa;">https://api.openai.com/v1</span>；Hỏa Sơn Phương Chu <span style="color:#aaa;">https://ark.cn-beijing.volces.com/api/v3</span>（hoặc <span style="color:#aaa;">.../api/coding/v3</span>）。Bắt buộc mang theo tiền tố phiên bản của mình.</div>
       </div>
       <div class="we-input-group">
         <label>API Key</label>
@@ -1882,176 +1882,176 @@ window.WORLD_ENGINE_UI = (function() {
       </div>
       <div class="we-input-group" style="display:flex;gap:6px;align-items:end;">
         <div style="flex:1;">
-          <label>模型</label>
-          <input type="text" id="we-model" value="${u(settings.model||'gpt-3.5-turbo')}" placeholder="模型名称" style="width:100%;">
+          <label>Mô hình</label>
+          <input type="text" id="we-model" value="${u(settings.model||'gpt-3.5-turbo')}" placeholder="Tên mô hình" style="width:100%;">
         </div>
-        <button class="we-btn" id="we-fetch-models" style="white-space:nowrap;flex-shrink:0;">获取列表</button>
+        <button class="we-btn" id="we-fetch-models" style="white-space:nowrap;flex-shrink:0;">Lấy danh sách</button>
       </div>
       <div class="we-input-group">
         <select id="we-model-list" style="display:none;width:100%;margin-top:4px;">
-          <option value="">-- 选择模型 --</option>
+          <option value="">-- Chọn mô hình --</option>
         </select>
       </div>`;
 
     const evolveBody = `
       <div class="we-input-group">
-        <label>推演模式</label>
+        <label>chế độ suy diễn</label>
         <select id="we-evolve-mode" style="width:100%;">
-          <option value="auto" ${mode === 'auto' ? 'selected' : ''}>自动 · 按轮（每 X 轮推演一次）</option>
-          <option value="time" ${mode === 'time' ? 'selected' : ''}>自动 · 按时间（正文日期差够 N 天）</option>
-          <option value="manual" ${mode === 'manual' ? 'selected' : ''}>手动（仅点「手动推演」才触发）</option>
+          <option value="auto" ${mode === 'auto' ? 'selected' : ''}>tự động · Theo vòng (mỗi X vòng suy diễn một lần)</option>
+          <option value="time" ${mode === 'time' ? 'selected' : ''}>tự động · Theo thời gian (chênh lệch ngày trong văn bản đủ N ngày)</option>
+          <option value="manual" ${mode === 'manual' ? 'selected' : ''}>Thủ công (chỉ khi bấm 「suy diễn thủ công」 mới kích hoạt)</option>
         </select>
       </div>
       <div class="we-input-group" id="we-evolve-everyx-group" style="${mode === 'auto' ? '' : 'display:none;'}">
-        <label>每几轮推演一次（X）</label>
+        <label>Mỗi mấy vòng suy diễn một lần (X）</label>
         <input type="number" id="we-evolve-everyx" min="1" step="1" value="${everyX}" style="width:100%;">
-        <div style="font-size:11px;color:var(--we-text3);margin-top:3px;">填 1 = 每轮推演；填 3 = 每向前 3 轮推演一次。重 roll 不计入轮数。</div>
+        <div style="font-size:11px;color:var(--we-text3);margin-top:3px;">điền 1 = mỗi vòng suy diễn; điền 3 = mỗi khi tiến tới 3 vòng suy diễn một lần. Reroll roll không tính vào số vòng.</div>
       </div>
       <div class="we-input-group" id="we-evolve-readrounds-group" style="${mode === 'auto' ? '' : 'display:none;'}">
-        <label>每次推演读取最近几轮对话（a）</label>
+        <label>Mỗi lần suy diễn đọc mấy vòng hội thoại gần đây (a）</label>
         <input type="number" id="we-evolve-readrounds" min="1" max="${everyX}" step="1" value="${readRounds}" style="width:100%;">
-        <div style="font-size:11px;color:var(--we-text3);margin-top:3px;">从当前层往前取 a 轮的「用户输入 + AI 输出」喂给后台推演。最小 1，最大不超过 X（每次推演的轮数）。默认 1 = 只读最新一轮。</div>
+        <div style="font-size:11px;color:var(--we-text3);margin-top:3px;">lấy từ tầng hiện tại ngược về trước a vòng của 「người dùng nhập + AI đầu ra」 đưa cho suy diễn dưới nền. Tối thiểu 1，tối đa không vượt quá X（số vòng mỗi lần suy diễn). Mặc định 1 = chỉ đọc vòng mới nhất.</div>
       </div>
       <div id="we-evolve-time-group" style="${mode === 'time' ? '' : 'display:none;'}">
         <div class="we-input-group" style="display:flex;gap:6px;">
-          <div style="flex:1;"><label>取正文前 N 字</label><input type="number" id="we-time-front" min="0" step="1" value="${tv('evolveTimeFront', 0)}" style="width:100%;"></div>
-          <div style="flex:1;"><label>取正文后 N 字</label><input type="number" id="we-time-back" min="0" step="1" value="${tv('evolveTimeBack', 80)}" style="width:100%;"></div>
+          <div style="flex:1;"><label>Lấy trước văn bản N chữ</label><input type="number" id="we-time-front" min="0" step="1" value="${tv('evolveTimeFront', 0)}" style="width:100%;"></div>
+          <div style="flex:1;"><label>Lấy sau văn bản N chữ</label><input type="number" id="we-time-back" min="0" step="1" value="${tv('evolveTimeBack', 80)}" style="width:100%;"></div>
         </div>
         <div class="we-input-group">
-          <label>日期正则（6 框：1/3/5 抓数字 → 捕获组，2/4/6 单位）</label>
+          <label>Regex ngày tháng (6 khung:1/3/5 bắt số → nhóm bắt,2/4/6 đơn vị)</label>
           <div style="display:flex;gap:4px;flex-wrap:wrap;">
-            <input type="text" id="we-time-re1" value="${u(tv('evolveTimeRe1',''))}" placeholder="框1 如 \\d+ 或 [一二三...]+" style="flex:1 1 30%;">
-            <input type="text" id="we-time-re2" value="${u(tv('evolveTimeRe2',''))}" placeholder="框2 单位 如 年" style="flex:1 1 18%;">
-            <input type="text" id="we-time-re3" value="${u(tv('evolveTimeRe3',''))}" placeholder="框3" style="flex:1 1 30%;">
-            <input type="text" id="we-time-re4" value="${u(tv('evolveTimeRe4',''))}" placeholder="框4 如 月" style="flex:1 1 18%;">
-            <input type="text" id="we-time-re5" value="${u(tv('evolveTimeRe5',''))}" placeholder="框5" style="flex:1 1 30%;">
-            <input type="text" id="we-time-re6" value="${u(tv('evolveTimeRe6',''))}" placeholder="框6 如 日/号" style="flex:1 1 18%;">
+            <input type="text" id="we-time-re1" value="${u(tv('evolveTimeRe1',''))}" placeholder="khung1 như \\d+ hoặc [một hai ba...]+" style="flex:1 1 30%;">
+            <input type="text" id="we-time-re2" value="${u(tv('evolveTimeRe2',''))}" placeholder="khung2 đơn vị như năm" style="flex:1 1 18%;">
+            <input type="text" id="we-time-re3" value="${u(tv('evolveTimeRe3',''))}" placeholder="khung3" style="flex:1 1 30%;">
+            <input type="text" id="we-time-re4" value="${u(tv('evolveTimeRe4',''))}" placeholder="khung4 như tháng" style="flex:1 1 18%;">
+            <input type="text" id="we-time-re5" value="${u(tv('evolveTimeRe5',''))}" placeholder="khung5" style="flex:1 1 30%;">
+            <input type="text" id="we-time-re6" value="${u(tv('evolveTimeRe6',''))}" placeholder="khung6 như ngày/ngày" style="flex:1 1 18%;">
           </div>
-          <div style="font-size:11px;color:var(--we-text3);margin-top:3px;">某框留空即跳过。中文数字自动换算，多个日期取最后一个。</div>
+          <div style="font-size:11px;color:var(--we-text3);margin-top:3px;">Khung nào để trống thì bỏ qua. Số tiếng Trung tự động quy đổi, nhiều ngày tháng thì lấy cái cuối cùng.</div>
         </div>
         <div class="we-input-group" style="display:flex;gap:6px;">
-          <div style="flex:1;"><label>乘数A（框1）</label><input type="number" id="we-time-mul1" step="any" value="${tv('evolveTimeMul1',360)}" style="width:100%;"></div>
-          <div style="flex:1;"><label>乘数B（框3）</label><input type="number" id="we-time-mul2" step="any" value="${tv('evolveTimeMul2',30)}" style="width:100%;"></div>
-          <div style="flex:1;"><label>乘数C（框5）</label><input type="number" id="we-time-mul3" step="any" value="${tv('evolveTimeMul3',1)}" style="width:100%;"></div>
+          <div style="flex:1;"><label>Hệ số nhân A（khung1）</label><input type="number" id="we-time-mul1" step="any" value="${tv('evolveTimeMul1',360)}" style="width:100%;"></div>
+          <div style="flex:1;"><label>Hệ số nhân B（khung3）</label><input type="number" id="we-time-mul2" step="any" value="${tv('evolveTimeMul2',30)}" style="width:100%;"></div>
+          <div style="flex:1;"><label>Hệ số nhân C（khung5）</label><input type="number" id="we-time-mul3" step="any" value="${tv('evolveTimeMul3',1)}" style="width:100%;"></div>
         </div>
         <div class="we-input-group">
-          <label>满 N 天推演一次</label>
+          <label>đủ N ngày suy diễn một lần</label>
           <input type="number" id="we-time-threshold" min="1" step="1" value="${tv('evolveTimeThreshold',1)}" style="width:100%;">
         </div>
         <div class="we-input-group">
-          <label>最多读取最近 X 轮对话</label>
+          <label>Đọc tối đa gần đây X vòng hội thoại</label>
           <input type="number" id="we-time-maxrounds" min="1" step="1" value="${tv('evolveTimeMaxRounds',10)}" style="width:100%;">
-          <div style="font-size:11px;color:var(--we-text3);margin-top:3px;">自上次推演以来跨了几轮就读几轮，超过 X 则只读最近 X 轮，封顶防止 prompt 过长。</div>
+          <div style="font-size:11px;color:var(--we-text3);margin-top:3px;">Từ lần suy diễn trước đã qua bao nhiêu vòng thì đọc bấy nhiêu vòng, nếu vượt quá X thì chỉ đọc gần đây X vòng, giới hạn để tránh prompt quá dài.</div>
         </div>
         <div class="we-input-group" style="border-top:1px solid var(--we-border,#3a3a3a);padding-top:8px;">
-          <label>当前状态时间（总天数）</label>
-          <input type="number" id="we-time-state" step="any" value="${stTimeVal}" placeholder="state.time，空则不写" style="width:100%;">
+          <label>Thời gian trạng thái hiện tại (tổng số ngày)</label>
+          <input type="number" id="we-time-state" step="any" value="${stTimeVal}" placeholder="state.time，để trống thì không ghi" style="width:100%;">
         </div>
         <div class="we-input-group">
-          <label>存档点时间（总天数）</label>
-          <input type="number" id="we-time-checkpoint" step="any" value="${cpTimeVal}" placeholder="checkpoint.time，空则不写" style="width:100%;">
+          <label>Thời gian điểm lưu (tổng số ngày)</label>
+          <input type="number" id="we-time-checkpoint" step="any" value="${cpTimeVal}" placeholder="checkpoint.time，để trống thì không ghi" style="width:100%;">
         </div>
         <div class="we-input-group">
-          <label>本轮对话时间（总天数）</label>
-          <input type="number" id="we-time-current" step="any" value="${lastDayVal}" placeholder="保存即判断是否推演" style="width:100%;">
-          <div style="font-size:11px;color:var(--we-text3);margin-top:3px;">保存后：与基准时间相减，够 N 天则立即推演。三个时间框都只在有值时写入，写错可关闭插件重开重填。</div>
+          <label>Thời gian hội thoại vòng này (tổng số ngày)</label>
+          <input type="number" id="we-time-current" step="any" value="${lastDayVal}" placeholder="Lưu là kiểm tra xem có suy diễn không" style="width:100%;">
+          <div style="font-size:11px;color:var(--we-text3);margin-top:3px;">Sau khi lưu: trừ đi thời gian cơ sở, nếu đủ N ngày thì lập tức suy diễn. Ba ô thời gian chỉ ghi khi có giá trị, nếu ghi sai có thể tắt plugin mở lại để điền lại.</div>
         </div>
       </div>`;
 
     const filterBody = `
       <div class="we-input-group">
-        <label>每行一条正则，匹配内容会在喂后台前删除</label>
+        <label>Mỗi dòng một regex, nội dung khớp sẽ bị xoá trước khi đưa vào nền</label>
         <div style="margin-bottom:8px;border:1px solid var(--we-border,#3a3a3a);border-radius:4px;padding:6px;">
-          <div style="font-size:12px;color:var(--we-text2);margin-bottom:4px;">简单模式：勾选标签自动生成删除正则</div>
+          <div style="font-size:12px;color:var(--we-text2);margin-bottom:4px;">Chế độ đơn giản: chọn thẻ để tự động tạo regex xoá</div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:4px;">
-            <button class="we-btn" id="we-btn-filter-scan" type="button">🔍 扫描本聊天标签</button>
-            <input type="text" id="we-filter-add-input" placeholder="手动加标签名(如 tucao)" style="flex:1;min-width:140px;">
-            <button class="we-btn" id="we-btn-filter-add" type="button">+ 添加</button>
+            <button class="we-btn" id="we-btn-filter-scan" type="button">🔍 Quét thẻ chat này</button>
+            <input type="text" id="we-filter-add-input" placeholder="Thêm tên thẻ thủ công(như tucao)" style="flex:1;min-width:140px;">
+            <button class="we-btn" id="we-btn-filter-add" type="button">+ Thêm</button>
           </div>
           <div id="we-filter-tags" style="display:flex;flex-wrap:wrap;gap:4px;min-height:4px;"></div>
-          <div style="font-size:11px;color:var(--we-text3);margin-top:3px;">自动生成的正则不一定生效——标签带属性(如 &lt;wlog time&gt;)、带 ~(如 &lt;konatan_planning~&gt;)、嵌套或闭标签异常时可能匹配失败。不生效请直接编辑下方文本框自行手写。未勾选标签不会保存。</div>
+          <div style="font-size:11px;color:var(--we-text3);margin-top:3px;">Regex tự động tạo chưa chắc đã có hiệu lực——Thẻ có thuộc tính(như &lt;wlog time&gt;)、có ~(như &lt;konatan_planning~&gt;)、Lỗi lồng nhau hoặc thẻ đóng bất thường có thể khiến việc khớp thất bại. Nếu không có hiệu lực, vui lòng chỉnh sửa trực tiếp ô văn bản bên dưới để tự viết tay. Thẻ chưa chọn sẽ không được lưu.</div>
         </div>
-        <textarea id="we-filter-regex" rows="4" style="width:100%;resize:vertical;" placeholder="每行一条；支持纯 pattern 或 /pattern/flags 字面量。例：\n<details>[\\s\\S]*?</details>\\n?\n/&lt;think&gt;[\\s\\S]*?&lt;\\/think&gt;/g">${u(tv('evolveFilterRegex',''))}</textarea>
+        <textarea id="we-filter-regex" rows="4" style="width:100%;resize:vertical;" placeholder="Mỗi dòng một mục; hỗ trợ thuần pattern hoặc /pattern/flags literal. Ví dụ:\n<details>[\\s\\S]*?</details>\\n?\n/&lt;think&gt;[\\s\\S]*?&lt;\\/think&gt;/g">${u(tv('evolveFilterRegex',''))}</textarea>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 4px;">
-          <button class="we-btn" id="we-btn-filter-test" type="button">▶ 测试正则</button>
+          <button class="we-btn" id="we-btn-filter-test" type="button">▶ Kiểm thử regex</button>
         </div>
         <div class="we-hint" id="we-filter-status" style="margin:0 0 4px;white-space:pre-wrap;"></div>
-        <div style="font-size:11px;color:var(--we-text3);margin-top:3px;">每行一条；支持纯 pattern（默认 g 全局）或 /pattern/flags 字面量（如 /.../gi）；空行忽略。仅影响喂后台推演的文本，不影响聊天正文与日期抓取。保存时自动校验每条，测试按钮可对最近一条对话试跑。</div>
+        <div style="font-size:11px;color:var(--we-text3);margin-top:3px;">Mỗi dòng một mục; hỗ trợ thuần pattern（mặc định g toàn cục) hoặc /pattern/flags literal (như /.../gi）；Dòng trống bị bỏ qua. Chỉ ảnh hưởng đến văn bản đưa vào suy diễn dưới nền, không ảnh hưởng đến nội dung chat và việc lấy ngày tháng. Tự động xác thực mỗi mục khi lưu, nút kiểm thử có thể chạy thử trên hội thoại gần nhất.</div>
       </div>`;
 
     const injectBody = `
       <div class="we-input-group">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
           <input type="checkbox" id="we-inject-into-prompt" ${settings.injectIntoPrompt !== false ? 'checked' : ''}>
-          注入正文
+          Tiêm vào nội dung chính
         </label>
-        <div style="font-size:11px;color:var(--we-text3);margin-top:3px;">关闭后不会将当前状态或存档点注入聊天正文。</div>
+        <div style="font-size:11px;color:var(--we-text3);margin-top:3px;">Sau khi tắt sẽ không tiêm trạng thái hiện tại hoặc điểm lưu vào nội dung chat.</div>
       </div>`;
 
     const displayMode = settings.displayMode === 'expand' ? 'expand' : 'mask';
     const displayBody = `
       <div class="we-input-group">
-        <label>主页显示模式</label>
+        <label>Chế độ hiển thị trang chủ</label>
         <select id="we-display-mode" style="width:100%;">
-          <option value="mask" ${displayMode === 'mask' ? 'selected' : ''}>遮蔽模式（主页 + 分页进入）</option>
-          <option value="expand" ${displayMode === 'expand' ? 'selected' : ''}>展开模式（所有内容平铺）</option>
+          <option value="mask" ${displayMode === 'mask' ? 'selected' : ''}>Chế độ che khuất (trang chủ + vào theo phân trang)</option>
+          <option value="expand" ${displayMode === 'expand' ? 'selected' : ''}>Chế độ mở rộng (trải phẳng toàn bộ nội dung)</option>
         </select>
-        <div style="font-size:11px;color:var(--we-text3);margin-top:3px;">展开模式下世界摘要下方直接平铺全部 section，无需进分页。</div>
+        <div style="font-size:11px;color:var(--we-text3);margin-top:3px;">Trong chế độ mở rộng, trải phẳng trực tiếp toàn bộ bên dưới tóm tắt thế giới section，không cần vào phân trang.</div>
       </div>`;
 
-    // 酒馆缓存与存档：存进当前聊天的 chat_metadata（随聊天文件保存到酒馆服务器，跨设备同步）。
-    // 列表与状态在 bindEvents → setupChatcacheSection() 里动态填充。
+    // Cache & bản lưu Tavern: lưu vào của chat hiện tại chat_metadata（lưu cùng tệp chat lên máy chủ Tavern, đồng bộ đa thiết bị).
+    // Danh sách và trạng thái ở bindEvents → setupChatcacheSection() được điền động bên trong.
     const chatcacheBody = `
       <div class="we-input-group">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
           <input type="checkbox" id="we-sync-to-chat" ${settings.syncToChat === true ? 'checked' : ''}>
-          跨设备实时同步（存进当前聊天）
+          Đồng bộ thời gian thực đa thiết bị (lưu vào chat hiện tại)
         </label>
-        <div style="font-size:11px;color:var(--we-text3);margin-top:3px;">开启后，本聊天的世界状态会持续写入酒馆聊天文件并随之跨设备同步；换设备打开同一聊天即可续上进度（冲突时较新版本胜出）。<b>不会</b>同步 API Key 等全局设置。</div>
+        <div style="font-size:11px;color:var(--we-text3);margin-top:3px;">Sau khi bật, trạng thái thế giới của chat này sẽ liên tục được ghi vào tệp chat Tavern và đồng bộ đa thiết bị theo đó; đổi thiết bị mở cùng một chat là có thể tiếp tục tiến độ (khi xung đột, phiên bản mới hơn sẽ thắng).<b>Sẽ không</b>đồng bộ API Key các cài đặt toàn cục như.</div>
       </div>
       <div class="we-input-group">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
           <input type="checkbox" id="we-auto-backup" ${settings.autoBackup === true ? 'checked' : ''}>
-          自动滚动备份（每当轮次推进存一条，保留最近 ${'3'} 条）
+          Tự động sao lưu cuốn chiếu (mỗi khi vòng thúc đẩy sẽ lưu một bản, giữ lại gần nhất ${'3'} bản)
         </label>
-        <div style="font-size:11px;color:var(--we-text3);margin-top:3px;">防误删误改。自动备份与命名存档都保存在本聊天里，跨设备可见。</div>
+        <div style="font-size:11px;color:var(--we-text3);margin-top:3px;">Tránh xoá nhầm sửa nhầm. Tự động sao lưu và bản lưu có tên đều được lưu trong chat này, có thể thấy qua đa thiết bị.</div>
       </div>
       <div class="we-hint" id="we-chatcache-status" style="margin:4px 0;"></div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0;">
-        <button class="we-btn we-btn-primary" id="we-chatcache-save">新建命名存档</button>
-        <button class="we-btn" id="we-chatcache-import">导入存档</button>
+        <button class="we-btn we-btn-primary" id="we-chatcache-save">Tạo mới bản lưu có tên</button>
+        <button class="we-btn" id="we-chatcache-import">nhập bản lưu</button>
         <input type="file" id="we-chatcache-import-file" accept=".json" style="display:none;">
       </div>
-      <div class="we-chatcache-list" id="we-chatcache-snapshots"><div class="we-empty">暂无存档</div></div>`;
+      <div class="we-chatcache-list" id="we-chatcache-snapshots"><div class="we-empty">Chưa có bản lưu</div></div>`;
 
-    // 批量重填世界推演：从第 1 个 AI 楼层分批推到指定楼层（清空重来）。
+    // Backfill hàng loạt suy diễn thế giới: Từ tầng 1 cái AI tầng chia lô suy diễn đến tầng chỉ định (xoá hết làm lại).
     const bf = (k, d) => { const v = settings[k]; return (v === undefined || v === null || v === '') ? d : v; };
     const backfillBody = `
-      <div style="font-size:11px;color:var(--we-text3);margin-bottom:6px;">从第 1 个 AI 楼层开始，<b>分批</b>把世界状态重新推演到指定楼层。每批仅喂本批楼层的对话，但世界状态逐批累积、保持连贯。<b>会清空当前世界状态推倒重来</b>（开始前自动存一份备份快照）。</div>
+      <div style="font-size:11px;color:var(--we-text3);margin-bottom:6px;">Từ tầng 1 cái AI bắt đầu tầng,<b>chia lô</b>suy diễn lại trạng thái thế giới đến tầng chỉ định. Mỗi lô chỉ nạp hội thoại của tầng lô đó, nhưng trạng thái thế giới tích luỹ từng lô, giữ nguyên tính liền mạch.<b>sẽ xoá trạng thái thế giới hiện tại làm lại từ đầu</b>（trước khi bắt đầu tự động lưu một bản sao lưu nhanh).</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;">
-        <div class="we-input-group" style="flex:1;min-width:90px;margin-bottom:0;"><label>每批 AI 楼层数</label>
+        <div class="we-input-group" style="flex:1;min-width:90px;margin-bottom:0;"><label>Mỗi lô AI số tầng</label>
           <input type="number" id="we-backfill-batch" min="1" step="1" value="${bf('backfillBatchSize', 5)}"></div>
-        <div class="we-input-group" style="flex:1;min-width:90px;margin-bottom:0;"><label>结束楼层（0=全部）</label>
+        <div class="we-input-group" style="flex:1;min-width:90px;margin-bottom:0;"><label>tầng kết thúc (0=tất cả)</label>
           <input type="number" id="we-backfill-end" min="0" step="1" value="${bf('backfillEndLayer', 0)}"></div>
-        <div class="we-input-group" style="flex:1;min-width:90px;margin-bottom:0;"><label>每批重试次数</label>
+        <div class="we-input-group" style="flex:1;min-width:90px;margin-bottom:0;"><label>số lần thử lại mỗi lô</label>
           <input type="number" id="we-backfill-retries" min="0" step="1" value="${bf('backfillRetries', 2)}"></div>
       </div>
       <div class="we-hint" id="we-backfill-status" style="margin:6px 0;"></div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0;">
-        <button class="we-btn we-btn-primary" id="we-backfill-start">▶ 开始重填世界推演</button>
-        <button class="we-btn" id="we-backfill-stop">■ 停止</button>
+        <button class="we-btn we-btn-primary" id="we-backfill-start">▶ bắt đầu backfill suy diễn thế giới</button>
+        <button class="we-btn" id="we-backfill-stop">■ dừng</button>
       </div>`;
 
-    // [FIX] 选项卡化：返回按 section 分好的片段字典，由 renderSettingsView 归入各选项卡。
-    //   每个 sec(...) 调用、body 内容、字段 id 与原先一字不改，只是不再直接拼成一串。
+    // [FIX] Tab hoá: trả về theo section từ điển đoạn đã phân chia, do renderSettingsView đưa vào các tab.
+    //   mỗi sec(...) gọi,body nội dung, trường id giữ nguyên không đổi một chữ so với ban đầu, chỉ là không còn ghép trực tiếp thành một chuỗi.
     return {
-      api: sec('set-api', 'API 配置', apiBody),
-      evolve: sec('set-evolve', '推演模式', evolveBody),
-      backfill: sec('set-backfill', '批量重填世界推演', backfillBody),
-      filter: sec('set-filter', '输入输出过滤器', filterBody),
-      display: sec('set-display', '界面显示', displayBody),
-      chatcache: sec('set-chatcache', '酒馆缓存与存档', chatcacheBody),
-      inject: sec('set-inject', '正文注入', injectBody)
+      api: sec('set-api', 'API cấu hình', apiBody),
+      evolve: sec('set-evolve', 'chế độ suy diễn', evolveBody),
+      backfill: sec('set-backfill', 'backfill hàng loạt suy diễn thế giới', backfillBody),
+      filter: sec('set-filter', 'bộ lọc đầu vào đầu ra', filterBody),
+      display: sec('set-display', 'hiển thị giao diện', displayBody),
+      chatcache: sec('set-chatcache', 'cache & bản lưu Tavern', chatcacheBody),
+      inject: sec('set-inject', 'tiêm nội dung chính', injectBody)
     };
   }
 
@@ -2065,40 +2065,40 @@ window.WORLD_ENGINE_UI = (function() {
         <div class="we-input-group">
           <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
             <input type="checkbox" id="we-worldbook-trigger" ${settings.worldbookTrigger === true ? 'checked' : ''}>
-            启用蓝绿灯触发（跟随酒馆世界书）
+            bật kích hoạt đèn xanh/lam (theo Worldbook Tavern)
           </label>
-          <div style="font-size:11px;color:var(--we-text3);margin-top:3px;">关闭时：已选条目全部注入推演（现状）。开启后：🔵常驻条目恒注入，🟢关键词条目仅在近期对话命中其关键词时注入；每条可单独覆写。关键词扫描由本扩展自行完成，与酒馆解耦。</div>
+          <div style="font-size:11px;color:var(--we-text3);margin-top:3px;">Khi tắt: tất cả mục đã chọn được tiêm vào suy diễn (hiện trạng). Sau khi bật:🔵mục thường trú luôn tiêm,🟢mục từ khoá chỉ tiêm khi hội thoại gần đây khớp từ khoá của nó; mỗi mục có thể ghi đè riêng. Việc quét từ khoá do extension này tự hoàn thành, tách rời với Tavern.</div>
         </div>
         <div class="we-worldbook-header">
-          <div><div class="we-worldbook-summary" id="we-worldbook-summary">正在读取当前聊天世界书...</div></div>
-          <button class="we-icon-btn" id="we-worldbook-reload" title="重新读取当前聊天世界书"><i class="fa-solid fa-rotate"></i></button>
+          <div><div class="we-worldbook-summary" id="we-worldbook-summary">đang đọc Worldbook chat hiện tại...</div></div>
+          <button class="we-icon-btn" id="we-worldbook-reload" title="đọc lại Worldbook chat hiện tại"><i class="fa-solid fa-rotate"></i></button>
         </div>
         <div class="we-worldbook-toolbar">
-          <button class="we-btn" id="we-worldbook-select-all">全选</button>
-          <button class="we-btn" id="we-worldbook-clear-all">取消全选</button>
-          <button class="we-btn we-btn-primary" id="we-worldbook-save">保存世界书选择</button>
+          <button class="we-btn" id="we-worldbook-select-all">chọn tất cả</button>
+          <button class="we-btn" id="we-worldbook-clear-all">bỏ chọn tất cả</button>
+          <button class="we-btn we-btn-primary" id="we-worldbook-save">lưu lựa chọn Worldbook</button>
         </div>
-        <div class="we-worldbook-list" id="we-worldbook-list"><div class="we-empty">正在读取...</div></div>
+        <div class="we-worldbook-list" id="we-worldbook-list"><div class="we-empty">đang đọc...</div></div>
       </div>`;
     const dataBody = `
       <div style="display:flex;gap:6px;flex-wrap:wrap;">
-        <button class="we-btn" id="we-export-data">导出 JSON</button>
-        <button class="we-btn" id="we-import-data">导入 JSON</button>
+        <button class="we-btn" id="we-export-data">xuất JSON</button>
+        <button class="we-btn" id="we-import-data">nhập JSON</button>
         <input type="file" id="we-import-file" accept=".json" style="display:none;">
       </div>`;
     const toneBody = `
       <div style="display:flex;gap:6px;flex-wrap:wrap;">
-        <button class="we-btn" id="we-tone-import">导入</button>
-        <button class="we-btn" id="we-tone-export">导出</button>
-        <button class="we-btn" id="we-tone-clear">清除</button>
+        <button class="we-btn" id="we-tone-import">nhập</button>
+        <button class="we-btn" id="we-tone-export">xuất</button>
+        <button class="we-btn" id="we-tone-clear">xoá</button>
         <input type="file" id="we-tone-file" accept=".txt" style="display:none;">
       </div>
       <div class="we-hint" id="we-tone-status" style="margin-top:6px;"></div>`;
-    // [FIX] 选项卡化：同样返回片段字典
+    // [FIX] Tab hoá: tương tự trả về từ điển đoạn
     return {
-      worldbook: sec('set-worldbook', '后台推演世界书', worldbookBody),
-      data: sec('set-data', '数据导入/导出', dataBody),
-      tone: sec('set-tone', '附加提示词', toneBody)
+      worldbook: sec('set-worldbook', 'suy diễn Worldbook dưới nền', worldbookBody),
+      data: sec('set-data', 'nhập dữ liệu/xuất', dataBody),
+      tone: sec('set-tone', 'prompt bổ sung', toneBody)
     };
   }
 
@@ -2109,11 +2109,11 @@ window.WORLD_ENGINE_UI = (function() {
         const index = Number(button.dataset.eventIndex);
         const scopedState = loadScopedState(scope);
         const event = scopedState?.events?.[index];
-        if (!event || !confirm(`删除事件“${event.name}”？`)) return;
+        if (!event || !confirm(`xoá sự kiện“${event.name}”？`)) return;
         scopedState.events.splice(index, 1);
         editingEvent = null;
         saveScopedState(scope, scopedState);
-        showToast('事件已删除');
+        showToast('sự kiện đã xoá');
         refresh();
       };
     });
@@ -2130,7 +2130,7 @@ window.WORLD_ENGINE_UI = (function() {
         core.ensureEventFields(copy);
         scopedState.events.push(copy);
         saveScopedState(scope, scopedState);
-        showToast('事件已复制到列表末尾');
+        showToast('sự kiện đã sao chép xuống cuối danh sách');
         refresh();
       };
     });
@@ -2156,8 +2156,8 @@ window.WORLD_ENGINE_UI = (function() {
       select.onchange = () => {
         const stageSelect = select.closest('.we-event-editor').querySelector('.we-event-edit-stage');
         const stages = select.value === 'progress'
-          ? ['筹备', '执行', '关键', '已完成', '已失败']
-          : ['萌芽', '发酵', '逼近', '已爆发', '已消散'];
+          ? ['chuẩn bị', 'thực thi', 'then chốt/quan trọng', 'đã hoàn thành', 'đã thất bại']
+          : ['manh nha', 'ủ biến', 'cận kề', 'đã bùng phát', 'đã tan biến'];
         stageSelect.innerHTML = stages.map(stage => `<option value="${stage}">${stage}</option>`).join('');
       };
     });
@@ -2173,7 +2173,7 @@ window.WORLD_ENGINE_UI = (function() {
 
         const name = editor.querySelector('.we-event-edit-name').value.trim();
         if (!name) {
-          showToast('事件名字不能为空', true);
+          showToast('tên sự kiện không được để trống', true);
           return;
         }
         event.name = name;
@@ -2185,8 +2185,8 @@ window.WORLD_ENGINE_UI = (function() {
         event.consecutiveFails = 0;
         delete event.evolveResult;
 
-        // 剩余轮数 → 反推 _terminalSince（仅正面终局）
-        const POSITIVE_TERMINALS = ['已爆发', '已完成'];
+        // số vòng còn lại → suy diễn ngược _terminalSince（chỉ kết cục tích cực)
+        const POSITIVE_TERMINALS = ['đã bùng phát', 'đã hoàn thành'];
         if (POSITIVE_TERMINALS.includes(event.stage)) {
           const K = 2 + (event.level || 1) * 2;
           const curRound = scopedState.round || 0;
@@ -2199,12 +2199,12 @@ window.WORLD_ENGINE_UI = (function() {
         core.ensureEventFields(event);
         saveScopedState(scope, scopedState);
         editingEvent = null;
-        showToast('事件修改已保存');
+        showToast('thay đổi sự kiện đã lưu');
         refresh();
       };
     });
 
-    // 势力编辑器事件
+    // Sự kiện trình chỉnh sửa thế lực
     document.querySelectorAll('.we-faction-edit').forEach(button => {
       button.onclick = () => {
         editingFaction = { scope: button.dataset.factionScope, index: Number(button.dataset.factionIndex) };
@@ -2223,7 +2223,7 @@ window.WORLD_ENGINE_UI = (function() {
         const faction = state.factions?.[index];
         if (!faction) return;
         const name = editor.querySelector('.we-faction-edit-name').value.trim();
-        if (!name) { showToast('势力名称不能为空', true); return; }
+        if (!name) { showToast('Tên thế lực không được để trống', true); return; }
         faction.name = name;
         faction.status = editor.querySelector('.we-faction-edit-status').value;
         faction.relation = editor.querySelector('.we-faction-edit-relation').value;
@@ -2238,7 +2238,7 @@ window.WORLD_ENGINE_UI = (function() {
         faction.powerPillars = pillars;
         saveScopedState(scope, state);
         editingFaction = null;
-        showToast('势力修改已保存');
+        showToast('Đã lưu thay đổi thế lực');
         refresh();
       };
     });
@@ -2248,10 +2248,10 @@ window.WORLD_ENGINE_UI = (function() {
         const index = Number(button.dataset.factionIndex);
         const state = loadScopedState(scope);
         const faction = state.factions?.[index];
-        if (!faction || !confirm(`删除势力"${faction.name}"？`)) return;
+        if (!faction || !confirm(`xoá thế lực"${faction.name}"？`)) return;
         state.factions.splice(index, 1);
         saveScopedState(scope, state);
-        showToast('势力已删除');
+        showToast('Đã xoá thế lực');
         refresh();
       };
     });
@@ -2265,12 +2265,12 @@ window.WORLD_ENGINE_UI = (function() {
         const copy = JSON.parse(JSON.stringify(faction));
         state.factions.splice(index + 1, 0, copy);
         saveScopedState(scope, state);
-        showToast('势力已复制');
+        showToast('Đã sao chép thế lực');
         refresh();
       };
     });
 
-    // 风声编辑器事件
+    // Sự kiện trình chỉnh sửa tiếng đồn
     document.querySelectorAll('.we-wind-edit').forEach(button => {
       button.onclick = () => {
         editingWind = { scope: button.dataset.windScope, index: Number(button.dataset.windIndex) };
@@ -2289,7 +2289,7 @@ window.WORLD_ENGINE_UI = (function() {
         const wind = scopedState.winds?.[index];
         if (!wind) return;
         const topic = editor.querySelector('.we-wind-edit-topic').value.trim();
-        if (!topic) { showToast('风声主题不能为空', true); return; }
+        if (!topic) { showToast('Chủ đề tiếng đồn không được để trống', true); return; }
         wind.topic = topic;
         wind.type = editor.querySelector('.we-wind-edit-type').value;
         wind.level = Number(editor.querySelector('.we-wind-edit-level').value);
@@ -2299,7 +2299,7 @@ window.WORLD_ENGINE_UI = (function() {
         wind.quietRounds = 0;
         saveScopedState(scope, scopedState);
         editingWind = null;
-        showToast('风声修改已保存');
+        showToast('Đã lưu thay đổi tiếng đồn');
         refresh();
       };
     });
@@ -2309,10 +2309,10 @@ window.WORLD_ENGINE_UI = (function() {
         const index = Number(button.dataset.windIndex);
         const scopedState = loadScopedState(scope);
         const wind = scopedState.winds?.[index];
-        if (!wind || !confirm(`删除风声"${wind.topic}"？`)) return;
+        if (!wind || !confirm(`Xoá có tiếng đồn"${wind.topic}"？`)) return;
         scopedState.winds.splice(index, 1);
         saveScopedState(scope, scopedState);
-        showToast('风声已删除');
+        showToast('Đã xoá tiếng đồn');
         refresh();
       };
     });
@@ -2327,12 +2327,12 @@ window.WORLD_ENGINE_UI = (function() {
         copy.quietRounds = 0;
         scopedState.winds.push(copy);
         saveScopedState(scope, scopedState);
-        showToast('风声已复制');
+        showToast('Đã sao chép tiếng đồn');
         refresh();
       };
     });
 
-    // ===== 天下大势编辑器事件 =====
+    // ===== Sự kiện trình chỉnh sửa đại thế thiên hạ =====
     document.querySelectorAll('.we-trend-edit').forEach(button => {
       button.onclick = () => {
         editingTrend = { scope: button.dataset.trendScope, index: Number(button.dataset.trendIndex) };
@@ -2351,7 +2351,7 @@ window.WORLD_ENGINE_UI = (function() {
         const trend = scopedState?.worldTrends?.[index];
         if (!trend) return;
         const name = editor.querySelector('.we-trend-edit-name').value.trim();
-        if (!name) { showToast('大势名称不能为空', true); return; }
+        if (!name) { showToast('Tên đại thế không được để trống', true); return; }
         trend.name = name;
         trend.status = editor.querySelector('.we-trend-edit-status').value;
         trend.scope = editor.querySelector('.we-trend-edit-scope').value.trim();
@@ -2359,7 +2359,7 @@ window.WORLD_ENGINE_UI = (function() {
         trend.description = editor.querySelector('.we-trend-edit-desc').value.trim();
         saveScopedState(scope, scopedState);
         editingTrend = null;
-        showToast('天下大势修改已保存');
+        showToast('Đã lưu thay đổi đại thế thiên hạ');
         refresh();
       };
     });
@@ -2369,10 +2369,10 @@ window.WORLD_ENGINE_UI = (function() {
         const index = Number(button.dataset.trendIndex);
         const scopedState = loadScopedState(scope);
         const trend = scopedState?.worldTrends?.[index];
-        if (!trend || !confirm(`删除大势"${trend.name}"？`)) return;
+        if (!trend || !confirm(`Xoá đại thế"${trend.name}"？`)) return;
         scopedState.worldTrends.splice(index, 1);
         saveScopedState(scope, scopedState);
-        showToast('天下大势已删除');
+        showToast('Đã xoá đại thế thiên hạ');
         refresh();
       };
     });
@@ -2386,12 +2386,12 @@ window.WORLD_ENGINE_UI = (function() {
         const copy = JSON.parse(JSON.stringify(trend));
         scopedState.worldTrends.push(copy);
         saveScopedState(scope, scopedState);
-        showToast('天下大势已复制');
+        showToast('Đã sao chép đại thế thiên hạ');
         refresh();
       };
     });
 
-    // ===== 仇敌编辑器事件 =====
+    // ===== Sự kiện trình chỉnh sửa kẻ thù =====
     document.querySelectorAll('.we-enemy-edit').forEach(button => {
       button.onclick = () => {
         editingEnemy = { scope: button.dataset.enemyScope, index: Number(button.dataset.enemyIndex) };
@@ -2410,14 +2410,14 @@ window.WORLD_ENGINE_UI = (function() {
         const enemy = state.enemies?.[index];
         if (!enemy) return;
         const name = editor.querySelector('.we-enemy-edit-name').value.trim();
-        if (!name) { showToast('仇敌名称不能为空', true); return; }
+        if (!name) { showToast('Tên kẻ thù không được để trống', true); return; }
         enemy.name = name;
         enemy.type = editor.querySelector('.we-enemy-edit-type').value;
         enemy.status = editor.querySelector('.we-enemy-edit-status').value;
         enemy.reason = editor.querySelector('.we-enemy-edit-reason').value.trim();
         saveScopedState(scope, state);
         editingEnemy = null;
-        showToast('仇敌修改已保存');
+        showToast('Đã lưu thay đổi kẻ thù');
         refresh();
       };
     });
@@ -2427,10 +2427,10 @@ window.WORLD_ENGINE_UI = (function() {
         const index = Number(button.dataset.enemyIndex);
         const state = loadScopedState(scope);
         const enemy = state.enemies?.[index];
-        if (!enemy || !confirm(`删除仇敌"${enemy.name}"？`)) return;
+        if (!enemy || !confirm(`Xoá kẻ thù"${enemy.name}"？`)) return;
         state.enemies.splice(index, 1);
         saveScopedState(scope, state);
-        showToast('仇敌已删除');
+        showToast('Đã xoá kẻ thù');
         refresh();
       };
     });
@@ -2444,12 +2444,12 @@ window.WORLD_ENGINE_UI = (function() {
         const copy = JSON.parse(JSON.stringify(enemy));
         state.enemies.splice(index + 1, 0, copy);
         saveScopedState(scope, state);
-        showToast('仇敌已复制');
+        showToast('Đã sao chép kẻ thù');
         refresh();
       };
     });
 
-    // ===== 影响链编辑器事件 =====
+    // ===== Sự kiện trình chỉnh sửa chuỗi ảnh hưởng =====
     document.querySelectorAll('.we-influence-edit').forEach(button => {
       button.onclick = () => {
         editingInfluence = { scope: button.dataset.influenceScope, index: Number(button.dataset.influenceIndex) };
@@ -2469,13 +2469,13 @@ window.WORLD_ENGINE_UI = (function() {
         if (!inf) return;
         const trigger = editor.querySelector('.we-influence-edit-trigger').value.trim();
         const impact = editor.querySelector('.we-influence-edit-impact').value.trim();
-        if (!trigger || !impact) { showToast('触发源和直接影响不能为空', true); return; }
+        if (!trigger || !impact) { showToast('Nguồn kích hoạt và ảnh hưởng trực tiếp không được để trống', true); return; }
         inf.trigger = trigger;
         inf.impact = impact;
         inf.fallout = editor.querySelector('.we-influence-edit-fallout').value.trim();
         saveScopedState(scope, scopedState);
         editingInfluence = null;
-        showToast('影响链修改已保存');
+        showToast('Đã lưu thay đổi chuỗi ảnh hưởng');
         refresh();
       };
     });
@@ -2485,10 +2485,10 @@ window.WORLD_ENGINE_UI = (function() {
         const index = Number(button.dataset.influenceIndex);
         const scopedState = loadScopedState(scope);
         const inf = scopedState.influenceChain?.[index];
-        if (!inf || !confirm(`删除影响链"${inf.trigger}"？`)) return;
+        if (!inf || !confirm(`Xoá chuỗi ảnh hưởng"${inf.trigger}"？`)) return;
         scopedState.influenceChain.splice(index, 1);
         saveScopedState(scope, scopedState);
-        showToast('影响链已删除');
+        showToast('Đã xoá chuỗi ảnh hưởng');
         refresh();
       };
     });
@@ -2503,12 +2503,12 @@ window.WORLD_ENGINE_UI = (function() {
         copy._createdRound = Number(scopedState.round) || 0;
         scopedState.influenceChain.push(copy);
         saveScopedState(scope, scopedState);
-        showToast('影响链已复制');
+        showToast('Đã sao chép chuỗi ảnh hưởng');
         refresh();
       };
     });
 
-    // ===== 区域事件编辑器事件 =====
+    // ===== Sự kiện trình chỉnh sửa sự kiện khu vực =====
     document.querySelectorAll('.we-ri-edit').forEach(button => {
       button.onclick = () => {
         editingRI = { active: true, scope: button.dataset.riScope };
@@ -2536,7 +2536,7 @@ window.WORLD_ENGINE_UI = (function() {
         ri.impact = editor.querySelector('.we-ri-edit-impact').value.trim();
         saveScopedState(scope, state);
         editingRI = null;
-        showToast('区域事件修改已保存');
+        showToast('Đã lưu thay đổi sự kiện khu vực');
         refresh();
       };
     });
@@ -2545,10 +2545,10 @@ window.WORLD_ENGINE_UI = (function() {
         const scope = button.dataset.riScope;
         const state = loadScopedState(scope);
         if (!state.regionalIncident) return;
-        if (!confirm('清除区域事件？')) return;
+        if (!confirm('Xoá sự kiện khu vực?')) return;
         state.regionalIncident = { active: false, title: '', type: '', scope: '', impact: '', cooldown: state.regionalIncident.cooldown || 0, _retry: false, _retryType: '' };
         saveScopedState(scope, state);
-        showToast('区域事件已清除');
+        showToast('Đã xoá sự kiện khu vực');
         refresh();
       };
     });
@@ -2563,12 +2563,12 @@ window.WORLD_ENGINE_UI = (function() {
         copy.cooldown = 0;
         state.regionalIncident = copy;
         saveScopedState(scope, state);
-        showToast('区域事件已复制（冷却已重置）');
+        showToast('Đã sao chép sự kiện khu vực (đã đặt lại thời gian hồi)');
         refresh();
       };
     });
 
-    // ===== 秘密（隐秘行为/资产）统一编辑器事件 =====
+    // ===== Bí mật (hành vi bí mật/tài sản) sự kiện trình chỉnh sửa thống nhất =====
     const SECRET_ARR = { action: 'secretActions', asset: 'secretAssets' };
 
     document.querySelectorAll('.we-secret-edit').forEach(button => {
@@ -2581,7 +2581,7 @@ window.WORLD_ENGINE_UI = (function() {
     document.querySelectorAll('.we-secret-editor-close').forEach(button => {
       button.onclick = () => { editingSecret = null; refresh(); };
     });
-    // 类型下拉：仅切换显示的表单(view)，不动数据、不保存
+    // Dropdown loại: chỉ chuyển đổi biểu mẫu hiển thị(view)，Không thay đổi dữ liệu, không lưu
     document.querySelectorAll('.we-secret-type').forEach(select => {
       select.onchange = () => {
         if (editingSecret) { editingSecret.view = select.value; refresh(); }
@@ -2591,23 +2591,23 @@ window.WORLD_ENGINE_UI = (function() {
       button.onclick = () => {
         const editor = button.closest('.we-secret-editor');
         const scope = editor.dataset.secretScope;
-        const list = editor.dataset.secretList;            // 条目当前所在桶
+        const list = editor.dataset.secretList;            // Bucket hiện tại của mục
         const index = Number(editor.dataset.secretIndex);
-        const view = editor.dataset.secretView;            // 目标类型（可能与 list 不同）
+        const view = editor.dataset.secretView;            // Loại mục tiêu (có thể với list khác nhau)
         const state = loadScopedState(scope);
         state.blackbox = state.blackbox || {};
         const srcArr = state.blackbox[SECRET_ARR[list]];
         if (!srcArr || srcArr[index] === undefined) return;
 
-        // 按 view 读取表单，组装目标条目
+        // theo view Đọc biểu mẫu, lắp ráp mục mục tiêu
         let item, okMsg;
         if (view === 'action') {
           const action = editor.querySelector('.we-secret-f-action').value.trim();
-          if (!action) { showToast('行为描述不能为空', true); return; }
-          item = { action, witnesses: editor.querySelector('.we-secret-f-witnesses').value.trim() || '无' };
+          if (!action) { showToast('Mô tả hành vi không được để trống', true); return; }
+          item = { action, witnesses: editor.querySelector('.we-secret-f-witnesses').value.trim() || 'không' };
         } else {
           const name = editor.querySelector('.we-secret-f-name').value.trim();
-          if (!name) { showToast('资产名称不能为空', true); return; }
+          if (!name) { showToast('Tên tài sản không được để trống', true); return; }
           item = {
             name,
             exposure: Math.min(100, Math.max(0, Number(editor.querySelector('.we-secret-f-exposure').value) || 0)),
@@ -2616,14 +2616,14 @@ window.WORLD_ENGINE_UI = (function() {
         }
 
         if (view === list) {
-          srcArr[index] = item;                            // 原地更新
-          okMsg = view === 'action' ? '隐秘行为已保存' : '隐秘资产已保存';
+          srcArr[index] = item;                            // Cập nhật tại chỗ
+          okMsg = view === 'action' ? 'Đã lưu hành vi bí mật' : 'Đã lưu tài sản bí mật';
         } else {
-          srcArr.splice(index, 1);                         // 从旧桶移除
+          srcArr.splice(index, 1);                         // Xoá khỏi bucket cũ
           const arrKey = SECRET_ARR[view];
           if (!Array.isArray(state.blackbox[arrKey])) state.blackbox[arrKey] = [];
-          state.blackbox[arrKey].push(item);               // 落入新桶 = 真正的类型转换
-          okMsg = view === 'action' ? '已转为隐秘行为' : '已转为隐秘资产';
+          state.blackbox[arrKey].push(item);               // Rơi vào bucket mới = Chuyển đổi loại thực sự
+          okMsg = view === 'action' ? 'Đã chuyển thành hành vi bí mật' : 'Đã chuyển thành tài sản bí mật';
         }
         saveScopedState(scope, state);
         editingSecret = null;
@@ -2639,10 +2639,10 @@ window.WORLD_ENGINE_UI = (function() {
         const state = loadScopedState(scope);
         const arr = state.blackbox?.[SECRET_ARR[list]];
         if (!arr || arr[index] === undefined) return;
-        if (!confirm(list === 'action' ? '删除隐秘行为？' : '删除隐秘资产？')) return;
+        if (!confirm(list === 'action' ? 'Xoá hành vi bí mật?' : 'Xoá tài sản bí mật?')) return;
         arr.splice(index, 1);
         saveScopedState(scope, state);
-        showToast('已删除');
+        showToast('Đã xoá');
         refresh();
       };
     });
@@ -2654,14 +2654,14 @@ window.WORLD_ENGINE_UI = (function() {
         const state = loadScopedState(scope);
         const arr = state.blackbox?.[SECRET_ARR[list]];
         if (!arr || arr[index] === undefined) return;
-        arr.splice(index + 1, 0, JSON.parse(JSON.stringify(arr[index])));  // 就近插入
+        arr.splice(index + 1, 0, JSON.parse(JSON.stringify(arr[index])));  // Chèn gần nhất
         saveScopedState(scope, state);
-        showToast('已复制');
+        showToast('Đã sao chép');
         refresh();
       };
     });
 
-    // ===== 导航事件 =====
+    // ===== Sự kiện điều hướng =====
     const backBtn = document.getElementById('we-btn-back');
     if (backBtn) backBtn.onclick = () => { _currentView = 'home'; refresh(); };
 
@@ -2671,19 +2671,19 @@ window.WORLD_ENGINE_UI = (function() {
     document.querySelectorAll('.we-nav-row[data-view]').forEach(row => {
       row.onclick = () => {
         if (_selectedNavView === row.dataset.view) {
-          // 二次点击：进入分页
+          // Nhấp đúp: vào phân trang
           _selectedNavView = null;
           _currentView = row.dataset.view;
           refresh();
         } else {
-          // 首次点击：选中该行
+          // Nhấp lần đầu: chọn dòng này
           _selectedNavView = row.dataset.view;
           refresh();
         }
       };
     });
 
-    // 点击导航列表以外的地方取消选中
+    // Nhấp ra ngoài danh sách điều hướng để huỷ chọn
     const panelBody = panelBodyElement;
     if (panelBody) {
       panelBody.onclick = (e) => {
@@ -2694,7 +2694,7 @@ window.WORLD_ENGINE_UI = (function() {
       };
     }
 
-    // ===== 区块折叠/展开事件 =====
+    // ===== Thu gọn khối/Mở rộng sự kiện =====
     document.querySelectorAll('.we-section-toggle').forEach(toggle => {
       toggle.onclick = () => {
         const sectionId = toggle.dataset.section;
@@ -2706,7 +2706,7 @@ window.WORLD_ENGINE_UI = (function() {
       };
     });
 
-    // [FIX] 设置页选项卡切换：纯 CSS 显隐，不重新渲染（保护输入内容 + 字段常驻 DOM 保证保存不丢）
+    // [FIX] Chuyển tab trang cài đặt: thuần CSS hiển thị/ẩn, không render lại (bảo vệ nội dung nhập + Trường thường trú DOM đảm bảo lưu không mất)
     document.querySelectorAll('.we-settings-tab').forEach(tab => {
       tab.onclick = () => {
         const key = tab.dataset.tab;
@@ -2715,13 +2715,13 @@ window.WORLD_ENGINE_UI = (function() {
           t.classList.toggle('we-settings-tab--active', t.dataset.tab === key));
         document.querySelectorAll('.we-settings-panel').forEach(p =>
           p.style.display = (p.dataset.tab === key) ? '' : 'none');
-        // [FIX] 切到调试 tab 时，局部刷新 renderDebug 拉最新一轮推演数据（不动其它 tab 输入）
+        // [FIX] Chuyển sang gỡ lỗi tab khi, làm mới cục bộ renderDebug Kéo dữ liệu suy diễn vòng mới nhất (không động đến cái khác tab nhập)
         if (key === 'debug') { refreshDebugRender(); refreshPresetManage(); }
       };
     });
 
-    // 「关于」卡内的版本下拉切换：复用 #we-preset-select 范式（点击弹出原生可滚动列表）。
-    //   纯 CSS 显隐、不重渲染、不触碰其它 tab。
+    // 「Chuyển đổi dropdown phiên bản trong thẻ Giới thiệu: tái sử dụng #we-preset-select mô hình (nhấp để bật lên danh sách cuộn gốc).
+    //   Thuần CSS hiển thị/ẩn, không render lại, không chạm vào cái khác tab。
     const clSel = document.getElementById('we-changelog-select');
     if (clSel) {
       clSel.onchange = () => {
@@ -2734,16 +2734,16 @@ window.WORLD_ENGINE_UI = (function() {
     const refreshBtn = document.getElementById('we-btn-refresh');
     if (refreshBtn) refreshBtn.onclick = () => refresh();
 
-    // —— 正则过滤：状态行渲染 + 测试按钮 ——
-    // 把 core.validateFilterRegex 的结果写成 we-hint 状态行（复用 chatcache/backfill 的 we-hint 范式）。
+    // —— Lọc regex: render dòng trạng thái + Nút kiểm thử ——
+    // Đem core.validateFilterRegex kết quả viết thành we-hint dòng trạng thái (tái sử dụng chatcache/backfill của we-hint mô hình).
     function renderFilterStatus(v, prefix) {
       const el = document.getElementById('we-filter-status');
       if (!el) return;
       const pfx = prefix || '';
-      if (!v || (!v.ok && !v.bad.length)) { el.textContent = pfx + '（未填写正则）'; return; }
-      if (!v.bad.length) { el.textContent = pfx + `✅ ${v.ok} 条全部生效`; return; }
-      let s = pfx + `⚠️ ${v.ok} 条生效 / ${v.bad.length} 条失败：`;
-      for (const b of v.bad) s += `\n行 ${b.line} 「${b.raw}」无效：${b.reason}`;
+      if (!v || (!v.ok && !v.bad.length)) { el.textContent = pfx + '（chưa điền regex)'; return; }
+      if (!v.bad.length) { el.textContent = pfx + `✅ ${v.ok} điều đều có hiệu lực`; return; }
+      let s = pfx + `⚠️ ${v.ok} điều có hiệu lực / ${v.bad.length} điều thất bại:`;
+      for (const b of v.bad) s += `\n dòng ${b.line} 「${b.raw}」không hợp lệ:${b.reason}`;
       el.textContent = s;
     }
 
@@ -2752,11 +2752,11 @@ window.WORLD_ENGINE_UI = (function() {
       testBtn.onclick = () => {
         const core = window.WORLD_ENGINE_CORE;
         const raw = (document.getElementById('we-filter-regex')?.value) || '';
-        if (!raw.trim()) { showToast('未填写正则', true); renderFilterStatus(null); return; }
-        if (!core || !core.validateFilterRegex) { showToast('core 模块不可用', true); return; }
+        if (!raw.trim()) { showToast('Chưa điền regex', true); renderFilterStatus(null); return; }
+        if (!core || !core.validateFilterRegex) { showToast('core Module không khả dụng', true); return; }
         const v = core.validateFilterRegex(raw);
-        if (v.bad.length) { renderFilterStatus(v, '测试中止——'); showToast(`有 ${v.bad.length} 条正则无效，请先修正`, true); return; }
-        // 取最近一条非空对话文本（不限 user/ai，沿用 manualEvolve 取 chat 的范式）
+        if (v.bad.length) { renderFilterStatus(v, 'Kiểm thử huỷ bỏ——'); showToast(`Có ${v.bad.length} điều regex không hợp lệ, vui lòng sửa trước`, true); return; }
+        // Lấy một văn bản hội thoại không rỗng gần nhất (không giới hạn user/ai，Tiếp tục dùng manualEvolve Lấy chat mô hình của)
         let sample = '';
         try {
           const ctx = SillyTavern.getContext();
@@ -2766,8 +2766,8 @@ window.WORLD_ENGINE_UI = (function() {
             if (t) { sample = String(chat[i].mes); break; }
           }
         } catch (e) {}
-        if (!sample) { showToast('当前聊天没有可测试的文本', true); return; }
-        // 跑过滤 + 按顺序累计删除处数（与 filterDialogue 同序：每条在前一条的结果上 replace）
+        if (!sample) { showToast('Chat hiện tại không có văn bản có thể kiểm thử', true); return; }
+        // Chạy bộ lọc + Tích luỹ số chỗ xoá theo thứ tự (cùng filterDialogue cùng thứ tự: mỗi điều trên kết quả của điều trước replace）
         let removed = 0, work = sample;
         for (const e of v.entries) {
           try {
@@ -2776,27 +2776,27 @@ window.WORLD_ENGINE_UI = (function() {
             while ((m = re.exec(work)) !== null) { n++; if (m.index === re.lastIndex) re.lastIndex++; }
             work = work.replace(re, '');
             removed += n;
-          } catch (err) { /* 不会进入 */ }
+          } catch (err) { /* Sẽ không vào */ }
         }
         const filtered = work;
         const before = sample.slice(0, 60), after = filtered.slice(0, 60);
         const el = document.getElementById('we-filter-status');
-        if (el) el.textContent = `已删除 ${removed} 处。\n前: ${before}${sample.length > 60 ? '…' : ''}\n后: ${after}${filtered.length > 60 ? '…' : ''}`;
-        showToast(`已删除 ${removed} 处`);
+        if (el) el.textContent = `Đã xoá ${removed} chỗ.\n Trước: ${before}${sample.length > 60 ? '…' : ''}\nsau: ${after}${filtered.length > 60 ? '…' : ''}`;
+        showToast(`Đã xoá ${removed} chỗ`);
       };
     }
 
-    // —— 正则过滤「简单模式」：勾选标签自动生成 <tag>[\s\S]*?</tag>\n? ——
-    // 解耦：底层仍是 #we-filter-regex 文本框(evolveFilterRegex 字段)为唯一真相源。
-    //   勾选 ↔ 文本框双向同步；非 <tag> 形式的行(用户手写杂项)原样保留，不进勾选清单。
-    // 反解析只认标准 <tag>...</tag> 形式；带 ~? / 带属性 / /pat/g / 纯 pattern 杂项 → 视为高级手写，保留。
+    // —— Lọc regex [Chế độ đơn giản]: Tự động tạo thẻ đánh dấu <tag>[\s\S]*?</tag>\n? ——
+    // Tách rời: Tầng dưới vẫn là #we-filter-regex hộp văn bản(evolveFilterRegex trường)làm nguồn sự thật duy nhất.
+    //   đánh dấu ↔ đồng bộ hai chiều hộp văn bản; không phải <tag> dòng có định dạng(tạp mục người dùng viết tay)giữ nguyên như cũ, không đưa vào danh sách đánh dấu.
+    // phân tích ngược chỉ nhận chuẩn <tag>...</tag> định dạng; có ~? / có thuộc tính / /pat/g / Thuần pattern tạp mục → coi là viết tay nâng cao, giữ lại.
     const SIMPLE_TAG_LINE = /^<([a-zA-Z_][\w-]*)>[\s\S]*?<\/\1>(?:\\n\?)?$/;
     const SCAN_TAG_RE = /<([a-zA-Z_][\w-]*)/g;
 
-    // 当前标签清单：{ name, checked }[]。无状态派生物，从 textarea 反解析 + 扫描/手动添加累积。
+    // Danh sách thẻ hiện tại:{ name, checked }[]。dẫn xuất không trạng thái, từ textarea phân tích ngược + quét/thêm thủ công tích luỹ.
     let _filterTags = [];
 
-    // 从 textarea 反解析出标准 <tag> 形式的勾选标签（非标准行视为高级手写，返回 tags + 保留的杂项行）
+    // từ textarea phân tích ngược ra chuẩn <tag> thẻ đánh dấu có định dạng (dòng không chuẩn coi là viết tay nâng cao, trả về tags + dòng tạp mục được giữ lại)
     function parseTextareaTags(raw) {
       const tags = [];
       const advanced = [];
@@ -2808,7 +2808,7 @@ window.WORLD_ENGINE_UI = (function() {
       return { tags, advanced };
     }
 
-    // 勾选标签 → 生成标准模板行；与高级手写行合并写回 textarea
+    // thẻ đánh dấu → tạo dòng mẫu chuẩn; hợp nhất với dòng viết tay nâng cao rồi ghi lại textarea
     function writeTextareaFromTags(checkedTags, advancedLines) {
       const tagLines = checkedTags.map(t => `<${t}>[\\s\\S]*?</${t}>\\n?`);
       const all = tagLines.concat(advancedLines);
@@ -2816,7 +2816,7 @@ window.WORLD_ENGINE_UI = (function() {
       if (ta) ta.value = all.join('\n');
     }
 
-    // 渲染勾选清单 chip 列表
+    // kết xuất danh sách đánh dấu chip danh sách
     function renderFilterTags() {
       const box = document.getElementById('we-filter-tags');
       if (!box) return;
@@ -2839,7 +2839,7 @@ window.WORLD_ENGINE_UI = (function() {
       }
     }
 
-    // 勾选变化 → 写回 textarea（保留高级手写行）
+    // thay đổi đánh dấu → ghi lại textarea（giữ lại dòng viết tay nâng cao)
     function syncTextareaFromTags() {
       const ta = document.getElementById('we-filter-regex');
       const raw = ta ? ta.value : '';
@@ -2848,15 +2848,15 @@ window.WORLD_ENGINE_UI = (function() {
       writeTextareaFromTags(checked, advanced);
     }
 
-    // textarea 手改 → 反解析更新勾选清单（保留清单里已有的非标准标签的勾选态）
+    // textarea sửa thủ công → phân tích ngược cập nhật danh sách đánh dấu (giữ lại trạng thái đánh dấu của các thẻ không chuẩn đã có trong danh sách)
     let _taSyncTimer = null;
     function syncTagsFromTextarea() {
       const ta = document.getElementById('we-filter-regex');
       if (!ta) return;
       const { tags } = parseTextareaTags(ta.value);
-      // tags 是 textarea 里标准 <tag> 行对应的标签名（视为已勾选）
+      // tags Có textarea chuẩn trong <tag> tên thẻ tương ứng với dòng (coi là đã đánh dấu)
       const tagSet = new Set(tags);
-      // 已在清单里的：按 textarea 是否还认它更新 checked；不在清单里的标准标签：加进去（勾选）
+      // đã có trong danh sách: theo textarea có còn nhận nó để cập nhật không checked；thẻ chuẩn không có trong danh sách: thêm vào (đánh dấu)
       for (const t of _filterTags) t.checked = tagSet.has(t.name);
       for (const name of tags) {
         if (!_filterTags.some(t => t.name === name)) _filterTags.push({ name, checked: true });
@@ -2864,7 +2864,7 @@ window.WORLD_ENGINE_UI = (function() {
       renderFilterTags();
     }
 
-    // 扫描最新一条 AI 回复，提取其中出现的 <xxx 标签名
+    // quét một tin nhắn mới nhất AI trả lời, trích xuất các mục xuất hiện trong đó <xxx tên thẻ
     function scanTagsFromLastAI() {
       let text = '';
       try {
@@ -2875,7 +2875,7 @@ window.WORLD_ENGINE_UI = (function() {
           if (m && !m.is_user && String(m.mes || '').trim()) { text = String(m.mes); break; }
         }
       } catch (e) {}
-      if (!text) { showToast('未找到 AI 回复', true); return; }
+      if (!text) { showToast('không tìm thấy AI trả lời', true); return; }
       const found = [];
       let m;
       SCAN_TAG_RE.lastIndex = 0;
@@ -2883,27 +2883,27 @@ window.WORLD_ENGINE_UI = (function() {
         const name = m[1];
         if (name && !found.includes(name)) found.push(name);
       }
-      if (!found.length) { showToast('最新 AI 回复里没发现标签', true); return; }
-      // 合并进清单：已有的保留勾选态，新发现的默认勾选
+      if (!found.length) { showToast('mới nhất AI không phát hiện thẻ trong câu trả lời', true); return; }
+      // hợp nhất vào danh sách: cái đã có giữ nguyên trạng thái đánh dấu, cái mới phát hiện mặc định đánh dấu
       for (const name of found) {
         if (!_filterTags.some(t => t.name === name)) _filterTags.push({ name, checked: true });
       }
       renderFilterTags();
       syncTextareaFromTags();
-      showToast(`扫描到 ${found.length} 个标签`);
+      showToast(`quét được ${found.length} thẻ`);
     }
 
-    // 绑定：扫描按钮
+    // Ràng buộc: Nút quét
     const scanBtn = document.getElementById('we-btn-filter-scan');
     if (scanBtn) scanBtn.onclick = scanTagsFromLastAI;
 
-    // 绑定：手动添加
+    // Ràng buộc: Thêm thủ công
     const addBtn = document.getElementById('we-btn-filter-add');
     const addInput = document.getElementById('we-filter-add-input');
     function doAddTag() {
       const v = (addInput && addInput.value || '').trim();
       if (!v) return;
-      if (!/^[a-zA-Z_][\w-]*$/.test(v)) { showToast('标签名无效（只允许字母数字下划线连字符）', true); return; }
+      if (!/^[a-zA-Z_][\w-]*$/.test(v)) { showToast('Tên thẻ không hợp lệ (chỉ cho phép chữ cái, số, dấu gạch dưới, dấu gạch ngang)', true); return; }
       if (!_filterTags.some(t => t.name === v)) _filterTags.push({ name: v, checked: true });
       if (addInput) addInput.value = '';
       renderFilterTags();
@@ -2912,14 +2912,14 @@ window.WORLD_ENGINE_UI = (function() {
     if (addBtn) addBtn.onclick = doAddTag;
     if (addInput) addInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); doAddTag(); } });
 
-    // 绑定：textarea 手改 → 反解析更新勾选（防抖）
+    // Ràng buộc:textarea sửa thủ công → Phân tích ngược cập nhật đánh dấu (debounce)
     const filterTa = document.getElementById('we-filter-regex');
     if (filterTa) filterTa.addEventListener('input', () => {
       clearTimeout(_taSyncTimer);
       _taSyncTimer = setTimeout(syncTagsFromTextarea, 300);
     });
 
-    // 初始化：打开设置页时从已存字段反解析出勾选状态
+    // Khởi tạo: Khi mở trang cài đặt, phân tích ngược trạng thái đánh dấu từ trường đã lưu
     syncTagsFromTextarea();
 
     const saveBtn = document.getElementById('we-save-settings');
@@ -2941,7 +2941,7 @@ window.WORLD_ENGINE_UI = (function() {
           evolveReadRounds: Math.max(1, parseInt(document.getElementById('we-evolve-readrounds')?.value) || 1),
           evolveFilterRegex: gv('we-filter-regex') || '',
           displayMode: document.getElementById('we-display-mode')?.value === 'expand' ? 'expand' : 'mask',
-          // 按时间模式
+          // Chế độ theo thời gian
           evolveTimeFront: Math.max(0, parseInt(gv('we-time-front')) || 0),
           evolveTimeBack: Math.max(0, parseInt(gv('we-time-back')) || 0),
           evolveTimeRe1: gv('we-time-re1') || '', evolveTimeRe2: gv('we-time-re2') || '',
@@ -2953,24 +2953,24 @@ window.WORLD_ENGINE_UI = (function() {
           evolveTimeThreshold: Math.max(1, parseInt(gv('we-time-threshold')) || 1),
           evolveTimeMaxRounds: Math.max(1, parseInt(gv('we-time-maxrounds')) || 10)
         };
-        // a 不得超过 X（每次推演的轮数）
+        // a Không được vượt quá X（số vòng mỗi lần suy diễn)
         ns.evolveReadRounds = Math.min(ns.evolveReadRounds, ns.evolveEveryX);
         window.WORLD_ENGINE_STORE.setItem('world_engine_settings', JSON.stringify(ns));
         if (window.WORLD_ENGINE_API) window.WORLD_ENGINE_API.getSettings(true);
 
-        // [FIX] 保存后校验正则过滤：复用 core.validateFilterRegex。非法条目不阻止保存（与现有数值 clamp 范式一致），
-        //   但在状态行展示生效/失败+原因，按是否有失败调整下方 toast。
+        // [FIX] Kiểm tra lọc regex sau khi lưu: Tái sử dụng core.validateFilterRegex。Mục không hợp lệ không ngăn cản việc lưu (với giá trị hiện tại clamp nhất quán với mô hình),
+        //   nhưng hiển thị hiệu lực trên dòng trạng thái/thất bại+lý do, điều chỉnh bên dưới dựa trên việc có thất bại hay không toast。
         let _filterBad = 0;
         try {
           const _core = window.WORLD_ENGINE_CORE;
           if (_core && _core.validateFilterRegex) {
             const _v = _core.validateFilterRegex(ns.evolveFilterRegex);
-            renderFilterStatus(_v, '已保存：');
+            renderFilterStatus(_v, 'Đã lưu:');
             _filterBad = _v.bad.length;
           }
-        } catch (e) { /* 校验失败不影响保存 */ }
+        } catch (e) { /* Kiểm tra thất bại không ảnh hưởng đến việc lưu */ }
 
-        // 按时间模式：三个时间框「有值才写」，本轮对话时间写入后触发判断
+        // Chế độ theo thời gian: Ba ô thời gian "có giá trị mới ghi", thời gian hội thoại vòng này sau khi ghi sẽ kích hoạt phán đoán
         if (ns.evolveMode === 'time') {
           const stIn = gv('we-time-state');
           if (stIn != null && stIn !== '') {
@@ -2989,11 +2989,11 @@ window.WORLD_ENGINE_UI = (function() {
         }
 
         window.WORLD_ENGINE?.applyInjection?.();
-        showToast(_filterBad > 0 ? `已保存，但有 ${_filterBad} 条正则无效` : '设置已保存', _filterBad > 0);
+        showToast(_filterBad > 0 ? `Đã lưu, nhưng có ${_filterBad} regex không hợp lệ` : 'Cài đặt đã lưu', _filterBad > 0);
       };
     }
 
-    // 推演模式切换：按轮显示 X/a，按时间显示时间组，手动都隐藏
+    // Chuyển đổi chế độ suy diễn: Hiển thị theo vòng X/a，Hiển thị nhóm thời gian theo thời gian, thủ công đều ẩn
     const evolveModeSel = document.getElementById('we-evolve-mode');
     if (evolveModeSel) {
       evolveModeSel.onchange = () => {
@@ -3022,45 +3022,45 @@ window.WORLD_ENGINE_UI = (function() {
         const checkboxes = [...worldbookList.querySelectorAll('.we-worldbook-entry-check')];
         const selected = checkboxes.filter(checkbox => checkbox.checked);
         const chars = selected.reduce((total, checkbox) => total + Number(checkbox.dataset.chars || 0), 0);
-        if (summary) summary.textContent = `${selected.length}/${checkboxes.length} 条已选，约 ${chars} 字符`;
+        if (summary) summary.textContent = `${selected.length}/${checkboxes.length} mục đã chọn, khoảng ${chars} ký tự`;
       }
 
       async function loadWorldbookEntries() {
         if (!worldbook) {
-          worldbookList.innerHTML = '<div class="we-empty">世界书模块未加载</div>';
+          worldbookList.innerHTML = '<div class="we-empty">Module Worldbook chưa tải</div>';
           return;
         }
-        worldbookList.innerHTML = '<div class="we-empty">正在读取当前聊天世界书...</div>';
+        worldbookList.innerHTML = '<div class="we-empty">đang đọc Worldbook chat hiện tại...</div>';
         if (reloadBtn) reloadBtn.disabled = true;
         try {
           const entries = await worldbook.loadCurrentEntries();
           const currentChatId = worldbook.getChatId ? worldbook.getChatId() : (window.WORLD_ENGINE_CORE?.getChatId?.() || 'default');
-          // 用 hasSelection() 区分"从未保存"与"保存了空数组"，避免刷新后误触发自动全选
+          // Dùng hasSelection() phân biệt"Chưa từng lưu"và"Đã lưu mảng rỗng"，Tránh kích hoạt nhầm tự động chọn tất cả sau khi làm mới
           const isFirstVisit = worldbook.hasSelection ? !worldbook.hasSelection() : false;
           const savedIds = worldbook.getSelectedIds();
           _wbCachedEntries = entries;
           _wbCachedChatId = currentChatId;
           _wbCachedOverrides = worldbook.getOverrides ? { ...worldbook.getOverrides() } : {};
-          // 首次进入该聊天（存储中无记录）则自动全选启用条目
+          // Lần đầu vào chat này (không có bản ghi trong lưu trữ) thì tự động chọn tất cả các mục đã bật
           if (isFirstVisit && entries.length) {
             const allIds = entries.filter(e => !e.disabled).map(e => e.id);
             worldbook.saveSelectedIds(allIds);
             _wbCachedSelectedIds = new Set(allIds);
-            showToast(`已自动全选 ${allIds.length} 条世界书条目`);
+            showToast(`Đã tự động chọn tất cả ${allIds.length} mục Worldbook`);
           } else {
             const enabledIds = new Set(entries.filter(e => !e.disabled).map(e => e.id));
             const validSavedIds = savedIds.filter(id => enabledIds.has(id));
             _wbCachedSelectedIds = new Set(validSavedIds);
-            // 仅在有匹配条目时才回写，防止刷新后 entry.world 尚未加载导致 ID 全部不匹配、
-            // 误将保存记录清空为 []（清空后下次开面板会误触发自动全选）
+            // Chỉ ghi lại khi có mục khớp, tránh sau khi làm mới entry['world chưa tải dẫn đến ID tất cả không khớp'],
+            // nhầm lẫn xoá bản ghi đã lưu thành []（sau khi xoá, lần mở bảng điều khiển tiếp theo sẽ kích hoạt nhầm tự động chọn tất cả)
             if (validSavedIds.length > 0 && validSavedIds.length !== savedIds.length) {
               worldbook.saveSelectedIds(validSavedIds);
             }
           }
           renderWorldbookList();
         } catch(error) {
-          worldbookList.innerHTML = `<div class="we-empty">读取失败：${u(error.message)}</div>`;
-          if (summary) summary.textContent = '读取失败';
+          worldbookList.innerHTML = `<div class="we-empty">Đọc thất bại:${u(error.message)}</div>`;
+          if (summary) summary.textContent = 'Đọc thất bại';
           _wbCachedEntries = null;
           _wbCachedSelectedIds = null;
           _wbCachedOverrides = null;
@@ -3076,8 +3076,8 @@ window.WORLD_ENGINE_UI = (function() {
         const overrides = _wbCachedOverrides || {};
         const triggerOn = !!(window.WORLD_ENGINE_WORLDBOOK?.triggerEnabled?.());
         if (!entries || !entries.length) {
-          worldbookList.innerHTML = '<div class="we-empty">当前聊天未关联可读取的世界书条目</div>';
-          if (summary) summary.textContent = '0 条可选';
+          worldbookList.innerHTML = '<div class="we-empty">Chat hiện tại chưa liên kết mục Worldbook có thể đọc</div>';
+          if (summary) summary.textContent = '0 mục tuỳ chọn';
           return;
         }
         const groups = new Map();
@@ -3092,25 +3092,25 @@ window.WORLD_ENGINE_UI = (function() {
             <div class="we-worldbook-group-header">
               <span>${expanded ? '▼' : '▶'}</span>
               <div class="we-worldbook-group-title">
-                <div>${u(world)} <span>${worldEntries.length}条</span></div>
+                <div>${u(world)} <span>${worldEntries.length}mục</span></div>
               </div>
               <div class="we-worldbook-group-actions">
-                <button type="button" data-worldbook-group-action="select">全选</button>
-                <button type="button" data-worldbook-group-action="clear">取消全选</button>
+                <button type="button" data-worldbook-group-action="select">chọn tất cả</button>
+                <button type="button" data-worldbook-group-action="clear">bỏ chọn tất cả</button>
               </div>
             </div>
             <div class="we-worldbook-group-body" style="${expanded ? '' : 'display:none;'}">
             ${worldEntries.map(entry => {
               const keys = entry.keys || [];
               const badge = entry.constant ? '🔵' : (entry.vectorized ? '🔗' : (keys.length ? '🟢' : '⚪'));
-              const keyHint = keys.length ? ' · 关键词：' + keys.slice(0, 5).join('、') + (keys.length > 5 ? '…' : '') : '';
+              const keyHint = keys.length ? ' · Từ khoá:' + keys.slice(0, 5).join('、') + (keys.length > 5 ? '…' : '') : '';
               const ov = overrides[entry.id] || 'auto';
               const overrideSel = (triggerOn && !entry.disabled) ? `
-                <select class="we-wb-override" data-entry-id="${u(entry.id)}" title="该条触发方式">
-                  <option value="auto"${ov === 'auto' ? ' selected' : ''}>跟随酒馆</option>
-                  <option value="const"${ov === 'const' ? ' selected' : ''}>强制常驻</option>
-                  <option value="key"${ov === 'key' ? ' selected' : ''}>强制关键词</option>
-                  <option value="off"${ov === 'off' ? ' selected' : ''}>关闭</option>
+                <select class="we-wb-override" data-entry-id="${u(entry.id)}" title="Cách kích hoạt mục này">
+                  <option value="auto"${ov === 'auto' ? ' selected' : ''}>theo Tavern</option>
+                  <option value="const"${ov === 'const' ? ' selected' : ''}>buộc luôn thường trú</option>
+                  <option value="key"${ov === 'key' ? ' selected' : ''}>từ khoá bắt buộc</option>
+                  <option value="off"${ov === 'off' ? ' selected' : ''}>tắt</option>
                 </select>` : '';
               return `
               <div class="we-worldbook-entry${entry.disabled ? ' is-disabled' : ''}">
@@ -3118,7 +3118,7 @@ window.WORLD_ENGINE_UI = (function() {
                   <input class="we-worldbook-entry-check" type="checkbox" value="${u(entry.id)}" data-chars="${entry.content.length}" ${selectedIds.has(entry.id) && !entry.disabled ? 'checked' : ''} ${entry.disabled ? 'disabled' : ''}>
                   <span>
                     <strong>${badge} ${u(entry.title)}</strong>
-                    <small>${entry.content.length} 字符${u(keyHint)}${entry.disabled ? ' · 世界书内已停用' : ''}</small>
+                    <small>${entry.content.length} ký tự${u(keyHint)}${entry.disabled ? ' · Đã vô hiệu hoá trong Worldbook' : ''}</small>
                   </span>
                 </label>${overrideSel}
               </div>`;
@@ -3170,7 +3170,7 @@ window.WORLD_ENGINE_UI = (function() {
             };
           });
           updateWorldbookSummary();
-          // 恢复滚动位置（refresh() 重建 DOM 后补回）
+          // Khôi phục vị trí cuộn (refresh() tái tạo DOM sau đó bù lại)
           if (_wbScrollTop) worldbookList.scrollTop = _wbScrollTop;
       }
 
@@ -3191,7 +3191,7 @@ window.WORLD_ENGINE_UI = (function() {
         const ids = [..._wbCachedSelectedIds];
         if (worldbook.saveSelection) worldbook.saveSelection(ids, _wbCachedOverrides || {});
         else worldbook.saveSelectedIds(ids);
-        showToast(`已保存 ${_wbCachedSelectedIds.size} 条后台世界书条目`);
+        showToast(`Đã lưu ${_wbCachedSelectedIds.size} mục Worldbook dưới nền`);
         updateWorldbookSummary();
       };
       const triggerBox = document.getElementById('we-worldbook-trigger');
@@ -3200,10 +3200,10 @@ window.WORLD_ENGINE_UI = (function() {
         const cur = wapi && wapi.getSettings ? wapi.getSettings(true) : {};
         window.WORLD_ENGINE_STORE.setItem('world_engine_settings', JSON.stringify({ ...cur, worldbookTrigger: triggerBox.checked }));
         if (wapi && wapi.getSettings) wapi.getSettings(true);
-        showToast(triggerBox.checked ? '已开启蓝绿灯触发' : '已关闭蓝绿灯触发（恢复全部已选注入）');
-        renderWorldbookList(); // 重渲染以显示/隐藏每条的触发覆写下拉
+        showToast(triggerBox.checked ? 'Đã bật kích hoạt đèn xanh/lam' : 'Đã tắt kích hoạt đèn xanh/lam (khôi phục tiêm tất cả đã chọn)');
+        renderWorldbookList(); // Render lại để hiển thị/Ẩn dropdown ghi đè kích hoạt của mỗi mục
       };
-      // refresh() 重建 DOM 时，如果 chatId 未变且已有缓存，直接渲染，避免勾选丢失
+      // refresh() tái tạo DOM khi, nếu chatId không đổi và đã có cache, render trực tiếp, tránh mất tick chọn
       const currentChatIdNow = worldbook.getChatId ? worldbook.getChatId() : (window.WORLD_ENGINE_CORE?.getChatId?.() || 'default');
       if (_wbCachedEntries && _wbCachedChatId === currentChatIdNow) {
         renderWorldbookList();
@@ -3215,11 +3215,11 @@ window.WORLD_ENGINE_UI = (function() {
     const resetBtn = document.getElementById('we-reset-world');
     if (resetBtn) {
       resetBtn.onclick = () => {
-        if (confirm('重置当前聊天所有世界状态和记忆？不可恢复！')) {
+        if (confirm('Đặt lại toàn bộ trạng thái thế giới và ký ức của chat hiện tại? Không thể khôi phục!')) {
           core.clearState();
           core.clearCheckpoint();
           core.saveFingerprint(String(core.getChatLayer()));
-          showToast('世界已重置');
+          showToast('Thế giới đã đặt lại');
           refresh();
         }
       };
@@ -3247,7 +3247,7 @@ window.WORLD_ENGINE_UI = (function() {
           const isHidden = body.style.display === 'none';
           body.style.display = isHidden ? 'block' : 'none';
           if (arrow) arrow.textContent = isHidden ? '▼' : '▶';
-          if (!isHidden) { refreshDebugRender(); refreshPresetManage(); } // [FIX] 局部刷新调试卡数据，不动其它 tab 输入
+          if (!isHidden) { refreshDebugRender(); refreshPresetManage(); } // [FIX] Làm mới cục bộ dữ liệu thẻ debug, không đổi thứ khác tab Nhập
         }
       };
     }
@@ -3256,7 +3256,7 @@ window.WORLD_ENGINE_UI = (function() {
     if (fetchBtn) {
       fetchBtn.onclick = async () => {
         const api = window.WORLD_ENGINE_API;
-        if (!api) { showToast('API 模块未加载', true); return; }
+        if (!api) { showToast('API Module chưa tải', true); return; }
         window.WORLD_ENGINE_STORE.setItem('world_engine_settings', JSON.stringify({
           ...(api.getSettings ? api.getSettings(true) : {}),
           apiUrl: document.getElementById('we-api-url')?.value || '',
@@ -3267,12 +3267,12 @@ window.WORLD_ENGINE_UI = (function() {
         }));
         if (api.getSettings) api.getSettings(true);
         fetchBtn.disabled = true;
-        fetchBtn.textContent = '获取中...';
+        fetchBtn.textContent = 'Đang lấy...';
         try {
           const models = await api.fetchModelList();
           const select = document.getElementById('we-model-list');
           if (select) {
-            select.innerHTML = '<option value="">-- 选择模型 --</option>' +
+            select.innerHTML = '<option value="">-- Chọn mô hình --</option>' +
               models.map(m => '<option value="' + u(m) + '">' + u(m) + '</option>').join('');
             select.style.display = 'block';
             select.onchange = () => {
@@ -3280,12 +3280,12 @@ window.WORLD_ENGINE_UI = (function() {
               if (modelInput) modelInput.value = select.value;
             };
           }
-          showToast('获取到 ' + models.length + ' 个模型');
+          showToast('Lấy được ' + models.length + ' mô hình');
         } catch(e) {
           showToast('' + e.message, true);
         }
         fetchBtn.disabled = false;
-        fetchBtn.innerHTML = '获取列表';
+        fetchBtn.innerHTML = 'Lấy danh sách';
       };
     }
 
@@ -3311,7 +3311,7 @@ window.WORLD_ENGINE_UI = (function() {
         a.download = 'world-engine-' + core.getChatId() + '-' + Date.now() + '.json';
         a.click();
         URL.revokeObjectURL(url);
-        showToast('已导出');
+        showToast('đã xuất');
       };
     }
 
@@ -3343,14 +3343,14 @@ window.WORLD_ENGINE_UI = (function() {
                 _retryType: String(data._retryType || '')
               };
               core.saveState(state);
-              showToast('区域事件导入成功');
+              showToast('Nhập sự kiện khu vực thành công');
               refresh();
               return;
             }
-            if (data.version !== '1.2') { showToast('不支持的存档格式版本', true); return; }
-            if (!data.state) { showToast('无效的导入文件', true); return; }
+            if (data.version !== '1.2') { showToast('Phiên bản định dạng bản lưu không được hỗ trợ', true); return; }
+            if (!data.state) { showToast('Tệp nhập không hợp lệ', true); return; }
             const s = data.state;
-            if (s.round === undefined) { showToast('缺少 round 字段', true); return; }
+            if (s.round === undefined) { showToast('Thiếu round trường', true); return; }
             core.importState(s);
             if (Object.prototype.hasOwnProperty.call(data, 'checkpoint')) {
               if (data.checkpoint) {
@@ -3360,10 +3360,10 @@ window.WORLD_ENGINE_UI = (function() {
               else core.clearCheckpoint();
             }
             core.saveFingerprint(String(core.getChatLayer()));
-            showToast('导入成功！第' + s.round + '轮，' + (s.memories||[]).filter(m=>m.type==='ledger').length + '轮账本');
+            showToast('Nhập thành công! Vòng ' + s.round + 'vòng, ' + (s.memories||[]).filter(m=>m.type==='ledger').length + 'sổ cái vòng');
             refresh();
           } catch(err) {
-            showToast('解析失败: ' + err.message, true);
+            showToast('Phân tích thất bại: ' + err.message, true);
           }
         };
         reader.readAsText(file);
@@ -3371,7 +3371,7 @@ window.WORLD_ENGINE_UI = (function() {
       };
     }
 
-    // ===== 附加提示词 导入 / 导出 / 清除 =====
+    // ===== prompt bổ sung nhập / xuất / xoá =====
     function getTonePrompt() {
       return (window.WORLD_ENGINE_API?.getSettings(true)?.tonePrompt || '');
     }
@@ -3385,7 +3385,7 @@ window.WORLD_ENGINE_UI = (function() {
       const el = document.getElementById('we-tone-status');
       if (!el) return;
       const t = getTonePrompt().trim();
-      el.textContent = t ? `当前已设置附加提示词（${t.length} 字）` : '当前未设置附加提示词';
+      el.textContent = t ? `Hiện đã cài đặt prompt bổ sung (${t.length}  chữ)` : 'Hiện chưa cài đặt prompt bổ sung';
     }
     updateToneStatus();
 
@@ -3399,10 +3399,10 @@ window.WORLD_ENGINE_UI = (function() {
         const reader = new FileReader();
         reader.onload = (ev) => {
           const text = String(ev.target.result || '').trim();
-          if (!text) { showToast('文件为空', true); return; }
+          if (!text) { showToast('Tệp trống', true); return; }
           saveTonePrompt(text);
           updateToneStatus();
-          showToast('附加提示词已导入');
+          showToast('Đã nhập prompt bổ sung');
         };
         reader.readAsText(file);
         toneFile.value = '';
@@ -3413,7 +3413,7 @@ window.WORLD_ENGINE_UI = (function() {
     if (toneExportBtn) {
       toneExportBtn.onclick = () => {
         const t = getTonePrompt();
-        if (!t.trim()) { showToast('当前无附加提示词可导出', true); return; }
+        if (!t.trim()) { showToast('Hiện không có prompt bổ sung để xuất', true); return; }
         const blob = new Blob([t], { type: 'text/plain;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -3421,25 +3421,25 @@ window.WORLD_ENGINE_UI = (function() {
         a.download = 'world-engine-tone-' + Date.now() + '.txt';
         a.click();
         URL.revokeObjectURL(url);
-        showToast('附加提示词已导出');
+        showToast('Đã xuất prompt bổ sung');
       };
     }
 
     const toneClearBtn = document.getElementById('we-tone-clear');
     if (toneClearBtn) {
       toneClearBtn.onclick = () => {
-        if (!getTonePrompt().trim()) { showToast('当前无附加提示词', true); return; }
+        if (!getTonePrompt().trim()) { showToast('Hiện không có prompt bổ sung', true); return; }
         saveTonePrompt('');
         updateToneStatus();
-        showToast('附加提示词已清除');
+        showToast('Đã xoá prompt bổ sung');
       };
     }
 
-    // ===== 酒馆缓存与存档 =====
+    // ===== cache & bản lưu Tavern =====
     (function setupChatcacheSection() {
       const cc = window.WORLD_ENGINE_CHATCACHE;
       const listEl = document.getElementById('we-chatcache-snapshots');
-      if (!cc || !listEl) return; // 不在设置页或模块缺失
+      if (!cc || !listEl) return; // Không ở trang cài đặt hoặc thiếu module
 
       const statusEl = document.getElementById('we-chatcache-status');
       const fmtTime = (ms) => {
@@ -3451,23 +3451,23 @@ window.WORLD_ENGINE_UI = (function() {
       function render() {
         const st = cc.getStatus();
         if (statusEl) {
-          if (!st.usable) statusEl.textContent = '当前没有可用聊天（请先打开一个角色/群聊）。';
-          else if (!st.apiAvailable) statusEl.textContent = '当前酒馆版本不支持写入 chat_metadata，酒馆缓存不可用。';
-          else statusEl.textContent = `实时同步${st.syncEnabled ? '已开启' : '已关闭'} · 本地修订 ${st.localRev} / 云端 ${st.liveRev} · 共 ${st.snapshotCount} 条存档`;
+          if (!st.usable) statusEl.textContent = 'Hiện không có chat khả dụng (vui lòng mở một nhân vật trước/chat nhóm).';
+          else if (!st.apiAvailable) statusEl.textContent = 'Phiên bản Tavern hiện tại không hỗ trợ ghi chat_metadata，Cache Tavern không khả dụng.';
+          else statusEl.textContent = `đồng bộ thời gian thực${st.syncEnabled ? 'Đã bật' : 'Đã tắt'} · Bản sửa đổi cục bộ ${st.localRev} / đám mây ${st.liveRev} · Tổng cộng ${st.snapshotCount} bản lưu`;
         }
         const snaps = cc.listSnapshots();
-        if (!snaps.length) { listEl.innerHTML = '<div class="we-empty">暂无存档</div>'; return; }
+        if (!snaps.length) { listEl.innerHTML = '<div class="we-empty">Chưa có bản lưu</div>'; return; }
         listEl.innerHTML = snaps.map(s => `
           <div class="we-snapshot-row" data-snap-id="${u(s.id)}">
             <div class="we-snapshot-main">
-              <div class="we-snapshot-name"><span class="we-snapshot-badge${s.auto ? ' is-auto' : ''}">${s.auto ? '自动' : '手动'}</span>${u(s.name)}</div>
-              <div class="we-snapshot-meta">第 ${s.round || 0} 轮 · ${fmtTime(s.createdAt)}</div>
+              <div class="we-snapshot-name"><span class="we-snapshot-badge${s.auto ? ' is-auto' : ''}">${s.auto ? 'tự động' : 'thủ công'}</span>${u(s.name)}</div>
+              <div class="we-snapshot-meta">Thứ  ${s.round || 0}  vòng · ${fmtTime(s.createdAt)}</div>
             </div>
             <div class="we-snapshot-actions">
-              <button class="we-icon-btn" data-snap-action="restore" title="恢复到当前聊天"><i class="fa-solid fa-rotate-left"></i></button>
-              <button class="we-icon-btn" data-snap-action="rename" title="重命名"><i class="fa-solid fa-pen"></i></button>
-              <button class="we-icon-btn" data-snap-action="export" title="导出 JSON"><i class="fa-solid fa-download"></i></button>
-              <button class="we-icon-btn" data-snap-action="delete" title="删除"><i class="fa-solid fa-trash"></i></button>
+              <button class="we-icon-btn" data-snap-action="restore" title="Khôi phục về chat hiện tại"><i class="fa-solid fa-rotate-left"></i></button>
+              <button class="we-icon-btn" data-snap-action="rename" title="đổi tên"><i class="fa-solid fa-pen"></i></button>
+              <button class="we-icon-btn" data-snap-action="export" title="xuất JSON"><i class="fa-solid fa-download"></i></button>
+              <button class="we-icon-btn" data-snap-action="delete" title="xoá"><i class="fa-solid fa-trash"></i></button>
             </div>
           </div>`).join('');
         listEl.querySelectorAll('[data-snap-action]').forEach(btn => {
@@ -3478,28 +3478,28 @@ window.WORLD_ENGINE_UI = (function() {
             const action = btn.dataset.snapAction;
             const snap = cc.listSnapshots().find(s => s.id === id);
             if (action === 'restore') {
-              if (!confirm(`恢复存档「${snap ? snap.name : id}」到当前聊天？\n当前状态会先自动备份，可再恢复回来。`)) return;
-              if (cc.restoreSnapshot(id)) { showToast('已恢复存档'); refresh(); }
-              else showToast('恢复失败', true);
+              if (!confirm(`Khôi phục bản lưu 「${snap ? snap.name : id}」vào chat hiện tại?\n Trạng thái hiện tại sẽ được tự động sao lưu trước, có thể khôi phục lại sau.`)) return;
+              if (cc.restoreSnapshot(id)) { showToast('Đã khôi phục bản lưu'); refresh(); }
+              else showToast('Khôi phục thất bại', true);
             } else if (action === 'rename') {
-              const name = prompt('新的存档名称：', snap ? snap.name : '');
+              const name = prompt('Tên bản lưu mới:', snap ? snap.name : '');
               if (name == null) return;
-              if (cc.renameSnapshot(id, name)) { showToast('已重命名'); render(); }
+              if (cc.renameSnapshot(id, name)) { showToast('Đã đổi tên'); render(); }
             } else if (action === 'export') {
               const obj = cc.exportSnapshot(id);
-              if (!obj) { showToast('导出失败', true); return; }
-              const safe = String(obj.name || id).replace(/[^\w一-龥-]+/g, '_');
+              if (!obj) { showToast('Xuất thất bại', true); return; }
+              const safe = String(obj.name || id).replace(/[^\w\p{L}\s-]+/gu, '_');
               setupDownload(JSON.stringify(obj, null, 2), 'we-snapshot-' + safe + '-' + Date.now() + '.json');
-              showToast('已导出存档');
+              showToast('Đã xuất bản lưu');
             } else if (action === 'delete') {
-              if (!confirm(`删除存档「${snap ? snap.name : id}」？不可恢复。`)) return;
-              if (cc.deleteSnapshot(id)) { showToast('已删除'); render(); }
+              if (!confirm(`Xoá bản lưu 「${snap ? snap.name : id}」？Không thể khôi phục.`)) return;
+              if (cc.deleteSnapshot(id)) { showToast('Đã xoá'); render(); }
             }
           };
         });
       }
 
-      // 立即生效并持久化单个开关（与 saveTonePrompt 同模式）
+      // Có hiệu lực ngay và lưu trữ vĩnh viễn công tắc đơn (cùng saveTonePrompt cùng chế độ)
       const persist = (key, val) => {
         const wapi = window.WORLD_ENGINE_API;
         const cur = wapi && wapi.getSettings ? wapi.getSettings(true) : {};
@@ -3510,22 +3510,22 @@ window.WORLD_ENGINE_UI = (function() {
       const syncBox = document.getElementById('we-sync-to-chat');
       if (syncBox) syncBox.onchange = () => {
         persist('syncToChat', syncBox.checked);
-        if (syncBox.checked && cc.pushLiveNow) cc.pushLiveNow(); // 开启即把本地播种进聊天
-        showToast(syncBox.checked ? '已开启跨设备同步' : '已关闭跨设备同步');
+        if (syncBox.checked && cc.pushLiveNow) cc.pushLiveNow(); // Bật sẽ gieo hạt cục bộ vào chat
+        showToast(syncBox.checked ? 'Đã bật đồng bộ đa thiết bị' : 'Đã tắt đồng bộ đa thiết bị');
         render();
       };
       const autoBox = document.getElementById('we-auto-backup');
       if (autoBox) autoBox.onchange = () => {
         persist('autoBackup', autoBox.checked);
-        showToast(autoBox.checked ? '已开启自动备份' : '已关闭自动备份');
+        showToast(autoBox.checked ? 'Đã bật tự động sao lưu' : 'Đã tắt tự động sao lưu');
       };
 
       const ccSaveBtn = document.getElementById('we-chatcache-save');
       if (ccSaveBtn) ccSaveBtn.onclick = () => {
-        const name = prompt('给这份存档起个名字：', '存档 ' + fmtTime(Date.now()));
+        const name = prompt('Đặt tên cho bản lưu này:', 'bản lưu ' + fmtTime(Date.now()));
         if (name == null) return;
-        if (cc.createSnapshot(name)) { showToast('已存档'); render(); }
-        else showToast('存档失败（当前聊天无世界数据或不可写）', true);
+        if (cc.createSnapshot(name)) { showToast('Đã lưu'); render(); }
+        else showToast('Lưu thất bại (chat hiện tại không có dữ liệu thế giới hoặc không thể ghi)', true);
       };
 
       const ccImportBtn = document.getElementById('we-chatcache-import');
@@ -3539,9 +3539,9 @@ window.WORLD_ENGINE_UI = (function() {
           reader.onload = (ev) => {
             try {
               const obj = JSON.parse(ev.target.result);
-              if (cc.importSnapshot(obj)) { showToast('已导入存档'); render(); }
-              else showToast('不是有效的存档文件', true);
-            } catch (err) { showToast('解析失败: ' + err.message, true); }
+              if (cc.importSnapshot(obj)) { showToast('Đã nhập bản lưu'); render(); }
+              else showToast('Không phải tệp bản lưu hợp lệ', true);
+            } catch (err) { showToast('Phân tích thất bại: ' + err.message, true); }
           };
           reader.readAsText(file);
           ccImportFile.value = '';
@@ -3551,11 +3551,11 @@ window.WORLD_ENGINE_UI = (function() {
       render();
     })();
 
-    // ===== 批量重填世界推演 =====
+    // ===== backfill hàng loạt suy diễn thế giới =====
     (function setupBackfillSection() {
       const startBtn = document.getElementById('we-backfill-start');
       const stopBtn = document.getElementById('we-backfill-stop');
-      if (!startBtn) return; // 不在设置页
+      if (!startBtn) return; // Không ở trang cài đặt
 
       const persistBf = (key, val) => {
         const wapi = window.WORLD_ENGINE_API;
@@ -3572,11 +3572,11 @@ window.WORLD_ENGINE_UI = (function() {
 
       startBtn.onclick = () => runBackfill();
       if (stopBtn) stopBtn.onclick = () => {
-        if (evolution && evolution.abort) { evolution.abort(); showToast('已发送停止信号'); }
+        if (evolution && evolution.abort) { evolution.abort(); showToast('Đã gửi tín hiệu dừng'); }
       };
     })();
 
-    // 调试区导出按钮
+    // Nút xuất khu vực gỡ lỗi
     function setupDownload(content, filename) {
       const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
       const url = URL.createObjectURL(blob);
@@ -3593,9 +3593,9 @@ window.WORLD_ENGINE_UI = (function() {
         const evo = window.WORLD_ENGINE_EVOLUTION;
         if (!evo || !evo.getLastDebug) return;
         const dbg = evo.getLastDebug();
-        if (!dbg.prompt) { showToast('无 Prompt 可导出', true); return; }
+        if (!dbg.prompt) { showToast('không Prompt có thể xuất', true); return; }
         setupDownload(dbg.prompt, 'prompt-' + Date.now() + '.txt');
-        showToast('Prompt 已导出');
+        showToast('Prompt đã xuất');
       };
     }
 
@@ -3605,31 +3605,31 @@ window.WORLD_ENGINE_UI = (function() {
         const evo = window.WORLD_ENGINE_EVOLUTION;
         if (!evo || !evo.getLastDebug) return;
         const dbg = evo.getLastDebug();
-        if (!dbg.rawResult) { showToast('无 API 返回可导出', true); return; }
+        if (!dbg.rawResult) { showToast('không API trả về có thể xuất', true); return; }
         setupDownload(dbg.rawResult, 'api-raw-' + Date.now() + '.txt');
-        showToast('API 返回已导出');
+        showToast('API trả về đã xuất');
       };
     }
 
-    // [FIX] 推演 prompt 分段卡片折叠（事件委托，逻辑在模块级 bindPromptSegToggle）
+    // [FIX] suy diễn prompt Thu gọn thẻ phân đoạn (uỷ quyền sự kiện, logic ở cấp module bindPromptSegToggle）
     bindPromptSegToggle(document.querySelector('.we-prompt-debug'));
 
-    // [FIX] 导出诊断包
+    // [FIX] xuất gói chẩn đoán
     const exportDiagBtn = document.getElementById('we-export-diag');
     if (exportDiagBtn) {
       exportDiagBtn.onclick = () => {
         const diag = window.WORLD_ENGINE_DIAG;
-        if (!diag || !diag.download) { showToast('诊断模块不可用', true); return; }
+        if (!diag || !diag.download) { showToast('Module chẩn đoán không khả dụng', true); return; }
         try {
           diag.download();
-          showToast('诊断包已导出');
+          showToast('Đã xuất gói chẩn đoán');
         } catch (e) {
-          showToast('诊断包导出失败: ' + (e && e.message || e), true);
+          showToast('Xuất gói chẩn đoán thất bại: ' + (e && e.message || e), true);
         }
       };
     }
 
-    // [MAP] 引擎预设管理：整页装配后首次绑定（事件委托在 bindPresetEvents 内）。
+    // [MAP] Quản lý preset engine: Lần đầu liên kết sau khi lắp ráp toàn trang (uỷ quyền sự kiện tại bindPresetEvents bên trong).
     bindPresetEvents(document.getElementById('we-preset-manage'));
   }
 
@@ -3682,7 +3682,7 @@ window.WORLD_ENGINE_UI = (function() {
     });
   }
 
-  /** 获取当前对话层数 */
+  /** Lấy số tầng hội thoại hiện tại */
   function getChatLayer() {
     try {
       const ctx = SillyTavern.getContext();
@@ -3691,7 +3691,7 @@ window.WORLD_ENGINE_UI = (function() {
     } catch(e) { return '?'; }
   }
 
-  /** 设置面板状态条 */
+  /** Thanh trạng thái bảng điều khiển cài đặt */
   function setStatus(text, isError) {
     const statusBar = document.getElementById('we-status-bar');
     if (!statusBar) return;
@@ -3699,9 +3699,9 @@ window.WORLD_ENGINE_UI = (function() {
     statusBar.className = 'we-status-bar' + (isError ? ' error' : '');
   }
 
-  // ========== 全局事件委托：声誉点击 + economy 编辑 ==========
+  // ========== Uỷ quyền sự kiện toàn cục: Click danh tiếng + economy Chỉnh sửa ==========
   document.addEventListener('click', function(e) {
-    // 声誉方块点击
+    // Click khối danh tiếng
     var dot = e.target.closest('.we-rep-dot');
     if (dot) {
       var dim = dot.getAttribute('data-dim');
@@ -3716,7 +3716,7 @@ window.WORLD_ENGINE_UI = (function() {
       }
       return;
     }
-    // climate 按钮点击
+    // climate Click nút
     var cb = e.target.closest('.we-climate-btn');
     if (cb) {
       var c = cb.getAttribute('data-climate');
@@ -3730,13 +3730,13 @@ window.WORLD_ENGINE_UI = (function() {
       }
       return;
     }
-    // 通用列表翻页
+    // Chuyển trang danh sách chung
     var arr = e.target.closest('.we-list-arrow');
     if (arr) {
       var rid = arr.getAttribute('data-rid');
       var dir = parseInt(arr.getAttribute('data-dir'));
       if (!rid || isNaN(dir)) return;
-      // 找到对应的翻页器
+      // Tìm bộ chuyển trang tương ứng
       var pager = arr.parentNode;
       var curSpan = pager.querySelector('.we-list-cur');
       if (!curSpan) return;
@@ -3755,7 +3755,7 @@ window.WORLD_ENGINE_UI = (function() {
       listPageState[rid] = newPage;
       return;
     }
-    // 删除 signal
+    // xoá signal
     var sd = e.target.closest('.we-signal-del');
     if (sd) {
       var idx = parseInt(sd.getAttribute('data-sigidx'));
@@ -3770,7 +3770,7 @@ window.WORLD_ENGINE_UI = (function() {
       }
       return;
     }
-    // 添加 signal
+    // Thêm signal
     var sa = e.target.closest('.we-signal-add');
     if (sa) {
       var scope = sa.getAttribute('data-sig-scope');
@@ -3778,14 +3778,14 @@ window.WORLD_ENGINE_UI = (function() {
       s.economy = s.economy || {};
       if (!s.economy.signals) s.economy.signals = [];
       if (s.economy.signals.length < 5) {
-        s.economy.signals.push({ summary: '新信号', scope: '区域' });
+        s.economy.signals.push({ summary: 'Tín hiệu mới', scope: 'khu vực' });
         saveScopedState(scope, s);
         refresh();
       }
       return;
     }
 
-    // 单击信号卡片后显示删除按钮；再次点击同一卡片时保持显示，方便移动端操作
+    // Click vào thẻ tín hiệu sẽ hiển thị nút xoá; click lại vào cùng một thẻ sẽ giữ nguyên hiển thị, thuận tiện cho thao tác trên thiết bị di động
     var signalCard = e.target.closest('.we-signal-item');
     if (signalCard && panelBodyElement && panelBodyElement.contains(signalCard)) {
       panelBodyElement.querySelectorAll('.we-card-active').forEach(function(c){ c.classList.remove('we-card-active'); });
@@ -3793,18 +3793,18 @@ window.WORLD_ENGINE_UI = (function() {
       return;
     }
 
-    // ===== 单击条目卡片显示/隐藏其编辑按钮（移动端无悬停，统一改为点按）=====
+    // ===== Click thẻ mục hiển thị/Ẩn nút chỉnh sửa của nó (di động không có hover, thống nhất đổi thành chạm)=====
     if (!panelBodyElement || !panelBodyElement.contains(e.target)) return;
-    // 点在按钮/输入控件/展开的编辑器内：交给各自处理器，不切换
+    // Click vào nút/Control đầu vào/Trong trình chỉnh sửa đã mở rộng: giao cho bộ xử lý tương ứng, không chuyển đổi
     if (e.target.closest('button, select, input, textarea, label, a, .we-event-editor, .we-rep-dot, .we-climate-btn, .we-signal-item, .we-list-arrow, .we-nav-row, .we-section-toggle')) return;
     var card = findActionCard(e.target);
     var wasActive = card && card.classList.contains('we-card-active');
-    // 先收起其它已展开的卡片
+    // Thu gọn các thẻ đã mở rộng khác trước
     panelBodyElement.querySelectorAll('.we-card-active').forEach(function(c){ c.classList.remove('we-card-active'); });
     if (card && !wasActive) card.classList.add('we-card-active');
   });
 
-  /** 找到包含编辑按钮组的条目卡片（其直接子节点里有 .we-event-actions / .we-secret-ops） */
+  /** Tìm thẻ mục chứa nhóm nút chỉnh sửa (trong node con trực tiếp của nó có .we-event-actions / .we-secret-ops） */
   function findActionCard(target) {
     var el = target;
     while (el && el.nodeType === 1 && el.id !== 'we-panel-body') {
@@ -3814,7 +3814,7 @@ window.WORLD_ENGINE_UI = (function() {
     return null;
   }
 
-  // 全局事件委托：signal 双击编辑
+  // Ủy thác sự kiện toàn cục:signal Nhấp đúp để chỉnh sửa
   document.addEventListener('dblclick', function(e) {
     var sum = e.target.closest('.we-signal-summary');
     var sc = e.target.closest('.we-signal-scope');
@@ -3851,14 +3851,14 @@ window.WORLD_ENGINE_UI = (function() {
     };
   });
 
-  // ========== 推演 UI 状态切换 ==========
+  // ========== suy diễn UI Chuyển đổi trạng thái ==========
   function setEvolvingUI(active, scope) {
-    // 只置标志，绝不在这里调 refresh()：bindEvents() 每次刷新都会调用本函数，
-    // 一旦回头再 refresh 就会 setEvolvingUI→refresh→bindEvents→setEvolvingUI 无限递归卡死。
-    // 显示哪份由 getActiveInjected 守卫 + _evolvingScope 负责，刷新由调用方在外面做。
+    // Chỉ đặt cờ, tuyệt đối không gọi ở đây refresh()：bindEvents() Mỗi lần làm mới đều sẽ gọi hàm này,
+    // một khi quay lại refresh sẽ setEvolvingUI→refresh→bindEvents→setEvolvingUI đệ quy vô hạn gây treo.
+    // Hiển thị bản nào do getActiveInjected thủ vệ/canh giữ + _evolvingScope chịu trách nhiệm, việc làm mới do bên gọi thực hiện ở bên ngoài.
     _evolving = !!active;
     if (active && scope) _evolvingScope = scope;
-    // 悬浮球卫星按钮：推演中禁用 前进/重新、启用 停止；空闲反之
+    // Nút vệ tinh bóng nổi: vô hiệu hoá khi đang suy diễn Tiến lên/Làm lại, kích hoạt Dừng; rảnh rỗi thì ngược lại
     const fwd = document.getElementById('we-sat-forward');
     const redo = document.getElementById('we-sat-redo');
     const ab = document.getElementById('we-sat-abort');
@@ -3878,20 +3878,20 @@ window.WORLD_ENGINE_UI = (function() {
     _injectedScope = scope === 'checkpoint' ? 'checkpoint' : 'state';
   }
 
-  // 手动推演（供悬浮球卫星按钮调用）：显式指定基底，不看 isNewRound。
-  //   重新推进 → 喂存档点 B（mode 'redo'），面板显示存档点；
-  //   向前推进 → 喂当前状态 A（mode 'forward'），面板显示当前状态。
+  // Suy diễn thủ công (dành cho nút vệ tinh bóng nổi gọi): chỉ định rõ cơ sở, không xem isNewRound。
+  //   Thúc đẩy lại → Nạp điểm lưu B（mode 'redo'），bảng điều khiển hiển thị điểm lưu;
+  //   Thúc đẩy về phía trước → Nạp trạng thái hiện tại A（mode 'forward'），bảng điều khiển hiển thị trạng thái hiện tại.
   async function runManualEvolve(mode, scope) {
     if (isEvolving) return;
     if (evolution.isRunning?.()) {
-      if (window.__WE_SetExternalStatus) window.__WE_SetExternalStatus('已有推演进行中...');
-      showToast('已有推演进行中，请稍候');
+      if (window.__WE_SetExternalStatus) window.__WE_SetExternalStatus('đã có suy diễn đang chạy...');
+      showToast('Đã có suy diễn đang chạy, vui lòng đợi');
       return;
     }
     isEvolving = true;
     setEvolvingUI(true, scope);
     refresh(true);
-    if (window.__WE_SetExternalStatus) window.__WE_SetExternalStatus('推演中...');
+    if (window.__WE_SetExternalStatus) window.__WE_SetExternalStatus('đang suy diễn...');
     try {
       const ctx = SillyTavern.getContext();
       const s = core.loadState();
@@ -3899,7 +3899,7 @@ window.WORLD_ENGINE_UI = (function() {
       const lastMsg = chat[chat.length - 1];
       const userMsg = lastMsg?.is_user ? (lastMsg.mes || '') : '';
       const aiMsg = !lastMsg?.is_user ? (lastMsg?.mes || '') : '';
-      // 读取轮数：手动/时间模式 → min(自上次推演经过轮数, 上限X)；按轮模式 → a（≤X）。start 做负数保护。
+      // Đọc số vòng: thủ công/Chế độ thời gian → min(Số vòng đã qua kể từ lần suy diễn trước, Giới hạn trên X)；Chế độ theo vòng → a（≤X）。start Bảo vệ số âm.
       const st = window.WORLD_ENGINE_API ? window.WORLD_ENGINE_API.getSettings(true) : {};
       let rounds;
       if (st.evolveMode === 'manual' || st.evolveMode === 'time') {
@@ -3917,17 +3917,17 @@ window.WORLD_ENGINE_UI = (function() {
       }
       const start = Math.max(0, chat.length - rounds * 2);
       const dialogueText = chat.slice(start)
-        .map(m => (m.is_user ? '用户' : 'AI') + '：' + core.filterDialogue((m.mes || '').trim(), st))
+        .map(m => (m.is_user ? 'người dùng' : 'AI') + '：' + core.filterDialogue((m.mes || '').trim(), st))
         .filter(line => line.length > 3)
         .join('\n');
       const ok = await evolution.evolve(s, userMsg, aiMsg, { mode, dialogueText });
       if (ok && window.WORLD_ENGINE_LEDGER) window.WORLD_ENGINE_LEDGER.recordChanges(s);
       if (ok && window.WORLD_ENGINE?.applyInjection) window.WORLD_ENGINE.applyInjection();
       const reason = !ok && evolution.getLastError ? evolution.getLastError() : '';
-      if (window.__WE_SetExternalStatus) window.__WE_SetExternalStatus(ok ? '推演完成' : (reason ? '推演失败：' + reason : '推演失败'), !ok);
-      if (ok) showToast('推演完成');
+      if (window.__WE_SetExternalStatus) window.__WE_SetExternalStatus(ok ? 'suy diễn hoàn tất' : (reason ? 'Suy diễn thất bại:' + reason : 'suy diễn thất bại'), !ok);
+      if (ok) showToast('suy diễn hoàn tất');
     } catch(e) {
-      if (window.__WE_SetExternalStatus) window.__WE_SetExternalStatus('推演失败: ' + e.message, true);
+      if (window.__WE_SetExternalStatus) window.__WE_SetExternalStatus('suy diễn thất bại: ' + e.message, true);
       showToast('' + e.message, true);
     }
     isEvolving = false;
@@ -3935,24 +3935,24 @@ window.WORLD_ENGINE_UI = (function() {
     refresh();
   }
 
-  // 批量「重填世界推演」：清空当前世界状态，从第 1 个 AI 楼层分批推到指定楼层。
+  // Hàng loạt "backfill suy diễn thế giới": xoá trạng thái thế giới hiện tại, từ tầng thứ 1 cái AI chia lô suy diễn đến tầng chỉ định.
   async function runBackfill() {
-    if (isEvolving) { showToast('已有推演进行中，请稍候'); return; }
-    if (evolution.isRunning?.()) { showToast('已有推演进行中，请稍候'); return; }
+    if (isEvolving) { showToast('Đã có suy diễn đang chạy, vui lòng đợi'); return; }
+    if (evolution.isRunning?.()) { showToast('Đã có suy diễn đang chạy, vui lòng đợi'); return; }
 
     const st = window.WORLD_ENGINE_API ? window.WORLD_ENGINE_API.getSettings(true) : {};
     const batchSize = Math.max(1, parseInt(st.backfillBatchSize) || 1);
     const retries = Math.max(0, parseInt(st.backfillRetries) || 0);
     let endLayer = Math.max(0, parseInt(st.backfillEndLayer) || 0);
 
-    // 统计当前 AI 楼层数，给出确认信息
+    // Thống kê hiện tại AI số tầng, đưa ra thông báo xác nhận
     let aiCount = 0;
     try {
       const ctx = SillyTavern.getContext();
       const chat = (ctx && ctx.chat) || [];
       for (const m of chat) if (m && !m.is_user && String(m.mes || '').trim()) aiCount++;
     } catch (e) {}
-    if (!aiCount) { showToast('当前聊天没有可推演的 AI 楼层', true); return; }
+    if (!aiCount) { showToast('Trò chuyện hiện tại không có gì để suy diễn AI tầng/lượt chat', true); return; }
     const effectiveEnd = (endLayer > 0 && endLayer <= aiCount) ? endLayer : aiCount;
     const totalBatches = Math.max(1, Math.ceil(effectiveEnd / batchSize));
 
@@ -3960,67 +3960,67 @@ window.WORLD_ENGINE_UI = (function() {
     const setBfStatus = (t) => { if (statusEl) statusEl.textContent = t; };
 
     if (!confirm(
-      `「重填世界推演」将清空当前世界状态，从第 1 个 AI 楼层重新推演到第 ${effectiveEnd} 层，` +
-      `共约 ${totalBatches} 批、每批最多重试 ${retries} 次。\n` +
-      `开始前会自动存一份备份快照。\n确定推倒重来？`
+      `「backfill suy diễn thế giới" sẽ xoá trạng thái thế giới hiện tại, từ tầng thứ 1 cái AI suy diễn lại đến tầng thứ ${effectiveEnd} ,` +
+      `tổng cộng khoảng ${totalBatches} lô, mỗi lô thử lại tối đa ${retries} lần.\n` +
+      `Trước khi bắt đầu sẽ tự động lưu một bản sao lưu nhanh.\n Xác nhận xoá hết làm lại?`
     )) return;
 
-    // 回填前自动备份（chatcache 不可用则静默跳过）
+    // tự động sao lưu trước khi backfill (chatcache không khả dụng thì âm thầm bỏ qua)
     try {
       const cc = window.WORLD_ENGINE_CHATCACHE;
       if (cc && cc.createSnapshot) {
-        const snap = cc.createSnapshot('回填前自动备份');
-        if (snap) showToast('已存回填前备份快照');
+        const snap = cc.createSnapshot('tự động sao lưu trước khi backfill');
+        if (snap) showToast('đã lưu snapshot sao lưu trước khi backfill');
       }
-    } catch (e) { console.warn('[世界引擎] 回填前备份失败（不影响回填）', e); }
+    } catch (e) { console.warn('[World Engine] sao lưu trước khi backfill thất bại (không ảnh hưởng backfill)', e); }
 
     isEvolving = true;
     setEvolvingUI(true, 'state');
     refresh(true);
-    if (window.__WE_SetExternalStatus) window.__WE_SetExternalStatus('回填中...');
-    setBfStatus('开始回填...');
+    if (window.__WE_SetExternalStatus) window.__WE_SetExternalStatus('đang backfill...');
+    setBfStatus('bắt đầu backfill...');
 
     try {
       const result = await evolution.backfillEvolve({
         batchSize, retries, endLayer,
         onProgress: (p) => {
           if (p.phase === 'batch-start') {
-            setBfStatus(`第 ${p.batch}/${p.totalBatches} 批（第 ${p.layerFrom}-${p.layerTo} 层）推演中...`);
-            if (window.__WE_SetExternalStatus) window.__WE_SetExternalStatus(`回填中 ${p.batch}/${p.totalBatches}`);
+            setBfStatus(`Thứ  ${p.batch}/${p.totalBatches} lô (thứ ${p.layerFrom}-${p.layerTo} tầng) đang suy diễn...`);
+            if (window.__WE_SetExternalStatus) window.__WE_SetExternalStatus(`đang backfill ${p.batch}/${p.totalBatches}`);
           } else if (p.phase === 'retry') {
-            setBfStatus(`第 ${p.batch}/${p.totalBatches} 批失败，重试 ${p.attempt}/${retries}...`);
-            if (window.__WE_SetExternalStatus) window.__WE_SetExternalStatus(`回填中 ${p.batch}/${p.totalBatches}`);
+            setBfStatus(`Thứ  ${p.batch}/${p.totalBatches} lô thất bại, thử lại ${p.attempt}/${retries}...`);
+            if (window.__WE_SetExternalStatus) window.__WE_SetExternalStatus(`đang backfill ${p.batch}/${p.totalBatches}`);
           } else if (p.phase === 'batch-done') {
-            setBfStatus(`第 ${p.batch}/${p.totalBatches} 批完成（已推进到第 ${p.round} 轮）`);
+            setBfStatus(`Thứ  ${p.batch}/${p.totalBatches} lô hoàn thành (đã thúc đẩy đến thứ ${p.round} vòng)`);
             refresh(true);
           }
         }
       });
 
       if (result.done) {
-        setBfStatus(`✅ 回填完成，共 ${result.completedBatches}/${result.totalBatches} 批`);
-        showToast(`回填完成，共 ${result.completedBatches} 批`);
-        if (window.__WE_SetExternalStatus) window.__WE_SetExternalStatus('回填完成');
+        setBfStatus(`✅ backfill hoàn tất, tổng cộng ${result.completedBatches}/${result.totalBatches} lô`);
+        showToast(`backfill hoàn tất, tổng cộng ${result.completedBatches} lô`);
+        if (window.__WE_SetExternalStatus) window.__WE_SetExternalStatus('backfill hoàn tất');
         if (window.WORLD_ENGINE?.applyInjection) window.WORLD_ENGINE.applyInjection();
       } else if (result.reason === 'aborted') {
-        setBfStatus(`🛑 已中止，完成 ${result.completedBatches}/${result.totalBatches} 批`);
-        showToast(`回填已中止（完成 ${result.completedBatches} 批）`);
-        if (window.__WE_SetExternalStatus) window.__WE_SetExternalStatus('回填已中止');
+        setBfStatus(`🛑 đã huỷ bỏ, hoàn thành ${result.completedBatches}/${result.totalBatches} lô`);
+        showToast(`backfill đã huỷ bỏ (hoàn thành ${result.completedBatches} lô)`);
+        if (window.__WE_SetExternalStatus) window.__WE_SetExternalStatus('backfill đã huỷ bỏ');
         if (window.WORLD_ENGINE?.applyInjection) window.WORLD_ENGINE.applyInjection();
       } else if (result.reason === 'no-ai-layers') {
-        setBfStatus('当前聊天没有可推演的 AI 楼层');
-        showToast('当前聊天没有可推演的 AI 楼层', true);
+        setBfStatus('Trò chuyện hiện tại không có gì để suy diễn AI tầng/lượt chat');
+        showToast('Trò chuyện hiện tại không có gì để suy diễn AI tầng/lượt chat', true);
       } else if (result.reason === 'busy') {
-        showToast('已有推演进行中，请稍候', true);
+        showToast('Đã có suy diễn đang chạy, vui lòng đợi', true);
       } else {
-        setBfStatus(`❌ 第 ${result.failedAt || '?'} 批失败，已停止（完成 ${result.completedBatches || 0} 批）`);
-        showToast(`回填在第 ${result.failedAt || '?'} 批失败已停止`, true);
-        if (window.__WE_SetExternalStatus) window.__WE_SetExternalStatus('回填失败', true);
+        setBfStatus(`❌ Thứ  ${result.failedAt || '?'} lô thất bại, đã dừng (hoàn thành ${result.completedBatches || 0} lô)`);
+        showToast(`backfill ở thứ ${result.failedAt || '?'} lô thất bại đã dừng`, true);
+        if (window.__WE_SetExternalStatus) window.__WE_SetExternalStatus('backfill thất bại', true);
         if (window.WORLD_ENGINE?.applyInjection) window.WORLD_ENGINE.applyInjection();
       }
     } catch (e) {
-      setBfStatus('❌ 回填异常: ' + (e && e.message || e));
-      showToast('回填异常: ' + (e && e.message || e), true);
+      setBfStatus('❌ backfill bất thường: ' + (e && e.message || e));
+      showToast('backfill bất thường: ' + (e && e.message || e), true);
     } finally {
       isEvolving = false;
       setEvolvingUI(false);
@@ -4028,7 +4028,7 @@ window.WORLD_ENGINE_UI = (function() {
     }
   }
 
-  // ========== 世界引擎悬浮球 ==========
+  // ========== Bóng nổi World Engine ==========
   let inputButtonObserver = null;
   let inputButtonRetryTimer = null;
   const WE_BALL_POS_KEY = 'we-ball-pos';
@@ -4049,10 +4049,10 @@ window.WORLD_ENGINE_UI = (function() {
     try { localStorage.setItem(WE_BALL_POS_KEY, JSON.stringify({ left, top, tucked: !!tucked, side: side || null })); } catch (_) {}
   }
 
-  // 侧边吸附参数
-  const WE_TUCK_EDGE = 28;    // 距边缘多近算「吸附」
-  const WE_TUCK_HANDLE = 15;  // 缩进后露出的小条宽度
-  const WE_TUCK_INSET = 8;    // 拉出后距边缘的留白
+  // Tham số hít cạnh bên
+  const WE_TUCK_EDGE = 28;    // Khoảng cách đến cạnh bao nhiêu thì tính là "hít"
+  const WE_TUCK_HANDLE = 15;  // Chiều rộng dải nhỏ lộ ra sau khi thu vào
+  const WE_TUCK_INSET = 8;    // Khoảng trống đến cạnh sau khi kéo ra
 
   function applyBallTuck(ball, side) {
     const vw = window.innerWidth;
@@ -4081,15 +4081,15 @@ window.WORLD_ENGINE_UI = (function() {
     const size = ball.offsetWidth || 52;
     let pos = loadBallPos();
     if (!pos) pos = { left: vw - size - 44, top: vh - size - 90 };
-    // 钳制进可视区域，避免拖出屏幕后找不到
+    // Kẹp vào khu vực hiển thị, tránh kéo ra khỏi màn hình rồi không tìm thấy
     pos.left = Math.max(4, Math.min(pos.left, vw - size - 4));
     pos.top = Math.max(4, Math.min(pos.top, vh - size - 4));
     ball.style.top = pos.top + 'px';
     ball.style.right = 'auto';
     ball.style.bottom = 'auto';
     if (pos.tucked && (pos.side === 'left' || pos.side === 'right')) {
-      ball.style.left = pos.left + 'px';   // 记录的是「拉出后」的位置
-      applyBallTuck(ball, pos.side);        // 视觉上缩到边缘
+      ball.style.left = pos.left + 'px';   // Ghi lại vị trí "sau khi kéo ra"
+      applyBallTuck(ball, pos.side);        // Thu vào cạnh về mặt thị giác
     } else {
       ball.classList.remove('we-ball-tucked', 'we-ball-tucked-left', 'we-ball-tucked-right');
       ball.style.left = pos.left + 'px';
@@ -4134,10 +4134,10 @@ window.WORLD_ENGINE_UI = (function() {
       const vw = window.innerWidth, size = ball.offsetWidth || 52;
       const left = parseFloat(ball.style.left) || 0;
       const top = parseFloat(ball.style.top) || 0;
-      if (left <= WE_TUCK_EDGE) {                          // 贴左缘 → 缩进左侧
+      if (left <= WE_TUCK_EDGE) {                          // Sát mép trái → Thu vào bên trái
         saveBallPos(WE_TUCK_INSET, top, true, 'left');
         applyBallTuck(ball, 'left');
-      } else if (left >= vw - size - WE_TUCK_EDGE) {        // 贴右缘 → 缩进右侧
+      } else if (left >= vw - size - WE_TUCK_EDGE) {        // Sát mép phải → Thu vào bên phải
         saveBallPos(vw - size - WE_TUCK_INSET, top, true, 'right');
         applyBallTuck(ball, 'right');
       } else {
@@ -4146,7 +4146,7 @@ window.WORLD_ENGINE_UI = (function() {
     };
     ball.addEventListener('mousedown', onDown);
     ball.addEventListener('touchstart', onDown, { passive: true });
-    // 点击处理：拖动后不算点击；已缩进则「拉出来」而非开面板
+    // Xử lý click: sau khi kéo không tính là click; đã thu vào thì "kéo ra" chứ không mở bảng điều khiển
     ball.addEventListener('click', (e) => {
       if (moved) { e.preventDefault(); e.stopImmediatePropagation(); moved = false; return; }
       if (ball.classList.contains('we-ball-tucked')) {
@@ -4167,13 +4167,13 @@ window.WORLD_ENGINE_UI = (function() {
     inputButtonObserver.observe(document.body, { childList: true, subtree: true });
   }
 
-  // 解析推演状态文本 → 切换地球形态 + 进度环
+  // Phân tích văn bản trạng thái suy diễn → Chuyển đổi hình thái trái đất + Vòng tiến độ
   function setBallState(text, isError) {
     const ball = document.getElementById('we-input-btn');
     if (!ball) return;
     const ring = ball.querySelector('.we-ball-ring');
     const badge = ball.querySelector('.we-ball-badge');
-    // 悬浮球不显示状态文字（文字走屏幕顶部横幅）
+    // Bóng nổi không hiển thị chữ trạng thái (chữ chạy banner trên cùng màn hình)
 
     ball.classList.remove('we-ball-evolving', 'we-ball-success', 'we-ball-fail');
     clearTimeout(_ballStatusTimer);
@@ -4185,8 +4185,8 @@ window.WORLD_ENGINE_UI = (function() {
       if (ring) ring.style.setProperty('--we-ring-pct', '0deg');
     };
 
-    if (/回填中/.test(text)) {
-      // 批量回填：地球持续旋转 + 右下角显示「批/总」进度
+    if (/đang backfill/.test(text)) {
+      // Backfill hàng loạt: trái đất tiếp tục xoay + Góc dưới bên phải hiển thị tiến độ "lô/tổng"
       ball.classList.add('we-ball-evolving');
       if (badge) badge.textContent = '';
       const mb = /(\d+)\s*\/\s*(\d+)/.exec(text);
@@ -4199,23 +4199,23 @@ window.WORLD_ENGINE_UI = (function() {
       } else {
         clearCount();
       }
-    } else if (/推演中/.test(text)) {
+    } else if (/đang suy diễn/.test(text)) {
       ball.classList.add('we-ball-evolving');
       if (badge) badge.textContent = '';
-      clearCount(); // 推演进行中不展示轮次计数，避免残留旧的 N/X
-    } else if (isError || /失败|异常/.test(text)) {
+      clearCount(); // Đang suy diễn không hiển thị đếm vòng, tránh sót lại cái cũ N/X
+    } else if (isError || /thất bại|Bất thường/.test(text)) {
       ball.classList.add('we-ball-fail');
       if (badge) badge.textContent = '✕';
       _ballStatusTimer = setTimeout(() => clearBallBadge(), 6000);
-    } else if (/完成/.test(text)) {
+    } else if (/hoàn thành/.test(text)) {
       ball.classList.add('we-ball-success');
       if (badge) badge.textContent = '✓';
-      clearCount(); // 推演完成 → 计数已归零，清掉进度环与数字
+      clearCount(); // suy diễn hoàn tất → Đếm đã về 0, xoá vòng tiến độ và số
       _ballStatusTimer = setTimeout(() => clearBallBadge(), 4000);
     }
 
-    // 解析「第 N/X 轮」→ 进度环 + 数字（仅未到推演的提示态才显示）
-    const m = /第\s*(\d+)\s*\/\s*(\d+)\s*轮/.exec(text || '');
+    // Phân tích "vòng N/X thứ"→ Vòng tiến độ + Số (chỉ hiển thị ở trạng thái nhắc nhở chưa đến suy diễn)
+    const m = /Thứ \s*(\d+)\s*\/\s*(\d+)\s* vòng/.exec(text || '');
     if (ring && m) {
       const cur = Number(m[1]), total = Number(m[2]) || 1;
       const pct = Math.max(0, Math.min(1, cur / total));
@@ -4233,7 +4233,7 @@ window.WORLD_ENGINE_UI = (function() {
     if (badge) badge.textContent = '';
   }
 
-  // 屏幕正上方状态横幅：显示约 5s 后淡出
+  // Banner trạng thái chính giữa trên cùng màn hình: hiển thị khoảng 5s rồi mờ dần
   let _topStatusTimer = null;
   function showTopStatus(text, isError) {
     if (!document.body || !text) return;
@@ -4250,7 +4250,7 @@ window.WORLD_ENGINE_UI = (function() {
     _topStatusTimer = setTimeout(() => { el.classList.remove('show'); }, 5000);
   }
 
-  // 给悬浮球的三颗卫星按钮绑事件；阻止冒泡，避免触发拖拽 / 打开面板
+  // Gắn sự kiện cho ba nút vệ tinh của quả cầu lơ lửng; ngăn chặn nổi bọt, tránh kích hoạt kéo thả / Mở bảng điều khiển
   function wireSatellites(ball) {
     const wire = (id, fn) => {
       const el = ball.querySelector('#' + id);
@@ -4266,16 +4266,16 @@ window.WORLD_ENGINE_UI = (function() {
     };
     wire('we-sat-forward', () => runManualEvolve('forward', 'state'));
     wire('we-sat-redo', () => runManualEvolve('redo', 'checkpoint'));
-    wire('we-sat-abort', () => { evolution.abort(); showToast('已发送停止信号'); });
+    wire('we-sat-abort', () => { evolution.abort(); showToast('Đã gửi tín hiệu dừng'); });
 
-    // 「插头」总开关(球左侧第四卫星):一键联动 evolveMode + injectIntoPrompt
-    //   关闭态(插上)= evolveMode='manual'(不自动推演) + injectIntoPrompt=false(不注入)；
-    //   不新增设置字段:状态从这俩字段反推(`manual && inject===false` = 关)。
-    //   立即生效:切完调 applyInjection 让 inject 守卫(world-engine.js:148) 生效(关→unregister,开→重注入)。
-    //   持久化:走 persist 同模式(setKV 内联,见 ui.js:3393 persist 体),改的是已持久化字段。
-    //   manual 自带拦 pending autoEvolveTimer 能力(world-engine.js:282 守卫),无需额外 engineEnabled 守卫
-    //   (吸取 PR#26 隐患 A 教训:不靠 engineEnabled,靠 manual 自然拦 timer fire)。
-    //   不用 we-sat-off(wire 内会拦 we-sat-off 不可点);用 .on class 标关闭态,power 永远可点。
+    // 「Công tắc chính "Phích cắm"(Vệ tinh thứ tư bên trái quả cầu):Liên kết một chạm evolveMode + injectIntoPrompt
+    //   Trạng thái tắt(Cắm vào)= evolveMode='manual'(Không tự động suy diễn) + injectIntoPrompt=false(Không tiêm)；
+    //   Không thêm mới trường cài đặt:Trạng thái suy ngược từ hai trường này(`manual && inject===false` = Tắt)。
+    //   Có hiệu lực ngay:Chuyển xong gọi applyInjection Để inject thủ vệ/canh giữ(world-engine.js:148) Có hiệu lực(Tắt→unregister,Bật→Tiêm lại)。
+    //   Lưu trữ lâu dài:Chạy persist Cùng chế độ(setKV Nội tuyến,Xem ui.js:3393 persist Thân),Cái thay đổi là trường đã lưu trữ lâu dài.
+    //   manual Tự mang chặn pending autoEvolveTimer Khả năng(world-engine.js:282 thủ vệ/canh giữ),Không cần thêm engineEnabled thủ vệ/canh giữ
+    //   (Rút ra PR#26 Mối nguy ngầm A Bài học:Không dựa vào engineEnabled,Dựa vào manual Chặn tự nhiên timer fire)。
+    //   Không dùng we-sat-off(wire Bên trong sẽ chặn we-sat-off Không thể nhấp);Dùng .on class Đánh dấu trạng thái tắt,power Luôn có thể nhấp.
     const wapi = window.WORLD_ENGINE_API;
     const readSettings = () => (wapi && wapi.getSettings ? wapi.getSettings(true) : {}) || {};
     const isPowerOff = (s) => s.evolveMode === 'manual' && s.injectIntoPrompt === false;
@@ -4283,19 +4283,19 @@ window.WORLD_ENGINE_UI = (function() {
       const el = ball.querySelector('#we-sat-power');
       if (el) el.classList.toggle('on', isPowerOff(readSettings()));
     };
-    syncPowerState(); // 初始视觉态
+    syncPowerState(); // Trạng thái thị giác ban đầu
     wire('we-sat-power', () => {
-      const turnOff = !isPowerOff(readSettings()); // 切到对面
+      const turnOff = !isPowerOff(readSettings()); // Chuyển sang đối diện
       const setKV = (k, v) => {
         const c = wapi && wapi.getSettings ? wapi.getSettings(true) : {};
         window.WORLD_ENGINE_STORE.setItem('world_engine_settings', JSON.stringify({ ...c, [k]: v }));
         if (wapi && wapi.getSettings) wapi.getSettings(true);
       };
       setKV('evolveMode', turnOff ? 'manual' : 'auto');
-      setKV('injectIntoPrompt', !turnOff); // 关=false, 开=true
-      window.WORLD_ENGINE?.applyInjection?.(); // 立即重注入:关→unregisterInjection,开→重新注入
-      syncPowerState(); // 更新 .on 视觉态
-      showToast(turnOff ? '已关闭推演与注入' : '已开启推演与注入');
+      setKV('injectIntoPrompt', !turnOff); // Tắt=false, Bật=true
+      window.WORLD_ENGINE?.applyInjection?.(); // Tiêm lại ngay lập tức:Tắt→unregisterInjection,Bật→Tiêm lại
+      syncPowerState(); // Cập nhật .on Trạng thái thị giác
+      showToast(turnOff ? 'Đã tắt suy diễn và tiêm' : 'Đã bật suy diễn và tiêm');
       if (typeof _currentView !== 'undefined' && _currentView === 'settings') refresh();
     });
   }
@@ -4308,8 +4308,8 @@ window.WORLD_ENGINE_UI = (function() {
       btn = document.createElement('button');
       btn.id = 'we-input-btn';
       btn.type = 'button';
-      btn.title = '世界引擎';
-      btn.setAttribute('aria-label', '世界引擎');
+      btn.title = 'World Engine';
+      btn.setAttribute('aria-label', 'World Engine');
       btn.className = 'we-ball';
       btn.innerHTML =
         '<span class="we-ball-orbit"></span>' +
@@ -4318,10 +4318,10 @@ window.WORLD_ENGINE_UI = (function() {
         '<span class="we-ball-count"></span>' +
         '<span class="we-ball-badge"></span>' +
         '<span class="we-ball-tip"></span>' +
-        '<span class="we-sat we-sat-up" id="we-sat-forward" role="button" title="向前推进"><i class="fa-solid fa-forward"></i></span>' +
-        '<span class="we-sat we-sat-right we-sat-off" id="we-sat-abort" role="button" title="停止推演"><i class="fa-solid fa-stop"></i></span>' +
-        '<span class="we-sat we-sat-down" id="we-sat-redo" role="button" title="重新推进"><i class="fa-solid fa-rotate-right"></i></span>' +
-        '<span class="we-sat we-sat-left" id="we-sat-power" role="button" title="插上=关闭推演与注入 / 拔下=开启"><i class="fa-solid fa-power-off"></i></span>';
+        '<span class="we-sat we-sat-up" id="we-sat-forward" role="button" title="Thúc đẩy về phía trước"><i class="fa-solid fa-forward"></i></span>' +
+        '<span class="we-sat we-sat-right we-sat-off" id="we-sat-abort" role="button" title="Dừng suy diễn"><i class="fa-solid fa-stop"></i></span>' +
+        '<span class="we-sat we-sat-down" id="we-sat-redo" role="button" title="Thúc đẩy lại"><i class="fa-solid fa-rotate-right"></i></span>' +
+        '<span class="we-sat we-sat-left" id="we-sat-power" role="button" title="Cắm vào=Tắt suy diễn và tiêm / Rút ra=bật"><i class="fa-solid fa-power-off"></i></span>';
       btn.onclick = () => togglePanel();
       document.body.appendChild(btn);
       wireSatellites(btn);
@@ -4334,7 +4334,7 @@ window.WORLD_ENGINE_UI = (function() {
       applyBallPos(btn);
     }
 
-    // 兼容旧的外部状态接口：保留隐藏元素，转发到地球状态机
+    // Tương thích giao diện trạng thái bên ngoài cũ: giữ lại phần tử ẩn, chuyển tiếp đến máy trạng thái trái đất
     let statusIndicator = document.getElementById('we-external-status');
     if (!statusIndicator) {
       statusIndicator = document.createElement('span');
@@ -4347,8 +4347,8 @@ window.WORLD_ENGINE_UI = (function() {
       const el = document.getElementById('we-external-status');
       if (el) el.textContent = text;
       setBallState(text || '', !!isError);
-      // 进度类（第 N/X 轮/天、回填中 i/M）只在悬浮球上显示；其余状态走屏幕顶部横幅
-      if (text && !/第\s*\d+\s*\/\s*\d+\s*[轮天]/.test(text) && !/回填中/.test(text)) {
+      // Loại tiến độ (thứ N/X  vòng/ngày, đang backfill i/M）chỉ hiển thị trên bóng nổi; các trạng thái còn lại đi qua biểu ngữ trên cùng màn hình
+      if (text && !/Thứ \s*\d+\s*\/\s*\d+\s*[vòng ngày]/.test(text) && !/đang backfill/.test(text)) {
         showTopStatus(text, !!isError);
       }
     };
