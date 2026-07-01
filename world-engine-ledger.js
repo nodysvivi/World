@@ -4,7 +4,7 @@ window.WORLD_ENGINE_LEDGER = (function() {
   const MAX_LEDGER_ROUNDS = 20;
 
   const EVENT_TYPE_NAMES = { conflict: 'loại xung đột', progress: 'loại thúc đẩy' };
-  const TERMINAL_STAGES = new Set(['đã hoàn thành', 'đã thất bại', 'đã tan biến', 'đã bùng phát']);
+  const TERMINAL_STAGES = new Set(['Đã hoàn thành', 'Đã thất bại', 'Đã tan biến', 'Đã bùng phát']);
 
   /**
    * So sánh điểm lưu (trước suy diễn) và trạng thái hiện tại (sau suy diễn), ghi lại Lv3/4 thay đổi.

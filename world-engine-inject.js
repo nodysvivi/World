@@ -40,31 +40,31 @@ window.WORLD_ENGINE_INJECT = (function() {
 
   // Lời phán vận thế thế lực: dịch từ vận thế thành "thế lực này hiện tại đang ở hoàn cảnh nào, nội bộ có đoàn kết hay không"
   const STATUS_VERDICT = {
-    "cực thịnh": 'Tiền lương dồi dào, nhân thủ cực thịnh, nội bộ trên dưới một lòng, vững như khối sắt, hành sự mang theo sự tự tin và phô trương không thể nghi ngờ',
-    "vững chắc": 'Vận hành như thường, nền tảng vững vàng, không có nội ưu ngoại hoạn rõ ràng, tiến hành các công việc đã định theo từng bước',
-    "chèn ép lẫn nhau": 'Bề ngoài vẫn chống đỡ, nhưng bên trong phe phái chèn ép lẫn nhau, cốt lõi bất hòa, nhiều quyết sách bị đình trệ do nội đấu, tự cản trở lẫn nhau',
-    "khốn đốn": 'Tài nguyên cạn kiệt hoặc bị bên ngoài phong tỏa, đang cắn răng chống đỡ, khắp nơi thiếu hụt, không chịu nổi đả kích thêm nữa',
-    "suy tàn": 'Đã mất đi trụ cột then chốt, địa bàn hoặc nhân vật trọng yếu, lòng người dao động, liên tục thất bại, đang từng bước trượt tới bờ vực tan rã',
-    "tan rã": 'Tồn tại trên danh nghĩa, chỉ còn cái vỏ rỗng, khó ra hiệu lệnh, chúng bạn xa lánh, có thể giải tán hoàn toàn bất cứ lúc nào',
+    "Cực thịnh": 'Tiền lương dồi dào, nhân thủ cực thịnh, nội bộ trên dưới một lòng, vững như khối sắt, hành sự mang theo sự tự tin và phô trương không thể nghi ngờ',
+    "Vững chắc": 'Vận hành như thường, nền tảng vững vàng, không có nội ưu ngoại hoạn rõ ràng, tiến hành các công việc đã định theo từng bước',
+    "Chèn ép lẫn nhau": 'Bề ngoài vẫn chống đỡ, nhưng bên trong phe phái chèn ép lẫn nhau, cốt lõi bất hòa, nhiều quyết sách bị đình trệ do nội đấu, tự cản trở lẫn nhau',
+    "Khốn đốn": 'Tài nguyên cạn kiệt hoặc bị bên ngoài phong tỏa, đang cắn răng chống đỡ, khắp nơi thiếu hụt, không chịu nổi đả kích thêm nữa',
+    "Suy tàn": 'Đã mất đi trụ cột then chốt, địa bàn hoặc nhân vật trọng yếu, lòng người dao động, liên tục thất bại, đang từng bước trượt tới bờ vực tan rã',
+    "Tan rã": 'Tồn tại trên danh nghĩa, chỉ còn cái vỏ rỗng, khó ra hiệu lệnh, chúng bạn xa lánh, có thể giải tán hoàn toàn bất cứ lúc nào',
   };
 
   // Lời phán quan hệ thế lực: dịch từ quan hệ thành "thế lực này đối với{{user}}khuynh hướng hành vi của"
   const RELATION_VERDICT = {
-    'huyết minh': 'với{{user}}Sinh tử có nhau, tin tưởng tuyệt đối, sẽ giúp đỡ bằng mọi giá, xem an nguy của đối phương như sự tồn vong của chính mình',
-    "đồng minh": 'với{{user}}Địa vị bình đẳng, hỗ trợ lẫn nhau, chủ động chi viện và chia sẻ tình báo trên lợi ích chung, nhưng mỗi bên đều có giới hạn riêng',
-    "thân thiện": 'công nhận{{user}}，Sẵn sàng ưu tiên hợp tác, tạo điều kiện, thể hiện thiện ý, nhưng chưa đến mức kết minh giao tâm',
-    "trung lập": 'đối với{{user}}Không thân không sơ, mọi việc hành sự theo lợi hại của bản thân, không có lập trường định sẵn',
-    "lạnh nhạt": 'đã chú ý tới{{user}}nhưng thiếu hứng thú, giữ khoảng cách, không muốn giao du sâu, tạm thời không có ý định hành động chủ động',
-    "thù địch": 'với{{user}}Công khai đối lập, sẽ gây áp lực, cản trở, làm khó dễ ở ngoài sáng, thậm chí tìm cơ hội xung đột trực diện',
-    "thù truyền kiếp": 'với{{user}}Không chết không thôi, nhất quyết phải diệt trừ cho bằng được, sẽ không từ thủ đoạn, liên tục tìm sơ hở để ra tay tàn độc',
+    'Huyết minh': 'với{{user}}Sinh tử có nhau, tin tưởng tuyệt đối, sẽ giúp đỡ bằng mọi giá, xem an nguy của đối phương như sự tồn vong của chính mình',
+    "Đồng minh": 'với{{user}}Địa vị bình đẳng, hỗ trợ lẫn nhau, chủ động chi viện và chia sẻ tình báo trên lợi ích chung, nhưng mỗi bên đều có giới hạn riêng',
+    "Thân thiện": 'công nhận{{user}}，Sẵn sàng ưu tiên hợp tác, tạo điều kiện, thể hiện thiện ý, nhưng chưa đến mức kết minh giao tâm',
+    "Trung lập": 'đối với{{user}}Không thân không sơ, mọi việc hành sự theo lợi hại của bản thân, không có lập trường định sẵn',
+    "Lạnh nhạt": 'đã chú ý tới{{user}}nhưng thiếu hứng thú, giữ khoảng cách, không muốn giao du sâu, tạm thời không có ý định hành động chủ động',
+    "Thù địch": 'với{{user}}Công khai đối lập, sẽ gây áp lực, cản trở, làm khó dễ ở ngoài sáng, thậm chí tìm cơ hội xung đột trực diện',
+    "Thù truyền kiếp": 'với{{user}}Không chết không thôi, nhất quyết phải diệt trừ cho bằng được, sẽ không từ thủ đoạn, liên tục tìm sơ hở để ra tay tàn độc',
   };
 
   // Lời phán khí hậu kinh tế: dịch từng từ khí hậu thành mô tả thị trường cho model văn bản chính xem
   const CLIMATE_VERDICT = {
-    "phồn vinh": 'Thị trường phồn thịnh, thương lộ thông suốt, trăm nghề hưng vượng, tiền hàng lưu chuyển thuận lợi, vật giá ổn định ở mức hơi cao',
-    "ổn định": 'Thị trường như thường, vật giá lên xuống tự nhiên theo mùa, không có biến động lớn',
-    "suy thoái": 'Thị trường tiêu điều, nhu cầu thu hẹp, thương hiệu liên tiếp phá sản, một số ít nhu yếu phẩm lại khan hiếm tăng giá',
-    "biến động": 'Trật tự kinh tế sắp sụp đổ, vật giá mất kiểm soát, thương lộ bị cản trở, lòng người hoang mang, trao đổi hàng hóa',
+    "Phồn vinh": 'Thị trường phồn thịnh, thương lộ thông suốt, trăm nghề hưng vượng, tiền hàng lưu chuyển thuận lợi, vật giá ổn định ở mức hơi cao',
+    "Ổn định": 'Thị trường như thường, vật giá lên xuống tự nhiên theo mùa, không có biến động lớn',
+    "Suy thoái": 'Thị trường tiêu điều, nhu cầu thu hẹp, thương hiệu liên tiếp phá sản, một số ít nhu yếu phẩm lại khan hiếm tăng giá',
+    "Biến động": 'Trật tự kinh tế sắp sụp đổ, vật giá mất kiểm soát, thương lộ bị cản trở, lòng người hoang mang, trao đổi hàng hóa',
   };
 
   function buildContext(worldState, tags) {
@@ -91,7 +91,7 @@ window.WORLD_ENGINE_INJECT = (function() {
     const factionsText = allFactions.length
       ? '\n' + allFactions.map(f => {
           const statusDesc = STATUS_VERDICT[f.status] || (f.status ? `đang ở trong 「${f.status}」」` : 'tình cảnh không rõ');
-          const relation = f.relation || 'trung lập';
+          const relation = f.relation || 'Trung lập';
           const relationDesc = RELATION_VERDICT[relation] || `đối với{{user}}có thái độ là 「${relation}」`;
           let s = `- ${f.name}trước mắt${statusDesc}；nó đối với{{user}}có thái độ là${relation}——${relationDesc}。`;
           if (f.scope) s += `phạm vi thế lực của nó bao phủ${f.scope}。`;
@@ -112,7 +112,7 @@ window.WORLD_ENGINE_INJECT = (function() {
     ).join('；') || 'không';
 
     // đại thế thiên hạ
-    const trendsText = (worldState.worldTrends || []).filter(t => t.status !== 'đã kết thúc').map(t =>
+    const trendsText = (worldState.worldTrends || []).filter(t => t.status !== 'Đã kết thúc').map(t =>
       `${t.name}（${t.scope || 'thiên hạ'}）：${t.description}`
     ).join('；') || 'không';
 
@@ -129,8 +129,8 @@ window.WORLD_ENGINE_INJECT = (function() {
     // tín hiệu kinh tế: tiêm toàn bộ
     const econ = worldState.economy || {};
     const signalsText = (econ.signals || []).map(s => `${s.summary}（${s.scope}）`).join('；');
-    const climate = econ.climate || 'ổn định';
-    const climateText = `thị trường${climate}，${CLIMATE_VERDICT[climate] || CLIMATE_VERDICT['ổn định']}`;
+    const climate = econ.climate || 'Ổn định';
+    const climateText = `thị trường${climate}，${CLIMATE_VERDICT[climate] || CLIMATE_VERDICT['Ổn định']}`;
     const econText = `${climateText}${signalsText ? '。tín hiệu:' + signalsText : ''}`;
 
     // sổ kẻ thù

@@ -3,20 +3,20 @@ window.WORLD_ENGINE_CORE = (function() {
   const STORAGE_PREFIX = 'world_engine_';
   const EVENT_TYPES = ['conflict', 'progress'];
   const EVENT_STAGE_ORDER = {
-    conflict: ['manh nha', 'ủ biến', 'cận kề'],
-    progress: ['chuẩn bị', 'thực thi', 'then chốt']
+    conflict: ['Manh nha', 'Ủ biến', 'Cận kề'],
+    progress: ['Chuẩn bị', 'Thực thi', 'then chốt']
   };
   const EVENT_STAGE_MAP = {
-    conflict: ['manh nha', 'ủ biến', 'cận kề', 'đã bùng phát', 'đã tan biến'],
-    progress: ['chuẩn bị', 'thực thi', 'then chốt', 'đã hoàn thành', 'đã thất bại']
+    conflict: ['Manh nha', 'Ủ biến', 'Cận kề', 'Đã bùng phát', 'Đã tan biến'],
+    progress: ['Chuẩn bị', 'Thực thi', 'then chốt', 'Đã hoàn thành', 'Đã thất bại']
   };
   const EVENT_SUCCESS_STAGE = {
-    conflict: 'đã bùng phát',
-    progress: 'đã hoàn thành'
+    conflict: 'Đã bùng phát',
+    progress: 'Đã hoàn thành'
   };
   const EVENT_TERMINAL_STAGES = {
-    conflict: ['đã bùng phát', 'đã tan biến'],
-    progress: ['đã hoàn thành', 'đã thất bại']
+    conflict: ['Đã bùng phát', 'Đã tan biến'],
+    progress: ['Đã hoàn thành', 'Đã thất bại']
   };
 
   function getDefaultState() {
@@ -35,7 +35,7 @@ window.WORLD_ENGINE_CORE = (function() {
         lastChange: ''
       },
       economy: {
-        climate: 'ổn định',
+        climate: 'Ổn định',
         signals: []
       },
       memories: [],
@@ -118,13 +118,13 @@ window.WORLD_ENGINE_CORE = (function() {
       }
     }
     state.factions = state.factions || [];
-    const FACTION_RELATIONS = ['huyết minh', 'đồng minh', 'thân thiện', 'trung lập', 'lạnh nhạt', 'thù địch', 'thù truyền kiếp'];
-    const FACTION_STATUSES = ['cực thịnh', 'vững chắc', 'chèn ép lẫn nhau', 'khốn đốn', 'suy tàn', 'tan rã'];
+    const FACTION_RELATIONS = ['Huyết minh', 'Đồng minh', 'Thân thiện', 'Trung lập', 'Lạnh nhạt', 'Thù địch', 'Thù truyền kiếp'];
+    const FACTION_STATUSES = ['Cực thịnh', 'Vững chắc', 'Chèn ép lẫn nhau', 'Khốn đốn', 'Suy tàn', 'Tan rã'];
     for (const f of state.factions) {
-      f.status = FACTION_STATUSES.includes(f.status) ? f.status : 'vững chắc';
-      // cấp 8→Di chuyển cấp 7: Của bản lưu cũ"căng thẳng"gộp vào"lạnh nhạt"
-      if (f.relation === 'căng thẳng') f.relation = 'lạnh nhạt';
-      f.relation = FACTION_RELATIONS.includes(f.relation) ? f.relation : 'trung lập';
+      f.status = FACTION_STATUSES.includes(f.status) ? f.status : 'Vững chắc';
+      // cấp 8→Di chuyển cấp 7: Của bản lưu cũ"căng thẳng"gộp vào"Lạnh nhạt"
+      if (f.relation === 'căng thẳng') f.relation = 'Lạnh nhạt';
+      f.relation = FACTION_RELATIONS.includes(f.relation) ? f.relation : 'Trung lập';
       f.scope = f.scope || '';
       if (!Array.isArray(f.powerPillars)) f.powerPillars = [];
       else f.powerPillars = f.powerPillars.map(p => {
@@ -152,7 +152,7 @@ window.WORLD_ENGINE_CORE = (function() {
       if (state.reputation[_dim] === 'có chút danh tiếng') state.reputation[_dim] = 'được kính trọng';
     }
     if (!state.reputation.lastChange) state.reputation.lastChange = '';
-    state.economy = state.economy || { climate: 'ổn định', signals: [] };
+    state.economy = state.economy || { climate: 'Ổn định', signals: [] };
     if (!state.economy.signals) state.economy.signals = [];
     state.enemies = state.enemies || [];
     state.influenceChain = Array.isArray(state.influenceChain) ? state.influenceChain : [];
@@ -512,11 +512,11 @@ window.WORLD_ENGINE_CORE = (function() {
 
   function addFaction(state, faction) {
     if (!state.factions) state.factions = [];
-    const FACTION_RELATIONS = ['huyết minh', 'đồng minh', 'thân thiện', 'trung lập', 'lạnh nhạt', 'thù địch', 'thù truyền kiếp'];
-    const FACTION_STATUSES = ['cực thịnh', 'vững chắc', 'chèn ép lẫn nhau', 'khốn đốn', 'suy tàn', 'tan rã'];
-    if (!FACTION_STATUSES.includes(faction.status)) faction.status = 'vững chắc';
-    if (faction.relation === 'căng thẳng') faction.relation = 'lạnh nhạt';
-    if (!FACTION_RELATIONS.includes(faction.relation)) faction.relation = 'trung lập';
+    const FACTION_RELATIONS = ['Huyết minh', 'Đồng minh', 'Thân thiện', 'Trung lập', 'Lạnh nhạt', 'Thù địch', 'Thù truyền kiếp'];
+    const FACTION_STATUSES = ['Cực thịnh', 'Vững chắc', 'Chèn ép lẫn nhau', 'Khốn đốn', 'Suy tàn', 'Tan rã'];
+    if (!FACTION_STATUSES.includes(faction.status)) faction.status = 'Vững chắc';
+    if (faction.relation === 'căng thẳng') faction.relation = 'Lạnh nhạt';
+    if (!FACTION_RELATIONS.includes(faction.relation)) faction.relation = 'Trung lập';
     faction.scope = faction.scope || '';
     if (!Array.isArray(faction.powerPillars)) faction.powerPillars = [];
     else faction.powerPillars = faction.powerPillars.map(p => {
@@ -537,13 +537,13 @@ window.WORLD_ENGINE_CORE = (function() {
   function addWorldTrend(state, trend) {
     if (!state.worldTrends) state.worldTrends = [];
     if (!trend || !trend.name) return;
-    trend.status = trend.status === 'đã kết thúc' ? 'đã kết thúc' : 'đang tiếp diễn';
+    trend.status = trend.status === 'Đã kết thúc' ? 'Đã kết thúc' : 'Đang tiếp diễn';
     trend.scope = trend.scope || 'thiên hạ';
     trend.description = trend.description || '';
     trend.source = trend.source || '';
     const idx = state.worldTrends.findIndex(existing => existing.name === trend.name);
     if (idx !== -1) {
-      if (state.worldTrends[idx].status === 'đã kết thúc') trend.status = 'đã kết thúc';
+      if (state.worldTrends[idx].status === 'Đã kết thúc') trend.status = 'Đã kết thúc';
       state.worldTrends[idx] = { ...state.worldTrends[idx], ...trend };
     } else {
       state.worldTrends.unshift(trend);

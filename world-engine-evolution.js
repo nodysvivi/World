@@ -5,20 +5,20 @@ window.WORLD_ENGINE_EVOLUTION = (function() {
 
   const EVENT_TYPES = ['conflict', 'progress'];
   const EVENT_STAGE_ORDER = {
-    conflict: ['manh nha', 'ủ biến', 'cận kề'],
-    progress: ['chuẩn bị', 'thực thi', 'then chốt/quan trọng']
+    conflict: ['Manh nha', 'Ủ biến', 'Cận kề'],
+    progress: ['Chuẩn bị', 'Thực thi', 'Then chốt/quan trọng']
   };
   const EVENT_FINAL_STAGE = {
-    conflict: 'đã bùng phát',
-    progress: 'đã hoàn thành'
+    conflict: 'Đã bùng phát',
+    progress: 'Đã hoàn thành'
   };
   const EVENT_TERMINAL_STAGES = {
-    conflict: ['đã bùng phát', 'đã tan biến'],
-    progress: ['đã hoàn thành', 'đã thất bại']
+    conflict: ['Đã bùng phát', 'Đã tan biến'],
+    progress: ['Đã hoàn thành', 'Đã thất bại']
   };
   const EVENT_STAGE_BASE = {
-    conflict: { 'manh nha': 95, 'ủ biến': 85, 'cận kề': 75 },
-    progress: { 'chuẩn bị': 75, 'thực thi': 85, 'then chốt/quan trọng': 95 }
+    conflict: { 'Manh nha': 95, 'Ủ biến': 85, 'Cận kề': 75 },
+    progress: { 'Chuẩn bị': 75, 'Thực thi': 85, 'Then chốt/quan trọng': 95 }
   };
   const WIND_DECAY = {
     announcement: { base: 10, grace: 4, linear: 3, quadratic: 1 },
@@ -194,7 +194,7 @@ nếu sự kiện có nhân chứng bí mật, bằng chứng ẩn, nhân vật 
         console.log('[World Engine] sự kiện đột phát khu vực đã tan biến (hết thời gian tiếp diễn):', title);
         return { triggered: false, injectPrompt: '', reason: 'expired' };
       }
-      // vẫn đang tiếp diễn, tiêm"đang tiếp diễn"nhắc nhở
+      // vẫn đang tiếp diễn, tiêm"Đang tiếp diễn"nhắc nhở
       return {
         triggered: true,
         ongoing: true,
@@ -314,8 +314,8 @@ nếu sự kiện có nhân chứng bí mật, bằng chứng ẩn, nhân vật 
 
   // ========== xúc xắc chuỗi sự kiện thúc đẩy (hệ thống hai loại bốn giai đoạn)==========
   // mỗi giai đoạn 9 ô, đầy 9 thăng cấp lên giai đoạn tiếp theo.
-  // conflict: manh nha→ủ biến→cận kề→đã bùng phát;API có thể phán định đã tan biến;level càng cao càng dễ thúc đẩy.
-  // progress: chuẩn bị→thực thi→then chốt/quan trọng→đã hoàn thành;API có thể phán định đã thất bại;level càng cao càng khó thúc đẩy.
+  // conflict: Manh nha→Ủ biến→Cận kề→Đã bùng phát;API có thể phán định đã tan biến;level càng cao càng dễ thúc đẩy.
+  // progress: Chuẩn bị→Thực thi→Then chốt/quan trọng→Đã hoàn thành;API có thể phán định đã thất bại;level càng cao càng khó thúc đẩy.
   // đình trệ hoàn toàn giao cho API kiểm soát, xúc xắc cục bộ không còn bỏ qua vòng
   function forceTriggerEvents(state) {
     const events = state.events || [];
@@ -448,39 +448,39 @@ mỗi mục bao gồm:
 - type: "conflict"/"progress"。conflict=chuỗi sự kiện loại xung đột,progress=chuỗi sự kiện loại thúc đẩy. Sự kiện mới bắt buộc phải điền; của sự kiện đã có type một khi đã xác định thì cấm thay đổi, khi cập nhật sự kiện cùng tên phải tiếp tục sử dụng hiện tại type。
 - level: 1-4。conflict biểu thị mức độ xung đột/thế năng mất kiểm soát,Lv càng cao càng dễ thăng cấp;progress biểu thị quy mô sự việc/độ khó hoàn thành,Lv càng cao càng khó hoàn thành.
 - stage: theo type sử dụng các giai đoạn khác nhau:
-  - conflict chỉ có thể sử dụng "manh nha"/"ủ biến"/"cận kề"/"đã bùng phát"/"đã tan biến"。
-    - manh nha: xung đột vừa xuất hiện dấu hiệu, chỉ có số ít người nhận ra, chưa hình thành áp lực công khai.
-    - ủ biến: mâu thuẫn bắt đầu lan rộng, tổ chức, nhân lực, tin đồn hoặc động cơ trả thù đang tụ tập.
-    - cận kề: xung đột sắp dẫn đến hành động cụ thể hoặc ảnh hưởng trực tiếp, đã đến gần điểm bùng phát.
-    - đã bùng phát: kết quả xung đột đã định, truy sát, truy nã, ẩu đả, phong toả, thanh trừng v.v. đã xảy ra.
-    - đã tan biến: xung đột mất đi động cơ, người thực thi, tài nguyên, mục tiêu hoặc thời hiệu, đã xác định sẽ không tiếp tục bùng phát.
-    - thứ tự thúc đẩy bình thường cố định là: manh nha → ủ biến → cận kề → đã bùng phát; đã tan biến không phải là giai đoạn thúc đẩy bình thường, chỉ có thể do API phán đoán trực tiếp dựa trên nhân quả rõ ràng.
-  - progress chỉ có thể sử dụng "chuẩn bị"/"thực thi"/"then chốt/quan trọng"/"đã hoàn thành"/"đã thất bại"。
-    - chuẩn bị: tài nguyên, nhân lực, vật liệu, tình báo, tuyến đường hoặc kế hoạch đang được chuẩn bị, chưa triển khai toàn diện.
-    - thực thi: sự việc đã thực sự bắt đầu, có sự đầu tư liên tục, dấu vết hành động và tiêu hao theo giai đoạn.
+  - conflict chỉ có thể sử dụng "Manh nha"/"Ủ biến"/"Cận kề"/"Đã bùng phát"/"Đã tan biến"。
+    - Manh nha: xung đột vừa xuất hiện dấu hiệu, chỉ có số ít người nhận ra, chưa hình thành áp lực công khai.
+    - Ủ biến: mâu thuẫn bắt đầu lan rộng, tổ chức, nhân lực, tin đồn hoặc động cơ trả thù đang tụ tập.
+    - Cận kề: xung đột sắp dẫn đến hành động cụ thể hoặc ảnh hưởng trực tiếp, đã đến gần điểm bùng phát.
+    - Đã bùng phát: kết quả xung đột đã định, truy sát, truy nã, ẩu đả, phong toả, thanh trừng v.v. đã xảy ra.
+    - Đã tan biến: xung đột mất đi động cơ, người thực thi, tài nguyên, mục tiêu hoặc thời hiệu, đã xác định sẽ không tiếp tục bùng phát.
+    - thứ tự thúc đẩy bình thường cố định là: Manh nha → Ủ biến → Cận kề → Đã bùng phát; Đã tan biến không phải là giai đoạn thúc đẩy bình thường, chỉ có thể do API phán đoán trực tiếp dựa trên nhân quả rõ ràng.
+  - progress chỉ có thể sử dụng "Chuẩn bị"/"Thực thi"/"Then chốt/quan trọng"/"Đã hoàn thành"/"Đã thất bại"。
+    - Chuẩn bị: tài nguyên, nhân lực, vật liệu, tình báo, tuyến đường hoặc kế hoạch đang được chuẩn bị, chưa triển khai toàn diện.
+    - Thực thi: sự việc đã thực sự bắt đầu, có sự đầu tư liên tục, dấu vết hành động và tiêu hao theo giai đoạn.
     - then chốt: gần đến kết quả, dễ bị can thiệp, nẫng tay trên, đảo ngược, trì hoãn hoặc phải trả giá nhất.
-    - đã hoàn thành: thành quả đã định và tiến vào trạng thái thế giới, có thể tạo ra sự kiện tiếp theo, có tiếng đồn, thay đổi kinh tế hoặc thế lực.
-    - đã thất bại: sự việc do người thực thi rút lui, cạn kiệt tài nguyên, mất vĩnh viễn điều kiện then chốt, bị phản chế hợp lệ hoặc hết thời hiệu mà xác định không thể hoàn thành.
-    - thứ tự thúc đẩy bình thường cố định là: chuẩn bị → thực thi → then chốt/quan trọng → đã hoàn thành; đã thất bại không phải là giai đoạn thúc đẩy bình thường, chỉ có thể do API phán đoán trực tiếp dựa trên nhân quả rõ ràng.
+    - Đã hoàn thành: thành quả đã định và tiến vào trạng thái thế giới, có thể tạo ra sự kiện tiếp theo, có tiếng đồn, thay đổi kinh tế hoặc thế lực.
+    - Đã thất bại: sự việc do người thực thi rút lui, cạn kiệt tài nguyên, mất vĩnh viễn điều kiện then chốt, bị phản chế hợp lệ hoặc hết thời hiệu mà xác định không thể hoàn thành.
+    - thứ tự thúc đẩy bình thường cố định là: Chuẩn bị → Thực thi → Then chốt/quan trọng → Đã hoàn thành; Đã thất bại không phải là giai đoạn thúc đẩy bình thường, chỉ có thể do API phán đoán trực tiếp dựa trên nhân quả rõ ràng.
 - stageRound: tiến độ trong giai đoạn hiện tại 1-8。giai đoạn không phải kết cục viết 9 sẽ được cục bộ tự động thăng cấp; tất cả các giai đoạn kết cục sẽ được cục bộ khoá thành 9/9。
 - desc: mô tả sự kiện
 - stall: true/false（true biểu thị sự kiện tạm thời đình trệ/bị cản trở, nhưng tương lai vẫn có thể khôi phục; chỉ dùng làm đánh dấu, không thay đổi type hoặc stage；lý do đình trệ và điều kiện khôi phục ghi vào desc）
 
 ### đình trệ chuỗi sự kiện và phán đoán kết cục
 - đình trệ không phải là kết cục. Chỉ cần vẫn tồn tại điều kiện khôi phục hợp lý, thì cài đặt stall=true，và giữ nguyên hiện tại stage。
-- conflict chỉ khi xung đột đã xác định mất đi khả năng tiếp tục bùng phát, mới có thể trực tiếp đem stage đánh dấu thành "đã tan biến"。
-- progress Chỉ khi sự việc đã được xác định là không thể tiếp tục hoặc không thể đạt được mục tiêu, mới có thể trực tiếp đem stage đánh dấu thành "đã thất bại"。
-- đánh dấu "đã tan biến"/"đã thất bại" khi,desc phải ghi rõ lý do cụ thể dẫn đến kết cục; không được phán định kết cục chỉ vì liên tục nhiều vòng không có tiến triển.
-- "đã bùng phát"/"đã tan biến"/"đã hoàn thành"/"đã thất bại" đều là kết cục, sau khi tiến vào không được khôi phục thành giai đoạn phi kết cục. Nếu cần khởi động lại, nên tạo chuỗi sự kiện mới.
+- conflict chỉ khi xung đột đã xác định mất đi khả năng tiếp tục bùng phát, mới có thể trực tiếp đem stage đánh dấu thành "Đã tan biến"。
+- progress Chỉ khi sự việc đã được xác định là không thể tiếp tục hoặc không thể đạt được mục tiêu, mới có thể trực tiếp đem stage đánh dấu thành "Đã thất bại"。
+- đánh dấu "Đã tan biến"/"Đã thất bại" khi,desc phải ghi rõ lý do cụ thể dẫn đến kết cục; không được phán định kết cục chỉ vì liên tục nhiều vòng không có tiến triển.
+- "Đã bùng phát"/"Đã tan biến"/"Đã hoàn thành"/"Đã thất bại" đều là kết cục, sau khi tiến vào không được khôi phục thành giai đoạn phi kết cục. Nếu cần khởi động lại, nên tạo chuỗi sự kiện mới.
 
 ### factions（mảng thế lực)
 mỗi mục bao gồm:
 - name: Tên thế lực (cùng tên thì ghi đè, tên mới thì thêm mới)
 - scope: Phạm vi địa lý mà thế lực trực tiếp kiểm soát hoặc có sức ảnh hưởng lớn
-- status: Vận thế tổng thể——"cực thịnh"/"vững chắc"/"chèn ép lẫn nhau"/"khốn đốn"/"suy tàn"/"tan rã"。
-  cực thịnh=Có tiền có người có thế, vững như bàn thạch; vững chắc=Hoạt động bình thường không có nguy cơ lớn; chèn ép lẫn nhau=Đấu tranh phe phái nội bộ, bộ khung vẫn chưa tan; khốn đốn=Tài nguyên cạn kiệt hoặc bị phong tỏa, cắn răng chống đỡ; suy tàn=Mất đi trụ cột/Địa bàn/nhân vật trọng yếu, trượt hướng tan rã; tan rã=Chỉ còn trên danh nghĩa, chỉ chờ xác nhận kết cục.
-- relation: Thế lực này đối với{{user}}thái độ, bảy cấp (lấy"trung lập"làm chính giữa, chỉ có thể lấy bảy giá trị này)——"huyết minh"/"đồng minh"/"thân thiện"/"trung lập"/"lạnh nhạt"/"thù địch"/"thù truyền kiếp"。
-  huyết minh=Tuyệt đối tin tưởng, sinh tử có nhau; đồng minh=Địa vị bình đẳng, hỗ trợ lẫn nhau; thân thiện=Đồng tình{{user}}，Ưu tiên hợp tác; trung lập=Không quan tâm không bài xích; lạnh nhạt=Đã chú ý tới nhưng không định hành động; thù địch=Công khai đối kháng; thù truyền kiếp=Không chết không thôi.
+- status: Vận thế tổng thể——"Cực thịnh"/"Vững chắc"/"Chèn ép lẫn nhau"/"Khốn đốn"/"Suy tàn"/"Tan rã"。
+  Cực thịnh=Có tiền có người có thế, vững như bàn thạch; Vững chắc=Hoạt động bình thường không có nguy cơ lớn; Chèn ép lẫn nhau=Đấu tranh phe phái nội bộ, bộ khung vẫn chưa tan; Khốn đốn=Tài nguyên cạn kiệt hoặc bị phong tỏa, cắn răng chống đỡ; Suy tàn=Mất đi trụ cột/Địa bàn/nhân vật trọng yếu, trượt hướng tan rã; Tan rã=Chỉ còn trên danh nghĩa, chỉ chờ xác nhận kết cục.
+- relation: Thế lực này đối với{{user}}thái độ, bảy cấp (lấy"Trung lập"làm chính giữa, chỉ có thể lấy bảy giá trị này)——"Huyết minh"/"Đồng minh"/"Thân thiện"/"Trung lập"/"Lạnh nhạt"/"Thù địch"/"Thù truyền kiếp"。
+  Huyết minh=Tuyệt đối tin tưởng, sinh tử có nhau; Đồng minh=Địa vị bình đẳng, hỗ trợ lẫn nhau; Thân thiện=Đồng tình{{user}}，Ưu tiên hợp tác; Trung lập=Không quan tâm không bài xích; Lạnh nhạt=Đã chú ý tới nhưng không định hành động; Thù địch=Công khai đối kháng; Thù truyền kiếp=Không chết không thôi.
 - currentGoal: Văn bản mục tiêu hiện tại
 - core_person: Tên nhân vật trọng yếu
 - powerPillars: Trụ cột quyền lực mà thế lực này hiện có, tối đa 3 cái, mỗi cái là 1-4 chuỗi tên chữ (ví dụ"Răn đe vũ lực"/"Mối quan hệ quan trường"/"Hỗ trợ tài chính"）。Chỉ những trụ cột vững chắc và có sức mạnh thực tế mới được liệt kê; những trụ cột đã sụp đổ hoặc mất hiệu lực không được giữ lại. Trường này chỉ biểu thị trụ cột hiện tại, không bao gồm lịch sử.API bắt buộc trong desc hoặc influenceChain giải thích sự thay đổi trụ cột.
@@ -490,7 +490,7 @@ mỗi mục bao gồm:
 mỗi mục bao gồm:
 - name: Tên đại thế (trùng tên ghi đè cập nhật, tên mới thêm mới)
 - scope: Phạm vi ảnh hưởng thực tế
-- status: "đang tiếp diễn"/"đã kết thúc"
+- status: "Đang tiếp diễn"/"Đã kết thúc"
 - description: Cục diện hiện tại và cách nó đang ràng buộc hành động của thế giới
 - source: Nguồn gốc rõ ràng hình thành đại thế này
 
@@ -521,7 +521,7 @@ mỗi mục bao gồm:
 - quietRounds là trường nội bộ cục bộ, cấm xuất hoặc sửa đổi.
 
 ### economy（đối tượng kinh tế)
-- climate: khí hậu kinh tế — Nhiệt độ kinh tế khu vực hiện tại:"phồn vinh"/"ổn định"/"suy thoái"/"biến động"
+- climate: khí hậu kinh tế — Nhiệt độ kinh tế khu vực hiện tại:"Phồn vinh"/"Ổn định"/"Suy thoái"/"Biến động"
 - signals: Mảng tín hiệu thị trường. Mỗi mục { summary: "Một câu mô tả thay đổi và ảnh hưởng", scope: "Phạm vi địa lý ảnh hưởng (tên khu vực cụ thể)" }。Ghi lại những thay đổi kinh tế đáng chú ý trên thị trường hiện tại——Thay đổi này phải đủ để ảnh hưởng đến hành động của thế lực,NPC quyết sách hoặc hướng đi của chuỗi sự kiện. Những biến động vụn vặt hàng ngày không đáng được đưa vào. Thường không vượt quá 3 mục.
 
 ### reputation（đối tượng danh tiếng)
@@ -542,16 +542,16 @@ mỗi mục bao gồm:
 - name: Tên kẻ thù (tên cá nhân hoặc tên đoàn thể phục thù)
 - reason: Lý do kết thù (tóm tắt{{user}}đã làm gì dẫn đến kết thù)
 - type: "blood"/"grudge"。blood=Huyết cừu (nhân vật trọng yếu bị giết, người thân thiết nhất qua đời/tàn phế);grudge=Ân oán không gây tử vong (bị phế, phá sản, bị cướp đi vật quan trọng v.v. gây ra tổn thương không thể đảo ngược)
-- status: "đang theo dõi"/"đang lên kế hoạch"/"đang thực thi"/"đã kết thúc"
+- status: "đang theo dõi"/"đang lên kế hoạch"/"đang thực thi"/"Đã kết thúc"
   - Đang theo dõi: đang thu thập tình báo, xác định{{user}}vị trí
   - Đang lên kế hoạch: đã định vị{{user}}，đang tổ chức nhân thủ/tài nguyên chuẩn bị hành động
   - Đang thực thi: đã phái đi truy sát/lực lượng báo thù, tấn công thực tế đã xảy ra hoặc sắp xảy ra
-  - đã kết thúc: kẻ thù bị{{user}}tiêu diệt hoặc phục thù đã hoàn thành. Sau khi đánh dấu, cục bộ giữ lại 20 vòng rồi mới xoá.
+  - Đã kết thúc: kẻ thù bị{{user}}tiêu diệt hoặc phục thù đã hoàn thành. Sau khi đánh dấu, cục bộ giữ lại 20 vòng rồi mới xoá.
 
 Quy tắc phán định:
 - type=blood điều kiện kích hoạt: nhân vật trọng yếu bị giết (loại trừ cựu nhân vật trọng yếu đã mất quyền lực, xem sự tan rã quyền lực của module thế lực); người thân ruột thịt qua đời/tàn phế. Loại hận thù này không thể đàm phán, không bao giờ phai nhạt, không từ bỏ theo thời gian.
 - type=grudge điều kiện kích hoạt:{{user}}hành vi gây ra tổn thương nghiêm trọng không thể vãn hồi cho nhân vật cụ thể (bị phế võ công, bị cướp đi cơ nghiệp cả đời, bị gài bẫy dẫn đến phá sản/lưu đày), và nạn nhân có động cơ và khả năng phục thù rõ ràng. Không phải mỗi người bị{{user}}đắc tội đều tính là grudge——phải thoả mãn"tổn thương không thể vãn hồi+ý nguyện phục thù rõ ràng+có theo dõi/khả năng báo thù"ba điều kiện.
-- bất kể blood hay là grudge，một khi đánh dấu là"đã kết thúc"，cục bộ sẽ giữ lại thêm 20 vòng ghi nhớ, sau đó tự động xoá.
+- bất kể blood hay là grudge，một khi đánh dấu là"Đã kết thúc"，cục bộ sẽ giữ lại thêm 20 vòng ghi nhớ, sau đó tự động xoá.
 
 liên kết với chuỗi sự kiện:
 - khi tạo mục kẻ thù, thông thường nên đồng bộ tạo một chuỗi sự kiện loại xung đột (type=conflict），name với kẻ thù name tương ứng, và trong influenceChain ghi lại mối liên hệ giữa hai bên.
@@ -588,19 +588,19 @@ Yêu cầu:
 
   const JSON_EXAMPLE = `{
   "events": [
-    { "name": "Huyết Đao Môn phục thù", "type": "conflict", "level": 2, "stage": "ủ biến", "stageRound": 5, "desc": "Huyết Đao Môn đã phái người truy tung, người truy tung đã lập trạm gác ngầm tại Tam Lý Đình ngoài Thanh Thạch Quan" },
-    { "name": "Thanh Lô Tư cải tiến hoả dược", "type": "progress", "level": 3, "stage": "thực thi", "stageRound": 4, "desc": "Thanh Lô Tư đã thu thập đủ tiêu thạch và mật thán, đang thử nghiệm lò nhỏ, vẫn chưa bước vào giai đoạn định hình" }
+    { "name": "Huyết Đao Môn phục thù", "type": "conflict", "level": 2, "stage": "Ủ biến", "stageRound": 5, "desc": "Huyết Đao Môn đã phái người truy tung, người truy tung đã lập trạm gác ngầm tại Tam Lý Đình ngoài Thanh Thạch Quan" },
+    { "name": "Thanh Lô Tư cải tiến hoả dược", "type": "progress", "level": 3, "stage": "Thực thi", "stageRound": 4, "desc": "Thanh Lô Tư đã thu thập đủ tiêu thạch và mật thán, đang thử nghiệm lò nhỏ, vẫn chưa bước vào giai đoạn định hình" }
   ],
   "factions": [
-    { "name": "Huyết Đao Môn", "scope": "Huyết Đao Lĩnh và ba trấn xung quanh", "status": "vững chắc", "relation": "thù địch", "currentGoal": "Phục thù", "core_person": "Huyết Đao Lão Tổ", "powerPillars": ["Răn đe vũ lực","Mạng lưới tình báo"] }
+    { "name": "Huyết Đao Môn", "scope": "Huyết Đao Lĩnh và ba trấn xung quanh", "status": "Vững chắc", "relation": "Thù địch", "currentGoal": "Phục thù", "core_person": "Huyết Đao Lão Tổ", "powerPillars": ["Răn đe vũ lực","Mạng lưới tình báo"] }
   ],
   "worldTrends": [
-    { "name": "Chiến tranh Bắc Cảnh", "scope": "Ba châu Bắc Cảnh và các nước xung quanh", "status": "đang tiếp diễn", "description": "Biên quân và các bộ tộc Bắc Cảnh bước vào chiến tranh dài hạn, việc trưng thu lương thực, bắt lính và phong toả tuyến đường thương mại liên tục thay đổi hành động của các bên", "source": "Lv4 Sự kiện loại xung đột "Chiến tranh Bắc Cảnh" bước vào trạng thái đã bùng phát" }
+    { "name": "Chiến tranh Bắc Cảnh", "scope": "Ba châu Bắc Cảnh và các nước xung quanh", "status": "Đang tiếp diễn", "description": "Biên quân và các bộ tộc Bắc Cảnh bước vào chiến tranh dài hạn, việc trưng thu lương thực, bắt lính và phong toả tuyến đường thương mại liên tục thay đổi hành động của các bên", "source": "Lv4 Sự kiện loại xung đột "Chiến tranh Bắc Cảnh" bước vào trạng thái đã bùng phát" }
   ],
   "winds": [
     { "topic": "Thanh Thạch Quan lập trạm kiểm soát", "type": "report", "level": 2, "content": "Cửa bắc Thanh Thạch Quan đã có quan binh lập trạm kiểm tra", "scope": "Thanh Thạch Quan và các thôn trấn xung quanh", "source": "Thương lái chứng kiến→Thương đội qua lại" }
   ],
-  "economy": { "climate": "ổn định", "signals": [] },
+  "economy": { "climate": "Ổn định", "signals": [] },
   "reputation": { "authority": "vô danh", "common": "vô danh", "shadow": "vô danh", "circuit": "vô danh", "lastChange": "không thay đổi" },
   "world_digest": "Người truy tung của Huyết Đao Môn đã lập trạm gác ngầm tại Tam Lý Đình ngoài Thanh Thạch Quan; các chủ Thiên Cơ Các Thượng Quan Vân gửi mật thư triệu hồi ba mật thám vòng ngoài; nhà bếp Tuý Tiên Lâu đổi kênh cung cấp do thương nhân bán lương thực tăng giá.",
   "enemies": [
@@ -860,14 +860,14 @@ Yêu cầu:
         for (const en of update.enemies) {
           if (!en.name || !en.reason) continue;
           if (!en.type || !['blood', 'grudge'].includes(en.type)) en.type = 'blood';
-          if (!en.status|| !['đang theo dõi','đang lên kế hoạch','đang thực thi','đã kết thúc'].includes(en.status)) en.status = 'đang theo dõi';
+          if (!en.status|| !['đang theo dõi','đang lên kế hoạch','đang thực thi','Đã kết thúc'].includes(en.status)) en.status = 'đang theo dõi';
           const idx = (state.enemies || []).findIndex(ex => ex.name === en.name);
           if (idx !== -1) state.enemies[idx] = { ...state.enemies[idx], ...en };
           else state.enemies.unshift(en);
         }
         // giữ lại kẻ thù đã kết thúc 20 dọn dẹp sau vòng
         state.enemies = (state.enemies || []).filter(en => {
-          if (en.status === 'đã kết thúc') {
+          if (en.status === 'Đã kết thúc') {
             en._terminalSince = en._terminalSince || state.round;
             return (state.round - en._terminalSince) < 20;
           }
@@ -933,13 +933,13 @@ Yêu cầu:
         }
       }
 
-      // tự động dọn dẹp: đã tan biến/chuỗi sự kiện đã thất bại & đại thế thiên hạ đã kết thúc
-      // - kết cục tiêu cực (đã tan biến/đã thất bại): vòng tiếp theo sẽ xoá
-      // - kết cục tích cực (đã bùng phát/đã hoàn thành): giữ lại từ khi vào kết cục 2+level*2 vòng (Lv1=4/Lv2=6/Lv3=8/Lv4=10），
+      // tự động dọn dẹp: Đã tan biến/chuỗi sự kiện đã thất bại & đại thế thiên hạ đã kết thúc
+      // - kết cục tiêu cực (Đã tan biến/Đã thất bại): vòng tiếp theo sẽ xoá
+      // - kết cục tích cực (Đã bùng phát/Đã hoàn thành): giữ lại từ khi vào kết cục 2+level*2 vòng (Lv1=4/Lv2=6/Lv3=8/Lv4=10），
       //   dành thời gian bày bố dư âm, đến hạn tự động dọn dẹp
-      const POSITIVE_TERMINALS = ['đã bùng phát', 'đã hoàn thành'];
+      const POSITIVE_TERMINALS = ['Đã bùng phát', 'Đã hoàn thành'];
       const cleanedEvents = (state.events || []).filter(e => {
-        if (e.stage === 'đã tan biến' || e.stage === 'đã thất bại') return false;
+        if (e.stage === 'Đã tan biến' || e.stage === 'Đã thất bại') return false;
         if (POSITIVE_TERMINALS.includes(e.stage)) {
           if (e._terminalSince === undefined) e._terminalSince = state.round;
           const keepRounds = 2 + (e.level || 1) * 2;
@@ -956,7 +956,7 @@ Yêu cầu:
       }
       state.events = cleanedEvents;
 
-      const cleanedTrends = (state.worldTrends || []).filter(t => t.status !== 'đã kết thúc');
+      const cleanedTrends = (state.worldTrends || []).filter(t => t.status !== 'Đã kết thúc');
       if (cleanedTrends.length !== (state.worldTrends || []).length) {
         const removed = (state.worldTrends || []).filter(t => !cleanedTrends.includes(t));
         console.log('[World Engine] 🧹 tự động dọn dẹp đại thế thiên hạ:', removed.map(t => t.name).join('、'));

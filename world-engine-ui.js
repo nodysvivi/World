@@ -36,13 +36,6 @@ window.WORLD_ENGINE_UI = (function() {
     }[m] || m));
   }
 
-  /** Viết hoa chữ cái đầu tiên của chuỗi (Unicode-safe, hỗ trợ ký tự có dấu tiếng Việt) */
-  function cap(str) {
-    if (!str) return '';
-    const s = String(str);
-    return s.charAt(0).toLocaleUpperCase('vi-VN') + s.slice(1);
-  }
-
   /** Render văn bản hiển thị cho người dùng: thay thế {{user}} thành tên nhân vật hiện tại, và escape HTML */
   function u(text) {
     return h(core.renderUserName(text));
@@ -80,7 +73,7 @@ window.WORLD_ENGINE_UI = (function() {
     const motto = SECTION_MOTTOS[sectionId.replace(/^cp-/, '')];
     const mottoHtml = motto ? `<span class="we-section-motto">— ${motto}</span>` : '';
     return `<span class="we-section-toggle" data-section="${sectionId}">
-      <span class="we-section-arrow" id="we-section-arrow-${sectionId}">${collapsed ? '▶' : '▼'}</span>${cap(title)}${mottoHtml}
+      <span class="we-section-arrow" id="we-section-arrow-${sectionId}">${collapsed ? '▶' : '▼'}</span>${title}${mottoHtml}
     </span>`;
   }
 
@@ -109,7 +102,7 @@ window.WORLD_ENGINE_UI = (function() {
         </div>
         <div class="we-panel-corner-actions">
           <button class="we-panel-close">✕</button>
-          <button class="we-panel-settings" id="we-btn-settings-open" title="cài đặt"><i class="fa-solid fa-gear"></i></button>
+          <button class="we-panel-settings" id="we-btn-settings-open" title="Cài đặt"><i class="fa-solid fa-gear"></i></button>
         </div>
       </div>
       <div class="we-panel-body" id="we-panel-body">
@@ -239,8 +232,8 @@ window.WORLD_ENGINE_UI = (function() {
     const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
     // chuỗi sự kiện: chỉ Lv3/4，giới hạn đơn lẻ 60
-    const CONFLICT_BASE = { 'manh nha':0, "ủ biến":1, "cận kề":2, "đã bùng phát":4, "đã tan biến":0 };
-    const PROGRESS_BASE = { "chuẩn bị":0, "thực thi":1, 'then chốt/quan trọng':2, "đã hoàn thành":-2, "đã thất bại":0 };
+    const CONFLICT_BASE = { 'Manh nha':0, "Ủ biến":1, "Cận kề":2, "Đã bùng phát":4, "Đã tan biến":0 };
+    const PROGRESS_BASE = { "Chuẩn bị":0, "Thực thi":1, 'Then chốt/quan trọng':2, "Đã hoàn thành":-2, "Đã thất bại":0 };
     let eventP = 0;
     for (const e of (state.events || [])) {
       const level = Number(e.level) || 1;
@@ -253,9 +246,9 @@ window.WORLD_ENGINE_UI = (function() {
         return clamp((keepTotal - (round - e._terminalSince)) / keepTotal, 0, 1);
       };
       let p;
-      if (e.stage === 'đã bùng phát') p = 4 * level * 0.5 * remainFactor();
-      else if (e.stage === 'đã hoàn thành') p = -2 * remainFactor();        // không nhân level
-      else if (e.stage === 'đã tan biến' || e.stage === 'đã thất bại') p = 0;
+      if (e.stage === 'Đã bùng phát') p = 4 * level * 0.5 * remainFactor();
+      else if (e.stage === 'Đã hoàn thành') p = -2 * remainFactor();        // không nhân level
+      else if (e.stage === 'Đã tan biến' || e.stage === 'Đã thất bại') p = 0;
       else p = (base[e.stage] || 0) * level * 0.5;
       if (e.stall) p *= 0.65;
       eventP += clamp(p, -60, 60);
@@ -273,12 +266,12 @@ window.WORLD_ENGINE_UI = (function() {
 
     // đại thế thiên hạ: mỗi điều đang tiếp diễn +6，tổng giới hạn 20
     let trendP = 0;
-    for (const t of (state.worldTrends || [])) if (t.status !== 'đã kết thúc') trendP += 6;
+    for (const t of (state.worldTrends || [])) if (t.status !== 'Đã kết thúc') trendP += 6;
     trendP = Math.min(trendP, 20);
 
     // thế lực: giá trị quan hệ × hệ số trạng thái, tổng giới hạn 35
-    const REL = { 'huyết minh':-1.5, "đồng minh":-1, "thân thiện":-0.5, "trung lập":0, "lạnh nhạt":0.5, "thù địch":1, "thù truyền kiếp":1.5 };
-    const STAT = { "cực thịnh":1.25, "vững chắc":1, "chèn ép lẫn nhau":0.75, "khốn đốn":0.5, "suy tàn":0.25, "tan rã":0 };
+    const REL = { 'Huyết minh':-1.5, "Đồng minh":-1, "Thân thiện":-0.5, "Trung lập":0, "Lạnh nhạt":0.5, "Thù địch":1, "Thù truyền kiếp":1.5 };
+    const STAT = { "Cực thịnh":1.25, "Vững chắc":1, "Chèn ép lẫn nhau":0.75, "Khốn đốn":0.5, "Suy tàn":0.25, "Tan rã":0 };
     let factionP = 0;
     for (const f of (state.factions || [])) {
       const rel = REL[f.relation] !== undefined ? REL[f.relation] : 0;
@@ -288,7 +281,7 @@ window.WORLD_ENGINE_UI = (function() {
     factionP = clamp(factionP, -35, 35);
 
     // Kinh tế: chỉ xem climate
-    const CLIMATE = { "phồn vinh":-2, "ổn định":0, "suy thoái":1, "biến động":2 };
+    const CLIMATE = { "Phồn vinh":-2, "Ổn định":0, "Suy thoái":1, "Biến động":2 };
     const econP = CLIMATE[(state.economy || {}).climate] || 0;
 
     // Đột phát khu vực: kích hoạt +5
@@ -345,7 +338,7 @@ window.WORLD_ENGINE_UI = (function() {
   }
 
   const VIEW_TITLES = {
-    situation: 'cục diện', events: 'sự kiện', relations: 'quan hệ', resources: 'tài nguyên', settings: 'cài đặt'
+    situation: 'Cục diện', events: 'Sự kiện', relations: 'Quan hệ', resources: 'Tài nguyên', settings: 'Cài đặt'
   };
 
   function renderSection(title, id, content) {
@@ -357,10 +350,10 @@ window.WORLD_ENGINE_UI = (function() {
     const tierColor = STABILITY_TIER_COLOR[stab.tier] || '#58b8a9';
 
     const rows = [
-      { view: 'situation', label: 'cục diện', sub: 'đại thế thiên hạ · sự kiện khu vực · sổ cái', poem: 'Thiên hạ vân tập hưởng ứng' },
-      { view: 'events',    label: 'sự kiện', sub: 'chuỗi sự kiện · có tiếng đồn · chuỗi ảnh hưởng',     poem: 'Việc đến thì ứng phó' },
-      { view: 'relations', label: 'quan hệ', sub: 'danh tiếng · thế lực · sổ kẻ thù',       poem: 'Đồng thanh tương ứng, đồng khí tương cầu' },
-      { view: 'resources', label: 'tài nguyên', sub: 'kinh tế · Bí mật',               poem: 'Địa Tạng Vô Tận Tạng' },
+      { view: 'situation', label: 'Cục diện', sub: 'Đại thế thiên hạ · Sự kiện khu vực · Sổ cái', poem: 'Thiên hạ vân tập hưởng ứng' },
+      { view: 'events',    label: 'Sự kiện', sub: 'Chuỗi sự kiện · Có tiếng đồn · Chuỗi ảnh hưởng',     poem: 'Việc đến thì ứng phó' },
+      { view: 'relations', label: 'Quan hệ', sub: 'Danh tiếng · Thế lực · Sổ kẻ thù',       poem: 'Đồng thanh tương ứng, đồng khí tương cầu' },
+      { view: 'resources', label: 'Tài nguyên', sub: 'Kinh tế · Bí mật',               poem: 'Địa Tạng Vô Tận Tạng' },
     ];
 
     const navRows = rows.map((r, i) => {
@@ -368,31 +361,31 @@ window.WORLD_ENGINE_UI = (function() {
       const botLine = i === rows.length - 1 ? '<div class="we-nav-line we-nav-line-hidden"></div>' : '<div class="we-nav-line"></div>';
       const sel = _selectedNavView === r.view ? ' we-nav-row--selected' : '';
       return '<div class="we-nav-row' + sel + '" data-view="' + r.view + '">'
-        + '<div class="we-nav-label">' + cap(r.label) + '</div>'
+        + '<div class="we-nav-label">' + r.label + '</div>'
         + '<div class="we-nav-track">' + topLine + '<div class="we-nav-dot"></div>' + botLine + '</div>'
-        + '<div class="we-nav-content"><span class="we-nav-sub">' + cap(r.sub) + '</span><span class="we-nav-poem">' + r.poem + '</span></div>'
+        + '<div class="we-nav-content"><span class="we-nav-sub">' + r.sub + '</span><span class="we-nav-poem">' + r.poem + '</span></div>'
         + '<i class="fa-solid fa-chevron-right we-nav-arrow"></i>'
         + '</div>';
     }).join('');
 
     return renderWorldCore(s)
       + '<div class="we-nav-list" style="--we-tier-color:' + tierColor + ';">' + navRows + '</div>'
-      + '<div class="we-section" id="we-sec-digest"><div class="we-section-title">tóm tắt thế giới</div><div class="we-digest">' + u(s.worldDigest) + '</div></div>';
+      + '<div class="we-section" id="we-sec-digest"><div class="we-section-title">Tóm tắt thế giới</div><div class="we-digest">' + u(s.worldDigest) + '</div></div>';
   }
 
   /** Trang chủ chế độ mở rộng: Cốt lõi thế giới + tóm tắt thế giới + Tất cả section Trải phẳng (như điểm lưu) */
   function renderHomeViewExpanded(s, layer, scope) {
     return renderWorldCore(s)
-      + '<div class="we-section" id="we-sec-digest"><div class="we-section-title">tóm tắt thế giới</div><div class="we-digest">' + u(s.worldDigest) + '</div></div>'
-      + renderSection('đại thế thiên hạ', 'trends', renderWorldTrends(s.worldTrends, scope))
-      + renderSection('sự kiện khu vực', 'regional', renderRegionalIncident(s.regionalIncident, scope))
-      + renderSection('chuỗi sự kiện', 'events', renderEventList(s.events, scope))
-      + renderSection('có tiếng đồn', 'winds', renderWindList(s.winds, scope))
-      + renderSection('chuỗi ảnh hưởng', 'influence', renderInfluenceChain(s.influenceChain, scope))
-      + renderSection('danh tiếng', 'reputation', renderReputation(s.reputation, scope))
-      + renderSection('thế lực', 'factions', renderFactionList(s.factions, scope))
-      + renderSection('sổ kẻ thù', 'enemies', renderEnemies(s.enemies, scope))
-      + renderSection('kinh tế', 'economy', renderEconomy(s.economy, scope))
+      + '<div class="we-section" id="we-sec-digest"><div class="we-section-title">Tóm tắt thế giới</div><div class="we-digest">' + u(s.worldDigest) + '</div></div>'
+      + renderSection('Đại thế thiên hạ', 'trends', renderWorldTrends(s.worldTrends, scope))
+      + renderSection('Sự kiện khu vực', 'regional', renderRegionalIncident(s.regionalIncident, scope))
+      + renderSection('Chuỗi sự kiện', 'events', renderEventList(s.events, scope))
+      + renderSection('Có tiếng đồn', 'winds', renderWindList(s.winds, scope))
+      + renderSection('Chuỗi ảnh hưởng', 'influence', renderInfluenceChain(s.influenceChain, scope))
+      + renderSection('Danh tiếng', 'reputation', renderReputation(s.reputation, scope))
+      + renderSection('Thế lực', 'factions', renderFactionList(s.factions, scope))
+      + renderSection('Sổ kẻ thù', 'enemies', renderEnemies(s.enemies, scope))
+      + renderSection('Kinh tế', 'economy', renderEconomy(s.economy, scope))
       + renderSection('Bí mật', 'blackbox', renderBlackbox(s.blackbox, scope))
       + renderSection('Sổ cái sự kiện', 'ledger', renderLedger(s.memories));
   }
@@ -400,24 +393,24 @@ window.WORLD_ENGINE_UI = (function() {
   function renderSubView(viewKey, s, layer, scope) {
     let content = '';
     if (viewKey === 'situation') {
-      content = renderSection('đại thế thiên hạ', 'trends', renderWorldTrends(s.worldTrends, scope))
-        + renderSection('sự kiện khu vực', 'regional', renderRegionalIncident(s.regionalIncident, scope))
+      content = renderSection('Đại thế thiên hạ', 'trends', renderWorldTrends(s.worldTrends, scope))
+        + renderSection('Sự kiện khu vực', 'regional', renderRegionalIncident(s.regionalIncident, scope))
         + renderSection('Sổ cái sự kiện', 'ledger', renderLedger(s.memories));
     } else if (viewKey === 'events') {
-      content = renderSection('chuỗi sự kiện', 'events', renderEventList(s.events, scope))
-        + renderSection('có tiếng đồn', 'winds', renderWindList(s.winds, scope))
-        + renderSection('chuỗi ảnh hưởng', 'influence', renderInfluenceChain(s.influenceChain, scope));
+      content = renderSection('Chuỗi sự kiện', 'events', renderEventList(s.events, scope))
+        + renderSection('Có tiếng đồn', 'winds', renderWindList(s.winds, scope))
+        + renderSection('Chuỗi ảnh hưởng', 'influence', renderInfluenceChain(s.influenceChain, scope));
     } else if (viewKey === 'relations') {
-      content = renderSection('danh tiếng', 'reputation', renderReputation(s.reputation, scope))
-        + renderSection('thế lực', 'factions', renderFactionList(s.factions, scope))
-        + renderSection('sổ kẻ thù', 'enemies', renderEnemies(s.enemies, scope));
+      content = renderSection('Danh tiếng', 'reputation', renderReputation(s.reputation, scope))
+        + renderSection('Thế lực', 'factions', renderFactionList(s.factions, scope))
+        + renderSection('Sổ kẻ thù', 'enemies', renderEnemies(s.enemies, scope));
     } else if (viewKey === 'resources') {
-      content = renderSection('kinh tế', 'economy', renderEconomy(s.economy, scope))
+      content = renderSection('Kinh tế', 'economy', renderEconomy(s.economy, scope))
         + renderSection('Bí mật', 'blackbox', renderBlackbox(s.blackbox, scope));
     }
     return '<div class="we-sub-topbar">'
       + '<button class="we-icon-btn" id="we-btn-back" title="trả về"><i class="fa-solid fa-arrow-left"></i></button>'
-      + '<span class="we-sub-title">' + cap(VIEW_TITLES[viewKey] || viewKey) + '</span>'
+      + '<span class="we-sub-title">' + (VIEW_TITLES[viewKey] || viewKey) + '</span>'
       + '</div>' + content;
   }
 
@@ -455,12 +448,12 @@ window.WORLD_ENGINE_UI = (function() {
 
   // [FIX] định nghĩa tab:label + bao gồm những đoạn nào. chỉ phân loại hiện có section，không thêm mới/không xoá tính năng.
   const SETTINGS_TABS = [
-    { key: 'common',    label: 'Thường dùng' },
-    { key: 'advanced',  label: 'Nâng cao' },
-    { key: 'archive',   label: 'Bản lưu' },
+    { key: 'common',    label: 'thường dùng' },
+    { key: 'advanced',  label: 'nâng cao' },
+    { key: 'archive',   label: 'bản lưu' },
     { key: 'worldbook', label: 'Worldbook' },
-    { key: 'debug',     label: 'Gỡ lỗi' },
-    { key: 'about',     label: 'Về' }
+    { key: 'debug',     label: 'gỡ lỗi' },
+    { key: 'about',     label: 'về' }
   ];
   let _settingsTab = 'common';
 
@@ -478,9 +471,9 @@ window.WORLD_ENGINE_UI = (function() {
 
     // gỡ lỗi section（giữ nguyên, gồm nút gói chẩn đoán + renderDebug，chuyển vào tab 「gỡ lỗi」)
     const debugSection = '<div class="we-section we-debug-section">'
-      + '<div class="we-section-title"><span class="we-debug-toggle" title="mở rộng hoặc thu gọn thông tin gỡ lỗi"><span class="we-toggle-arrow">▶</span>Gỡ lỗi</span></div>'
+      + '<div class="we-section-title"><span class="we-debug-toggle" title="mở rộng hoặc thu gọn thông tin gỡ lỗi"><span class="we-toggle-arrow">▶</span>gỡ lỗi</span></div>'
       + '<div id="we-debug-body" style="display:none;">'
-      + '<button class="we-btn" id="we-export-diag" style="width:100%;margin-bottom:8px;">Xuất gói chẩn đoán</button><!-- [FIX] gói chẩn đoán: không liên quan đến việc đã suy diễn hay chưa, luôn có thể xuất -->'
+      + '<button class="we-btn" id="we-export-diag" style="width:100%;margin-bottom:8px;">xuất gói chẩn đoán</button><!-- [FIX] gói chẩn đoán: không liên quan đến việc đã suy diễn hay chưa, luôn có thể xuất -->'
       + '<div id="we-debug-render">' + renderDebug() + '</div>'
       // [MAP] Quản lý preset engine: Cùng với PR#12 hiển thị phân đoạn chỉ đọc ở cùng thẻ gỡ lỗi, đưa 4 đoạn hardcode nâng cấp thành có thể chỉnh sửa+preset hoá.
       // Điểm neo độc lập #we-preset-manage，làm mới cục bộ; lưu theo độc lập storage key，không vào we-save-settings。
@@ -559,15 +552,15 @@ window.WORLD_ENGINE_UI = (function() {
   }
 
   function renderCheckpointSections(s, layer) {
-    return renderSection('đại thế thiên hạ', 'cp-trends', renderWorldTrends(s.worldTrends, 'checkpoint'))
-      + renderSection('chuỗi sự kiện', 'cp-events', renderEventList(s.events, 'checkpoint'))
-      + renderSection('thế lực', 'cp-factions', renderFactionList(s.factions, 'checkpoint'))
-      + renderSection('có tiếng đồn', 'cp-winds', renderWindList(s.winds, 'checkpoint'))
-      + renderSection('danh tiếng', 'cp-reputation', renderReputation(s.reputation, 'checkpoint'))
-      + renderSection('kinh tế', 'cp-economy', renderEconomy(s.economy, 'checkpoint'))
-      + renderSection('sổ kẻ thù', 'cp-enemies', renderEnemies(s.enemies, 'checkpoint'))
-      + renderSection('chuỗi ảnh hưởng', 'cp-influence', renderInfluenceChain(s.influenceChain, 'checkpoint'))
-      + renderSection('sự kiện khu vực', 'cp-regional', renderRegionalIncident(s.regionalIncident, 'checkpoint'))
+    return renderSection('Đại thế thiên hạ', 'cp-trends', renderWorldTrends(s.worldTrends, 'checkpoint'))
+      + renderSection('Chuỗi sự kiện', 'cp-events', renderEventList(s.events, 'checkpoint'))
+      + renderSection('Thế lực', 'cp-factions', renderFactionList(s.factions, 'checkpoint'))
+      + renderSection('Có tiếng đồn', 'cp-winds', renderWindList(s.winds, 'checkpoint'))
+      + renderSection('Danh tiếng', 'cp-reputation', renderReputation(s.reputation, 'checkpoint'))
+      + renderSection('Kinh tế', 'cp-economy', renderEconomy(s.economy, 'checkpoint'))
+      + renderSection('Sổ kẻ thù', 'cp-enemies', renderEnemies(s.enemies, 'checkpoint'))
+      + renderSection('Chuỗi ảnh hưởng', 'cp-influence', renderInfluenceChain(s.influenceChain, 'checkpoint'))
+      + renderSection('Sự kiện khu vực', 'cp-regional', renderRegionalIncident(s.regionalIncident, 'checkpoint'))
       + renderSection('Bí mật', 'cp-blackbox', renderBlackbox(s.blackbox, 'checkpoint'))
       + renderSection('Sổ cái sự kiện', 'cp-ledger', renderLedger(s.memories));
   }
@@ -661,9 +654,9 @@ window.WORLD_ENGINE_UI = (function() {
               <div class="we-core-title">Lõi thế giới</div>
               <div class="we-core-sub">Độ ổn định</div>
               <div class="we-core-pct" style="color:${tierColor};">${stab.stability.toFixed(1)}<span>%</span></div>
+              <div class="we-core-tier" style="color:${tierColor};">${stab.tier}</div>
             </div>
           </div>
-          <div class="we-core-tier" style="color:${tierColor};">${stab.tier}</div>
           <div class="we-core-stats">${stats}</div>
         </div>
       </div>`;
@@ -698,16 +691,16 @@ window.WORLD_ENGINE_UI = (function() {
     const curRound = (core.loadState() || {}).round || 0;
     return renderPagedList(events, 'events-' + scope, (e, eventIndex) => {
       const stageColors = {
-        'manh nha':'#d6b85a',
-        "ủ biến":'#d98a3d',
-        "cận kề":'#cf5f3f',
-        "đã bùng phát":'#b93f3f',
-        "đã tan biến":'#888888',
-        "chuẩn bị":'#7de9d9',
-        "thực thi":'#58e8b3',
-        'then chốt/quan trọng':'#2a8a5d',
-        "đã hoàn thành":'#1b5e3b',
-        "đã thất bại":'#888888',
+        'Manh nha':'#d6b85a',
+        "Ủ biến":'#d98a3d',
+        "Cận kề":'#cf5f3f',
+        "Đã bùng phát":'#b93f3f',
+        "Đã tan biến":'#888888',
+        "Chuẩn bị":'#7de9d9',
+        "Thực thi":'#58e8b3',
+        'Then chốt/quan trọng':'#2a8a5d',
+        "Đã hoàn thành":'#1b5e3b',
+        "Đã thất bại":'#888888',
         "Đình trệ":'#6688aa'
       };
       const levelColors = {
@@ -719,7 +712,7 @@ window.WORLD_ENGINE_UI = (function() {
       const color = stageColors[e.stage] || '#888';
       const levelColor = levelColors[e.level] || '#9aa6b2';
       let extras = '';
-      const terminalStages = e.type === 'progress' ? ['đã hoàn thành', 'đã thất bại'] : ['đã bùng phát', 'đã tan biến'];
+      const terminalStages = e.type === 'progress' ? ['Đã hoàn thành', 'Đã thất bại'] : ['Đã bùng phát', 'Đã tan biến'];
       const isTerminal = terminalStages.includes(e.stage);
       if (e.consecutiveFails > 0 && !isTerminal) {
         const maxFails = e.type === 'progress' ? 2 + (e.level || 1) : 6 - (e.level || 1);
@@ -751,30 +744,30 @@ window.WORLD_ENGINE_UI = (function() {
       }
       const typeName = e.type === 'progress' ? 'loại thúc đẩy' : 'loại xung đột';
       const typeColor = e.type === 'progress' ? '#57b7a8' : '#cf5f3f';
-      // Logo đếm ngược kết cục chính diện (đã bùng phát/đã hoàn thành, giữ lại 2+level*2 vòng sau tự động xoá)
+      // Logo đếm ngược kết cục chính diện (Đã bùng phát/Đã hoàn thành, giữ lại 2+level*2 vòng sau tự động xoá)
       let countdownHtml = '';
-      const POSITIVE_TERMINALS = ['đã bùng phát', 'đã hoàn thành'];
+      const POSITIVE_TERMINALS = ['Đã bùng phát', 'Đã hoàn thành'];
       if (POSITIVE_TERMINALS.includes(e.stage) && e._terminalSince !== undefined) {
         const keepRounds = 2 + (e.level || 1) * 2;
         const left = keepRounds - (curRound - e._terminalSince) + 1;
         if (left >= 1) {
-          const cdColor = e.stage === 'đã hoàn thành' ? '#58e8b3' : '#e07465';
+          const cdColor = e.stage === 'Đã hoàn thành' ? '#58e8b3' : '#e07465';
           countdownHtml = ` <span class="we-badge we-event-countdown" style="color:${cdColor};" title="Sự kiện này ở ${left} vòng sau tự động xoá"><i class="fa-regular fa-clock"></i>Còn lại${left} vòng</span>`;
         }
       }
       const terminalStamp = {
-        "đã hoàn thành": { text: 'hoàn thành', color: '#58e8b3' },
-        "đã bùng phát": { text: 'bùng phát', color: '#e07465' },
-        "đã tan biến": { text: 'tan biến', color: '#a6a6ad' },
-        "đã thất bại": { text: 'thất bại', color: '#c08aaa' }
+        "Đã hoàn thành": { text: 'hoàn thành', color: '#58e8b3' },
+        "Đã bùng phát": { text: 'bùng phát', color: '#e07465' },
+        "Đã tan biến": { text: 'tan biến', color: '#a6a6ad' },
+        "Đã thất bại": { text: 'thất bại', color: '#c08aaa' }
       }[e.stage];
       const isEditing = editingEvent?.scope === scope && editingEvent?.index === eventIndex;
       // màu sắc làm CSS biến được truyền xuống, viền/màu nền/hiệu ứng ánh sáng hoàn toàn do lớp style xử lý (không còn inline thanh màu bên trái)
       const itemStyle = `--event-accent:${color};--event-type:${typeColor};--event-level:${levelColor};`;
       const stageClassMap = {
-        'manh nha': 'we-stage-sprout', "ủ biến": 'we-stage-ferment', "cận kề": 'we-stage-loom',
-        "đã bùng phát": 'we-stage-erupt', "đã tan biến": 'we-stage-fade',
-        "đã hoàn thành": 'we-stage-done', "đã thất bại": 'we-stage-failed',
+        'Manh nha': 'we-stage-sprout', "Ủ biến": 'we-stage-ferment', "Cận kề": 'we-stage-loom',
+        "Đã bùng phát": 'we-stage-erupt', "Đã tan biến": 'we-stage-fade',
+        "Đã hoàn thành": 'we-stage-done', "Đã thất bại": 'we-stage-failed',
       };
       const stageClass = stageClassMap[e.stage] || '';
       const itemClass = (isTerminal ? 'we-event-item we-event-item-terminal' : 'we-event-item') + (stageClass ? ' ' + stageClass : '');
@@ -808,8 +801,8 @@ window.WORLD_ENGINE_UI = (function() {
 
   function renderEventEditor(event, scope, eventIndex) {
     const stages = event.type === 'progress'
-      ? ['chuẩn bị', 'thực thi', 'then chốt/quan trọng', 'đã hoàn thành', 'đã thất bại']
-      : ['manh nha', 'ủ biến', 'cận kề', 'đã bùng phát', 'đã tan biến'];
+      ? ['Chuẩn bị', 'Thực thi', 'Then chốt/quan trọng', 'Đã hoàn thành', 'Đã thất bại']
+      : ['Manh nha', 'Ủ biến', 'Cận kề', 'Đã bùng phát', 'Đã tan biến'];
     const levelOptions = [1, 2, 3, 4].map(level =>
       `<option value="${level}" ${Number(event.level) === level ? 'selected' : ''}>Lv.${level}</option>`
     ).join('');
@@ -824,7 +817,7 @@ window.WORLD_ENGINE_UI = (function() {
     ).join('');
 
     // Đếm ngược kết cục tích cực: giá trị mặc định lấy phần còn lại hiện tại, sự kiện không phải kết cục thì để trống
-    const POSITIVE_TERMINALS = ['đã bùng phát', 'đã hoàn thành'];
+    const POSITIVE_TERMINALS = ['Đã bùng phát', 'Đã hoàn thành'];
     const keepRounds = 2 + (Number(event.level) || 1) * 2;
     let leftValue = '';
     if (POSITIVE_TERMINALS.includes(event.stage)) {
@@ -844,7 +837,7 @@ window.WORLD_ENGINE_UI = (function() {
           <label>loại<select class="we-event-edit-type">${typeOptions}</select></label>
           <label>giai đoạn<select class="we-event-edit-stage">${stageOptions}</select></label>
           <label>tiến độ giai đoạn<input class="we-event-edit-round" type="number" min="1" max="9" value="${event.stageRound || 1}"></label>
-          <label title="chỉ kết cục tích cực (đã bùng phát/đã hoàn thành) có hiệu lực, đến hạn tự động xoá; không phải kết cục thì để trống">số vòng còn lại<input class="we-event-edit-left" type="number" min="1" placeholder="chuyên dùng cho kết cục" value="${leftValue}"></label>
+          <label title="chỉ kết cục tích cực (Đã bùng phát/Đã hoàn thành) có hiệu lực, đến hạn tự động xoá; không phải kết cục thì để trống">số vòng còn lại<input class="we-event-edit-left" type="number" min="1" placeholder="chuyên dùng cho kết cục" value="${leftValue}"></label>
           <label class="we-event-editor-wide">mô tả<textarea class="we-event-edit-desc" rows="3">${u(event.desc || '')}</textarea></label>
         </div>
         <div class="we-event-editor-footer">
@@ -857,10 +850,10 @@ window.WORLD_ENGINE_UI = (function() {
     if (!factions || !factions.length) return '<div class="we-empty">tạm thời không có thế lực</div>';
     return renderPagedList(factions, 'factions', (f, factionIndex) => {
       const relationColors = {
-        'huyết minh':'#2563eb', "đồng minh":'#0ea5e9', "thân thiện":'#06b6d4', "trung lập":'#94a3b8',
-        "lạnh nhạt":'#f59e0b', "căng thẳng":'#f59e0b', "thù địch":'#ef4444', "thù truyền kiếp":'#991b1b'
+        'Huyết minh':'#2563eb', "Đồng minh":'#0ea5e9', "Thân thiện":'#06b6d4', "Trung lập":'#94a3b8',
+        "Lạnh nhạt":'#f59e0b', "căng thẳng":'#f59e0b', "Thù địch":'#ef4444', "Thù truyền kiếp":'#991b1b'
       };
-      const statusColors = { "cực thịnh":'#d0aa58', "vững chắc":'#69b68e', "chèn ép lẫn nhau":'#cf5f3f', "khốn đốn":'#70a8d2', "suy tàn":'#a6a6ad', "tan rã":'#888888' };
+      const statusColors = { "Cực thịnh":'#d0aa58', "Vững chắc":'#69b68e', "Chèn ép lẫn nhau":'#cf5f3f', "Khốn đốn":'#70a8d2', "Suy tàn":'#a6a6ad', "Tan rã":'#888888' };
       const relColor = relationColors[f.relation] || '#888';
       const stColor = statusColors[f.status] || '#888';
 
@@ -882,8 +875,8 @@ window.WORLD_ENGINE_UI = (function() {
       return `<div class="we-faction-item">
         <div class="we-faction-name">${u(f.name)}</div>
         <div class="we-faction-tags">
-          <span class="we-tag" style="border-color:${stColor};color:${stColor};">${f.status||'vững chắc'}</span>
-          <span class="we-tag" style="border-color:${relColor};color:${relColor};">${f.relation||'trung lập'}</span>
+          <span class="we-tag" style="border-color:${stColor};color:${stColor};">${f.status||'Vững chắc'}</span>
+          <span class="we-tag" style="border-color:${relColor};color:${relColor};">${f.relation||'Trung lập'}</span>
           ${f.scope ? '<span class="we-tag">' + u(f.scope) + '</span>' : ''}
         </div>
         ${f.currentGoal ? `<div class="we-faction-goal">${u(f.currentGoal)}</div>` : ''}
@@ -896,9 +889,9 @@ window.WORLD_ENGINE_UI = (function() {
   }
 
   function renderFactionEditor(f, index, scope) {
-    const statusOptions = ['cực thịnh','vững chắc','chèn ép lẫn nhau','khốn đốn','suy tàn','tan rã'].map(s =>
+    const statusOptions = ['Cực thịnh','Vững chắc','Chèn ép lẫn nhau','Khốn đốn','Suy tàn','Tan rã'].map(s =>
       `<option value="${s}" ${f.status === s ? 'selected' : ''}>${s}</option>`).join('');
-    const relationOptions = ['huyết minh','đồng minh','thân thiện','trung lập','lạnh nhạt','thù địch','thù truyền kiếp'].map(r =>
+    const relationOptions = ['Huyết minh','Đồng minh','Thân thiện','Trung lập','Lạnh nhạt','Thù địch','Thù truyền kiếp'].map(r =>
       `<option value="${r}" ${f.relation === r ? 'selected' : ''}>${r}</option>`).join('');
     const pillars = [];
     for (let i = 0; i < 3; i++) pillars.push(f.powerPillars?.[i] || '');
@@ -924,7 +917,7 @@ window.WORLD_ENGINE_UI = (function() {
   function renderWorldTrends(trends, scope) {
     if (!trends || !trends.length) return '<div class="we-empty">tạm thời không có đại thế thiên hạ</div>';
     return renderPagedList(trends, 'world-trends', (trend, trendIndex) => {
-      const ended = trend.status === 'đã kết thúc';
+      const ended = trend.status === 'Đã kết thúc';
       const color = ended ? '#888888' : '#c9a45c';
       const isEditing = editingTrend?.scope === scope && editingTrend?.index === trendIndex;
       const actionHtml = isEditing ? '' : `
@@ -938,7 +931,7 @@ window.WORLD_ENGINE_UI = (function() {
         ${actionHtml}
         <div class="we-trend-header">
           <span class="we-trend-name">${u(trend.name)}</span>
-          <span class="we-badge" style="background:${color}22;color:${color};">${u(trend.status || 'đang tiếp diễn')}</span>
+          <span class="we-badge" style="background:${color}22;color:${color};">${u(trend.status || 'Đang tiếp diễn')}</span>
         </div>
         <div class="we-trend-scope">${u(trend.scope || 'thiên hạ')}</div>
         <div class="we-trend-description">${u(trend.description || '?')}</div>
@@ -949,7 +942,7 @@ window.WORLD_ENGINE_UI = (function() {
   }
 
   function renderTrendEditor(trend, scope, index) {
-    const statusOptions = ['đang tiếp diễn', 'đã kết thúc'].map(s =>
+    const statusOptions = ['Đang tiếp diễn', 'Đã kết thúc'].map(s =>
       `<option value="${s}" ${trend.status === s ? 'selected' : ''}>${s}</option>`).join('');
     return `
       <div class="we-event-editor" data-trend-scope="${scope}" data-trend-index="${index}">
@@ -1039,7 +1032,7 @@ window.WORLD_ENGINE_UI = (function() {
     const levels = ['trời giận người oán','tai tiếng khắp nơi','vô danh','được kính trọng','được vạn người ngưỡng mộ'];
     const levelColors = { 'trời giận người oán':'#e05555', 'tai tiếng khắp nơi':'#d97a5a', 'vô danh':'#7a8a9a', 'được kính trọng':'#6cae8e', 'được vạn người ngưỡng mộ':'#c9a45c' };
     const legacyMap = { 'có chút danh tiếng':'được kính trọng' };
-    const dimLabels = { authority:'Triều đình', common:'Thị tứ', shadow:'Giang hồ', circuit:'Đồng đạo' };
+    const dimLabels = { authority:'triều đình', common:'thị tứ', shadow:'giang hồ', circuit:'đồng đạo' };
     // Các chiều × Cổ văn đính kèm các cấp độ (lược bỏ xuất xứ)
     const quotes = {
       authority: { 'trời giận người oán':'Trên dưới ghét như kẻ thù', 'tai tiếng khắp nơi':'Người tại vị đều nói về cái ác của hắn', 'vô danh':'Chìm trong hạ liêu không ai biết', 'được kính trọng':'Quần thần không ai không kính sợ', 'được vạn người ngưỡng mộ':'Thiên hạ mong ngóng phong thái' },
@@ -1069,17 +1062,17 @@ window.WORLD_ENGINE_UI = (function() {
   function renderEconomy(econ, scope) {
     if (!econ) return '<div class="we-empty">Tạm thời không có dữ liệu kinh tế</div>';
     const sc = scope || 'state';
-    const climates = ['phồn vinh','ổn định','suy thoái','biến động'];
-    const climateColors = { 'phồn vinh': '#3ecf8e', 'ổn định': '#7a8a9a', 'suy thoái': '#d9a34a', 'biến động': '#e05555' };
-    const climateBg = { 'phồn vinh': 'rgba(62,207,142,0.08)', 'ổn định': 'rgba(122,138,154,0.06)', 'suy thoái': 'rgba(217,163,74,0.08)', 'biến động': 'rgba(224,85,85,0.08)' };
-    const climate = econ.climate || 'ổn định';
+    const climates = ['Phồn vinh','Ổn định','Suy thoái','Biến động'];
+    const climateColors = { 'Phồn vinh': '#3ecf8e', 'Ổn định': '#7a8a9a', 'Suy thoái': '#d9a34a', 'Biến động': '#e05555' };
+    const climateBg = { 'Phồn vinh': 'rgba(62,207,142,0.08)', 'Ổn định': 'rgba(122,138,154,0.06)', 'Suy thoái': 'rgba(217,163,74,0.08)', 'Biến động': 'rgba(224,85,85,0.08)' };
+    const climate = econ.climate || 'Ổn định';
     const cColor = climateColors[climate] || '#7a8a9a';
     let html = '<div class="we-climate-bar" style="background:' + (climateBg[climate]||'rgba(122,138,154,0.06)') + ';">';
     html += '<span class="we-climate-dot" style="background:' + cColor + ';box-shadow:0 0 8px ' + cColor + '88;"></span>';
-    html += '<span class="we-climate-label" style="color:' + cColor + '">' + cap(climate) + '</span>';
+    html += '<span class="we-climate-label" style="color:' + cColor + '">' + climate + '</span>';
     html += '<div class="we-climate-btns">';
     for (const c of climates) {
-      html += '<span class="we-climate-btn' + (c === climate ? ' we-climate-btn-on' : '') + '" style="' + (c === climate ? ('color:'+(climateColors[c]||'#7a8a9a')+';border-color:'+(climateColors[c]||'#7a8a9a')) : '') + '" data-climate-scope="' + sc + '" data-climate="' + c + '">' + cap(c) + '</span>';
+      html += '<span class="we-climate-btn' + (c === climate ? ' we-climate-btn-on' : '') + '" style="' + (c === climate ? ('color:'+(climateColors[c]||'#7a8a9a')+';border-color:'+(climateColors[c]||'#7a8a9a')) : '') + '" data-climate-scope="' + sc + '" data-climate="' + c + '">' + c + '</span>';
     }
     html += '</div></div>';
     if (econ.signals?.length) {
@@ -2163,8 +2156,8 @@ window.WORLD_ENGINE_UI = (function() {
       select.onchange = () => {
         const stageSelect = select.closest('.we-event-editor').querySelector('.we-event-edit-stage');
         const stages = select.value === 'progress'
-          ? ['chuẩn bị', 'thực thi', 'then chốt/quan trọng', 'đã hoàn thành', 'đã thất bại']
-          : ['manh nha', 'ủ biến', 'cận kề', 'đã bùng phát', 'đã tan biến'];
+          ? ['Chuẩn bị', 'Thực thi', 'Then chốt/quan trọng', 'Đã hoàn thành', 'Đã thất bại']
+          : ['Manh nha', 'Ủ biến', 'Cận kề', 'Đã bùng phát', 'Đã tan biến'];
         stageSelect.innerHTML = stages.map(stage => `<option value="${stage}">${stage}</option>`).join('');
       };
     });
@@ -2193,7 +2186,7 @@ window.WORLD_ENGINE_UI = (function() {
         delete event.evolveResult;
 
         // số vòng còn lại → suy diễn ngược _terminalSince（chỉ kết cục tích cực)
-        const POSITIVE_TERMINALS = ['đã bùng phát', 'đã hoàn thành'];
+        const POSITIVE_TERMINALS = ['Đã bùng phát', 'Đã hoàn thành'];
         if (POSITIVE_TERMINALS.includes(event.stage)) {
           const K = 2 + (event.level || 1) * 2;
           const curRound = scopedState.round || 0;

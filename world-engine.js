@@ -375,7 +375,7 @@
         if (window.__WE_SetExternalStatus) window.__WE_SetExternalStatus(text, !!isErr);
       }
 
-      // thực thi một lần suy diễn (tự động theo vòng / theo thời gian / thời gian điền tay trên trang cài đặt dùng chung).
+      // Thực thi một lần suy diễn (tự động theo vòng / theo thời gian / thời gian điền tay trên trang cài đặt dùng chung).
       // storyDay không phải null → Ghi lại sau khi suy diễn thành công state.time（theo chế độ thời gian).
       async function performEvolution(aiMsg, chat, storyDay, readRoundsOverride) {
         isEvolving = true;

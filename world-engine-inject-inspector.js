@@ -20,7 +20,7 @@ window.WORLD_ENGINE_INJECT_INSPECTOR = (function() {
   const INJECTION_NAME = 'world-engine-world';
 
   // lính gác hạ cánh:buildContext() đầu ra luôn bắt đầu bằng 「【Trạng thái thế giới】」 (world-engine-inject.js），
-  //   chuỗi con này không có bất kỳ {{...}} macro, không bị ST substituteParams viết lại → Dùng nó để phán đoán 「tiêm có vào cuối cùng prompt」ổn định nhất.
+  //   chuỗi con này không có bất kỳ {{...}} macro, không bị ST substituteParams viết lại → Dùng nó để phán đoán 「tiêm có vào cuối cùng prompt」Ổn định nhất.
   //   （Lưu ý: Dùng chuỗi tiêm hoàn chỉnh làm indexOf sẽ do {{user}} các macro bị khai triển mà dẫn đến âm tính giả, nên chỉ nhận lính canh không macro này.）
   const SENTINEL = '【Trạng thái thế giới】';
 

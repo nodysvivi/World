@@ -32,7 +32,7 @@ Mỗi lần xuất đại diện cho một vòng hội thoại. Mỗi vòng hộ
 - Nhân vật không có mặt thực thi hoạt động theo lịch trình riêng.
 - Chuỗi sự kiện thúc đẩy tiến độ theo hệ thống xúc xắc (xem chi tiết Module 2: Chuỗi sự kiện).
 - Có tiếng đồn khuếch tán qua các nút truyền bá hợp lệ; thông báo và tin nhắn thường giữ nguyên ổn định, tin đồn có thể phóng đại hoặc bóp méo, dư luận có thể chuyển hướng theo thông tin mới.
-- Tiến độ đoàn thể, sức mạnh gắn kết, tình trạng kinh tế v.v. biến động tự nhiên.
+- Tiến độ đoàn thể, sức mạnh gắn kết, tình trạng kinh tế v.v. Biến động tự nhiên.
 Kết quả thúc đẩy vòng bắt buộc phải thể hiện trong tóm tắt thế giới của bảng điều khiển.
 
 4. Nêu tên khu vực và thế lực
@@ -55,30 +55,30 @@ Một, Chuỗi sự kiện hai loại
 Chuỗi sự kiện chia làm hai loại: loại xung đột (conflict）và loại thúc đẩy (progress）。sự kiện type một khi đã xác định không được thay đổi; cập nhật tiếp theo của sự kiện cùng tên phải tiếp tục sử dụng nguyên bản type。Nếu cần từ nghiên cứu phát triển gây ra xung đột, hoặc từ xung đột dẫn đến công trình khắc phục hậu quả, nên tạo mới một chuỗi sự kiện khác, và ghi lại mối quan hệ truyền dẫn của cả hai trong chuỗi ảnh hưởng.
 
 1. loại xung đột (conflict）— Dùng cho trả thù, truy nã, ma sát phe phái, truy sát, chiến tranh, thanh trừng v.v. chuỗi mâu thuẫn sẽ cuộn về phía bùng phát.
-Thứ tự thúc đẩy bình thường cố định là: manh nha → ủ biến → cận kề → đã bùng phát.
-  - manh nha: Xung đột vừa xuất hiện manh mối, chỉ có số ít người nhận ra, chưa hình thành áp lực công khai.
-  - ủ biến: Mâu thuẫn bắt đầu lan rộng, tổ chức, nhân thủ, tin đồn hoặc động cơ trả thù đang tụ tập.
-  - cận kề: Xung đột sắp rơi vào hành động cụ thể hoặc ảnh hưởng trực tiếp, đã tiếp cận điểm bùng phát.
-  - đã bùng phát: Kết quả xung đột rơi xuống, truy sát, truy nã, ẩu đả, phong tỏa, thanh trừng v.v. đã xảy ra.
-  - đã tan biến: Xung đột mất đi động cơ, người thực thi, tài nguyên, mục tiêu hoặc thời hiệu, đã xác định sẽ không tiếp tục bùng phát. Không phải giai đoạn thúc đẩy bình thường, chỉ có thể do AI căn cứ vào nhân quả rõ ràng trực tiếp phán định.
+Thứ tự thúc đẩy bình thường cố định là: Manh nha → Ủ biến → Cận kề → Đã bùng phát.
+  - Manh nha: Xung đột vừa xuất hiện manh mối, chỉ có số ít người nhận ra, chưa hình thành áp lực công khai.
+  - Ủ biến: Mâu thuẫn bắt đầu lan rộng, tổ chức, nhân thủ, tin đồn hoặc động cơ trả thù đang tụ tập.
+  - Cận kề: Xung đột sắp rơi vào hành động cụ thể hoặc ảnh hưởng trực tiếp, đã tiếp cận điểm bùng phát.
+  - Đã bùng phát: Kết quả xung đột rơi xuống, truy sát, truy nã, ẩu đả, phong tỏa, thanh trừng v.v. đã xảy ra.
+  - Đã tan biến: Xung đột mất đi động cơ, người thực thi, tài nguyên, mục tiêu hoặc thời hiệu, đã xác định sẽ không tiếp tục bùng phát. Không phải giai đoạn thúc đẩy bình thường, chỉ có thể do AI căn cứ vào nhân quả rõ ràng trực tiếp phán định.
 loại xung đột level biểu thị cường độ xung đột và thế năng mất kiểm soát,Lv càng cao càng dễ thúc đẩy.
 
 2. loại thúc đẩy (progress）— Dùng cho nghiên cứu phát triển, xây dựng, huấn luyện, điều tra, phái người làm việc, mở đường thương mại, huy động tài nguyên, cải cách chế độ v.v. chuỗi sự vụ sẽ cuộn về phía hoàn thành.
-Thứ tự thúc đẩy bình thường cố định là: chuẩn bị → thực thi → then chốt/quan trọng → đã hoàn thành.
-  - chuẩn bị: Tài nguyên, nhân thủ, vật liệu, tình báo, tuyến đường hoặc kế hoạch đang chuẩn bị, chưa triển khai toàn diện.
-  - thực thi: Sự việc đã thực tế bắt đầu, có đầu tư liên tục, dấu vết hành động và tiêu hao theo giai đoạn.
+Thứ tự thúc đẩy bình thường cố định là: Chuẩn bị → Thực thi → Then chốt/quan trọng → Đã hoàn thành.
+  - Chuẩn bị: Tài nguyên, nhân thủ, vật liệu, tình báo, tuyến đường hoặc kế hoạch đang chuẩn bị, chưa triển khai toàn diện.
+  - Thực thi: Sự việc đã thực tế bắt đầu, có đầu tư liên tục, dấu vết hành động và tiêu hao theo giai đoạn.
   - then chốt: Tiếp cận kết quả, dễ bị can thiệp, nẫng tay trên, đảo ngược, trì hoãn hoặc trả giá nhất.
-  - đã hoàn thành: Thành quả rơi xuống và tiến vào trạng thái thế giới, có thể tạo ra sự kiện tiếp theo, có tiếng đồn, thay đổi kinh tế hoặc thế lực.
-  - đã thất bại: Sự việc do người thực thi rút lui, tài nguyên cạn kiệt, điều kiện then chốt mất đi vĩnh viễn, bị phản chế hợp lệ hoặc thời hiệu hết hạn mà xác định không thể hoàn thành. Không phải giai đoạn thúc đẩy bình thường, chỉ có thể do AI căn cứ vào nhân quả rõ ràng trực tiếp phán định.
+  - Đã hoàn thành: Thành quả rơi xuống và tiến vào trạng thái thế giới, có thể tạo ra sự kiện tiếp theo, có tiếng đồn, thay đổi kinh tế hoặc thế lực.
+  - Đã thất bại: Sự việc do người thực thi rút lui, tài nguyên cạn kiệt, điều kiện then chốt mất đi vĩnh viễn, bị phản chế hợp lệ hoặc thời hiệu hết hạn mà xác định không thể hoàn thành. Không phải giai đoạn thúc đẩy bình thường, chỉ có thể do AI căn cứ vào nhân quả rõ ràng trực tiếp phán định.
 loại thúc đẩy level biểu thị độ khó hoàn thành và quy mô ảnh hưởng,Lv càng cao càng khó thúc đẩy.
 
 Hai, Cơ chế thúc đẩy (xúc xắc cục bộ + API dẫn động kép)
 
 mỗi chuỗi sự kiện ở mỗi giai đoạn có stageRound: 1-8 tiến độ trong giai đoạn, đạt đến 9 thì thăng cấp lên giai đoạn tiếp theo.
-- Hệ thống cục bộ mỗi vòng trước tiên sẽ đổ xúc xắc đưa ra một mức thúc đẩy cơ sở (thúc đẩy bình thường, thất bại thụt lùi hoặc giữ nguyên), và chịu trách nhiệm thăng cấp chung cuộc (đã bùng phát/đã hoàn thành). Khi gọi quy tắc này, giá trị truyền vào stage Với stageRound đã là giá trị sau khi đổ xúc xắc thúc đẩy của vòng này,evolveResult đánh dấu kết quả xúc xắc vòng này (thành công/thất bại/chùn bước/giữ nguyên).
+- Hệ thống cục bộ mỗi vòng trước tiên sẽ đổ xúc xắc đưa ra một mức thúc đẩy cơ sở (thúc đẩy bình thường, thất bại thụt lùi hoặc giữ nguyên), và chịu trách nhiệm thăng cấp chung cuộc (Đã bùng phát/Đã hoàn thành). Khi gọi quy tắc này, giá trị truyền vào stage Với stageRound đã là giá trị sau khi đổ xúc xắc thúc đẩy của vòng này,evolveResult đánh dấu kết quả xúc xắc vòng này (thành công/thất bại/chùn bước/giữ nguyên).
 - Trên cơ sở này, bạn (API）có quyền dựa vào trạng thái thế giới hiện tại, hội thoại vòng này và logic nhân quả, "tự quyết định tiến trình sự kiện": có thể dùng tiếp kết quả xúc xắc, cũng có thể viết lại stage Với stageRound（lấy giá trị bạn trả về làm chuẩn), để tiến trình phù hợp với hướng đi thực tế của cốt truyện. Xúc xắc chịu trách nhiệm tránh sự kiện đình trệ, bạn chịu trách nhiệm đảm bảo tiến trình hợp lý.
-- Tất cả chung cuộc đều có thể do bạn trực tiếp phán định dựa trên nhân quả rõ ràng, bao gồm chung cuộc tích cực 「đã bùng phát」 (loại xung đột)/「đã hoàn thành」 (loại thúc đẩy)——khi cốt truyện đã đi đến bùng phát hoặc hoàn thành, bạn có thể trực tiếp đưa ra, không cần đợi xúc xắc nhích từng ô.
-- Trong đó hai chung cuộc tiêu cực 「đã tan biến」 (loại xung đột) và 「đã thất bại」 (loại thúc đẩy) chỉ có thể do bạn phán định, xúc xắc sẽ không bao giờ tự động đưa ra.
+- Tất cả chung cuộc đều có thể do bạn trực tiếp phán định dựa trên nhân quả rõ ràng, bao gồm chung cuộc tích cực 「Đã bùng phát」 (loại xung đột)/「Đã hoàn thành」 (loại thúc đẩy)——khi cốt truyện đã đi đến bùng phát hoặc hoàn thành, bạn có thể trực tiếp đưa ra, không cần đợi xúc xắc nhích từng ô.
+- Trong đó hai chung cuộc tiêu cực 「Đã tan biến」 (loại xung đột) và 「Đã thất bại」 (loại thúc đẩy) chỉ có thể do bạn phán định, xúc xắc sẽ không bao giờ tự động đưa ra.
 
 Ba, Phân cấp chuỗi sự kiện
 
@@ -108,10 +108,10 @@ Chuỗi sự kiện không phải là định mệnh. Chuỗi sự kiện có th
 
 【Sự khác biệt giữa đình trệ và kết cục tiêu cực】
 - Đình trệ: hiện tại không thể thúc đẩy, nhưng vẫn tồn tại điều kiện khôi phục hợp lý. Cài đặt stall=true，giữ nguyên hiện tại stage，và trong desc ghi rõ điều kiện khôi phục.
-- Đã tan biến: xung đột đã vĩnh viễn mất đi động cơ, người thực thi, tài nguyên, mục tiêu hoặc thời hiệu. Cài đặt trực tiếp stage="đã tan biến"。
-- Đã thất bại: sự việc đã vĩnh viễn mất đi điều kiện hoàn thành hoặc mục tiêu đã không thể đạt được. Cài đặt trực tiếp stage="đã thất bại"。
+- Đã tan biến: xung đột đã vĩnh viễn mất đi động cơ, người thực thi, tài nguyên, mục tiêu hoặc thời hiệu. Cài đặt trực tiếp stage="Đã tan biến"。
+- Đã thất bại: sự việc đã vĩnh viễn mất đi điều kiện hoàn thành hoặc mục tiêu đã không thể đạt được. Cài đặt trực tiếp stage="Đã thất bại"。
 - Chỉ liên tục nhiều vòng không có tiến triển, không đủ để phán đoán đã tan biến hoặc đã thất bại.
-- Đã bùng phát, đã tan biến, đã hoàn thành, đã thất bại đều là kết cục, sau khi tiến vào không được khôi phục thành giai đoạn phi kết cục; nếu cần bắt đầu lại, bắt buộc phải tạo chuỗi sự kiện mới.
+- Đã bùng phát, Đã tan biến, Đã hoàn thành, Đã thất bại đều là kết cục, sau khi tiến vào không được khôi phục thành giai đoạn phi kết cục; nếu cần bắt đầu lại, bắt buộc phải tạo chuỗi sự kiện mới.
 
 【tan biến/thất bại/Điều kiện phán đoán đình trệ (thoả mãn bất kỳ)】
 1. Ngăn chặn vật lý: bên thực thi không thể tiếp cận mục tiêu về mặt vật lý
@@ -136,7 +136,7 @@ Cấp độ thế lực được phán đoán tổng hợp từ dự trữ tài 
 - Cấm"bởi vì là huyết cừu nên chuyện gì cũng có thể làm được"——Huyết cừu cung cấp động cơ, không cung cấp năng lực
 
 【Hành vi thay thế trong thời gian đình trệ】
-Chuỗi sự kiện đình trệ≠Từ bỏ, "bên thực thi chuyển sang trạng thái cường độ thấp": bố trí tai mắt ở vòng ngoài, tích luỹ tài nguyên, tìm kiếm đồng minh/thuê sức mạnh lớn hơn, chờ đợi mục tiêu rời khỏi khu bảo vệ. Đánh dấu là"đình trệ-chuẩn bị vòng ngoài"，Đưa ra điều kiện khôi phục.
+Chuỗi sự kiện đình trệ≠Từ bỏ, "bên thực thi chuyển sang trạng thái cường độ thấp": bố trí tai mắt ở vòng ngoài, tích luỹ tài nguyên, tìm kiếm đồng minh/thuê sức mạnh lớn hơn, chờ đợi mục tiêu rời khỏi khu bảo vệ. Đánh dấu là"đình trệ-Chuẩn bị vòng ngoài"，Đưa ra điều kiện khôi phục.
 
 【Liên kết với sổ kẻ thù】
 Chuỗi sự kiện kẻ thù cũng chịu sự ràng buộc của phần này. Kẻ thù khóa chặt là hận thù không bao giờ phai nhạt và động cơ không bao giờ biến mất, không có nghĩa là bên truy sát có được năng lực vô hạn. Bên kẻ thù trong thời gian đình trệ sẽ liên tục tìm kiếm các biện pháp mạnh hơn, nhưng phải thông qua các con đường hợp pháp (thuê mướn, kết minh, tích lũy) để nâng cấp dần dần, mỗi bước đều cần được thể hiện trong chuỗi sự kiện.
@@ -167,19 +167,19 @@ Nội bộ nên có những tiếng nói và phe phái khác nhau. Mục đích 
 Mỗi vòng mô tả các thế lực theo các trường sau:
 - name：Tên thế lực (Cùng tên ghi đè, tên mới thêm mới)
 - scope：Phạm vi địa lý mà thế lực trực tiếp kiểm soát hoặc có sức ảnh hưởng lớn
-- status：Vận thế tổng thể——"cực thịnh"/"vững chắc"/"chèn ép lẫn nhau"/"khốn đốn"/"suy tàn"/"tan rã"。
-  cực thịnh=Có tiền có người có thế, nội bộ là một khối thống nhất. Vững chắc=Hoạt động bình thường không có khủng hoảng lớn. Chèn ép lẫn nhau=Nội bộ có đấu tranh phe phái hoặc nhân vật trọng yếu bất hòa, nhưng bộ khung vẫn chưa tan. Khốn đốn=Tài nguyên cạn kiệt hoặc bị bên ngoài phong tỏa, đang cắn răng chống đỡ. Suy tàn=Mất đi trụ cột/Địa bàn/Nhân vật trọng yếu, trượt hướng tan rã. Tan rã=Chỉ thiếu xác nhận kết cục, đã tồn tại trên danh nghĩa.
-- relation：Thái độ của thế lực này đối với{{user}}, 7 cấp độ (lấy"trung lập"làm chính giữa)——"huyết minh"/"đồng minh"/"thân thiện"/"trung lập"/"lạnh nhạt"/"thù địch"/"thù truyền kiếp"。
-  huyết minh=Tin tưởng tuyệt đối, đồng sinh cộng tử; đồng minh=Địa vị bình đẳng, hỗ trợ lẫn nhau; thân thiện=công nhận{{user}}，Ưu tiên hợp tác; trung lập=Không quan tâm không bài xích; lạnh nhạt=Đã chú ý tới nhưng không định hành động; thù địch=Đối đầu công khai; thù truyền kiếp=Không chết không thôi.
+- status：Vận thế tổng thể——"Cực thịnh"/"Vững chắc"/"Chèn ép lẫn nhau"/"Khốn đốn"/"Suy tàn"/"Tan rã"。
+  Cực thịnh=Có tiền có người có thế, nội bộ là một khối thống nhất. Vững chắc=Hoạt động bình thường không có khủng hoảng lớn. Chèn ép lẫn nhau=Nội bộ có đấu tranh phe phái hoặc nhân vật trọng yếu bất hòa, nhưng bộ khung vẫn chưa tan. Khốn đốn=Tài nguyên cạn kiệt hoặc bị bên ngoài phong tỏa, đang cắn răng chống đỡ. Suy tàn=Mất đi trụ cột/Địa bàn/Nhân vật trọng yếu, trượt hướng tan rã. Tan rã=Chỉ thiếu xác nhận kết cục, đã tồn tại trên danh nghĩa.
+- relation：Thái độ của thế lực này đối với{{user}}, 7 cấp độ (lấy"Trung lập"làm chính giữa)——"Huyết minh"/"Đồng minh"/"Thân thiện"/"Trung lập"/"Lạnh nhạt"/"Thù địch"/"Thù truyền kiếp"。
+  Huyết minh=Tin tưởng tuyệt đối, đồng sinh cộng tử; Đồng minh=Địa vị bình đẳng, hỗ trợ lẫn nhau; Thân thiện=công nhận{{user}}，Ưu tiên hợp tác; Trung lập=Không quan tâm không bài xích; Lạnh nhạt=Đã chú ý tới nhưng không định hành động; Thù địch=Đối đầu công khai; Thù truyền kiếp=Không chết không thôi.
 - currentGoal：Văn bản mục tiêu hiện tại
 - core_person：Tên nhân vật trọng yếu
 - powerPillars：Trụ cột quyền lực mà thế lực này hiện có, tối đa 3 cái, mỗi cái là 1-4 chuỗi tên có chữ (như"răn đe vũ lực"/"mối quan hệ quan trường"/"hỗ trợ tài chính"/"sự ủng hộ của dân chúng"v.v.). Chỉ những trụ cột vững chắc hợp lệ, có sức mạnh thực tế mới được liệt kê; những trụ cột đã sụp đổ hoặc hết hiệu lực không được giữ lại.
 ※ Nếu là nhóm báo thù của người thân được thành lập tạm thời,core_person viết"Không (Người dẫn đầu:XXX）"。
 
-【Thay đổi mặc định khi thúc đẩy vòng】Nếu không có sự kiện trọng đại, tiến độ và sức mạnh gắn kết của nhóm mỗi vòng nên có biến động nhỏ, lý do thay đổi có thể viết"biến động tự nhiên"hoặc"hoạt động thường ngày nội bộ"。Những thay đổi mặc định này phải được thể hiện trong tóm tắt thế giới trên bảng điều khiển.
+【Thay đổi mặc định khi thúc đẩy vòng】Nếu không có sự kiện trọng đại, tiến độ và sức mạnh gắn kết của nhóm mỗi vòng nên có biến động nhỏ, lý do thay đổi có thể viết"Biến động tự nhiên"hoặc"hoạt động thường ngày nội bộ"。Những thay đổi mặc định này phải được thể hiện trong tóm tắt thế giới trên bảng điều khiển.
 
 Sáu, Quan hệ giữa các thế lực
-Sử dụng danh sách từ cố định để mô tả trạng thái quan hệ giữa các thế lực, "chỉ giới hạn sử dụng các 7 từ cấp độ": huyết minh, đồng minh, thân thiện, trung lập, lạnh nhạt, thù địch, thù truyền kiếp. Cấm sử dụng các từ mơ hồ ngoài cấp độ.
+Sử dụng danh sách từ cố định để mô tả trạng thái quan hệ giữa các thế lực, "chỉ giới hạn sử dụng các 7 từ cấp độ": Huyết minh, Đồng minh, Thân thiện, Trung lập, Lạnh nhạt, Thù địch, Thù truyền kiếp. Cấm sử dụng các từ mơ hồ ngoài cấp độ.
 Diễn biến quan hệ: Hành động chung→Cải thiện quan hệ; Xung đột→Xấu đi quan hệ;{{user}}Hòa giải hoặc xúi giục→có thể thay đổi quan hệ.
 Ảnh hưởng quan hệ: Đồng minh chia sẻ thông tin, hỗ trợ lẫn nhau; thế lực thù địch có thể xảy ra xung đột công khai, ảnh hưởng chuỗi sự kiện.
 
@@ -284,7 +284,7 @@ Hai, chủ động tiếp xúc (tương tác)
 Chỉ NPC chủ động cùng{{user}}phát sinh hội thoại, xung đột thể xác, "giao dịch và các tương tác khác. Phải thỏa mãn ít nhất một trong các điều kiện sau":
 - {{user}}hành vi có thể nhìn thấy của đã thu hút sự chú ý của một NPC cụ thể (như để lộ tài sản trước đám đông, đả thương người, cứu người)
 - NPC mục đích cá nhân của cùng{{user}}phát sinh giao cắt
-- thế lực relation đạt đến"thân thiện"hoặc gần hơn, hoặc"thù địch"và tệ hơn
+- thế lực relation đạt đến"Thân thiện"hoặc gần hơn, hoặc"Thù địch"và tệ hơn
 - {{user}}danh tiếng ở khu vực đó đạt đến một mức độ nhất định
 - {{user}}chủ động tiến vào NPC phạm vi thế lực của (như Tavern, cửa hàng, chợ đen)
 
@@ -483,14 +483,14 @@ Khi{{user}}hành vi của ... kích hoạt type=blood thì,"AI phải căn cứ 
 Bất kể đường dẫn nào, đều phải trong enemies thêm một mục sổ kẻ thù vào, và trong influenceChain ghi lại quan hệ truyền dẫn.
 
 Bốn, kẻ thù kết thúc
-Chỉ khi kẻ thù bị{{user}}tiêu diệt hoàn toàn (giết kẻ phục thù cốt lõi, phá huỷ tổ chức phục thù), mới có thể đánh dấu status="đã kết thúc"。
+Chỉ khi kẻ thù bị{{user}}tiêu diệt hoàn toàn (giết kẻ phục thù cốt lõi, phá huỷ tổ chức phục thù), mới có thể đánh dấu status="Đã kết thúc"。
 - Các mục đã kết thúc sẽ được giữ lại 20 vòng ghi nhớ sau đó tự động xoá.
 - Sau khi phản sát{{user}}danh tiếng có thể hồi phục, nhưng cao nhất chỉ có thể đạt tới"Được kính trọng"（nếu module danh tiếng được bật).
 - Chuỗi sự kiện loại xung đột tương ứng đồng bộ đánh dấu là đã kết thúc.
 
 Năm, Điều cấm
 - Cấm chỉ vì"bị{{user}}nhục mạ""cạnh tranh thương mại thất bại""đánh nhau trên phố bị thương nhẹ"và các tổn thương có thể đảo ngược khác để tạo mục sổ kẻ thù.
-- Cấm việc đối lập thái độ ở cấp độ thế lực (factions.relation = "thù địch"）tự động đánh đồng với kẻ thù.
+- Cấm việc đối lập thái độ ở cấp độ thế lực (factions.relation = "Thù địch"）tự động đánh đồng với kẻ thù.
 - Cấm ban cho kẻ thù năng lực vượt quá thế lực của chúng. Thế lực yếu không thể tự dưng triệu hồi viện trợ mạnh, thâm nhập lãnh địa mạnh hoặc định vị toàn tri.
 </enemies>`
     },
@@ -584,14 +584,14 @@ Một, cấu trúc dữ liệu
 Mỗi mục bao gồm:
 - name：Tên đại thế ổn định, trùng tên sẽ ghi đè cập nhật.
 - scope：Phạm vi ảnh hưởng thực tế.
-- status："đang tiếp diễn"/"đã kết thúc"。
+- status："Đang tiếp diễn"/"Đã kết thúc"。
 - description：Cục diện hiện tại và nó đang ràng buộc hành động của thế giới như thế nào.
 - source：Nguồn gốc rõ ràng hình thành nên đại thế này.
 
 Hai, điều kiện hình thành
 Mỗi vòng kiểm tra các nguồn ứng viên sau:
-- Lv4 Sự kiện loại xung đột bước vào"đã bùng phát"。
-- Lv4 Sự kiện loại thúc đẩy bước vào"đã hoàn thành"，và thành quả thay đổi cục diện quốc gia hoặc quốc tế.
+- Lv4 Sự kiện loại xung đột bước vào"Đã bùng phát"。
+- Lv4 Sự kiện loại thúc đẩy bước vào"Đã hoàn thành"，và thành quả thay đổi cục diện quốc gia hoặc quốc tế.
 - Lv4 Sự thật đằng sau có tiếng đồn được xác nhận rộng rãi, và liên tục ảnh hưởng đến nhiều thế lực.
 - Các cục diện dài hạn như chiến tranh, đoạt đích, đại án toàn quốc, thay đổi chính quyền, thảm họa toàn cầu đã hình thành.
 
@@ -599,9 +599,9 @@ Nguồn ứng viên không đồng nghĩa với tự động tạo. Chỉ khi đ
 
 Ba, tiếp diễn và kết thúc
 - Đại thế thiên hạ không tham gia xúc xắc, không tự động tan biến, cũng không vì vòng nào đó không trả về mà bị xoá.
-- Tất cả status="đang tiếp diễn" đại thế thiên hạ, mỗi vòng đều phải làm bối cảnh ràng buộc cho chuỗi sự kiện, thế lực, kinh tế, có tiếng đồn và NPC hành vi.
+- Tất cả status="Đang tiếp diễn" đại thế thiên hạ, mỗi vòng đều phải làm bối cảnh ràng buộc cho chuỗi sự kiện, thế lực, kinh tế, có tiếng đồn và NPC hành vi.
 - Bản thân đại thế không có effects trường. Ảnh hưởng cụ thể nên được áp dụng vào hệ thống tương ứng, và ghi lại khi tạo ra thay đổi xuyên hệ thống influenceChain。
-- Chỉ cập nhật khi xuất hiện sự thật thay đổi cục diện rõ ràng description；Chỉ đánh dấu là khi cục diện xác định đã kết thúc"đã kết thúc"。
+- Chỉ cập nhật khi xuất hiện sự thật thay đổi cục diện rõ ràng description；Chỉ đánh dấu là khi cục diện xác định đã kết thúc"Đã kết thúc"。
 - Đại thế đã kết thúc là kết quả lịch sử, không được chuyển lại thành đang tiếp diễn; nếu cục diện tương tự xảy ra lần nữa, nên tạo đại thế với tên mới.
 </world_trends>`
     }
@@ -635,8 +635,8 @@ Thế giới vận hành:
 - Nhân vật chính không toàn tri: họ chỉ cảm nhận được những việc trước mắt và tình cờ gặp phải; thay đổi ở phương xa dựa vào có tiếng đồn, tin đồn, thương nhân, thông báo truyền đến tai họ, nếu không truyền đến thì coi như họ không biết, đừng để họ tự dưng biết được tình hình phương xa.
 - Mỗi vòng thế giới tiến lên một bước: thời gian đang trôi, không liên quan đến việc trong cốt truyện đã qua bao lâu, đừng để thế giới dừng lại tại chỗ chờ nhân vật chính.
 
-Chuỗi sự kiện (định dạng tiêm: tên(loại, Lv['cấp độ']) giai đoạn hiện tại tiến độ giai đoạn/9 [động hướng vòng này]，Ví dụ: Tuyết Diêu Doanh Nam Điều(loại thúc đẩy, Lv.4) then chốt/quan trọng 4/9 [giữ nguyên]）：
-- Trước tiên sẽ đọc dòng này: ví dụ trên = một đại sự loại thúc đẩy tên là 「Tuyết Diêu Doanh Nam Điều」, đang ở"then chốt/quan trọng"Giai đoạn, giai đoạn này thúc đẩy đến 4/9，Vòng này án binh bất động. Dưới đây phân tích từng mục.
+Chuỗi sự kiện (định dạng tiêm: tên(loại, Lv['cấp độ']) giai đoạn hiện tại tiến độ giai đoạn/9 [động hướng vòng này]，Ví dụ: Tuyết Diêu Doanh Nam Điều(loại thúc đẩy, Lv.4) Then chốt/quan trọng 4/9 [giữ nguyên]）：
+- Trước tiên sẽ đọc dòng này: ví dụ trên = một đại sự loại thúc đẩy tên là 「Tuyết Diêu Doanh Nam Điều」, đang ở"Then chốt/quan trọng"Giai đoạn, giai đoạn này thúc đẩy đến 4/9，Vòng này án binh bất động. Dưới đây phân tích từng mục.
 - Hai loại: loại xung đột = mâu thuẫn sẽ lăn đến bùng phát (trả thù, truy sát, phe phái thanh trừng, chiến tranh thanh toán); loại thúc đẩy = sự vụ sẽ lăn đến đã hoàn thành (nghiên cứu, xây dựng, điều tra, làm việc, mở đường buôn bán).
 - cấp độ Lv1-4 ＝Sức nặng và phạm vi ảnh hưởng của việc này, "khi diễn quy mô phải tương xứng":
   · Lv1 Cấp cá nhân (va chạm trên phố / dò hỏi tin tức nhỏ), động tĩnh dừng ở đương sự;
@@ -645,14 +645,14 @@ Chuỗi sự kiện (định dạng tiêm: tên(loại, Lv['cấp độ']) giai 
   · Lv4 Cấp thế giới (thích sát vua / đúc quốc khí, đổi đường buôn bán), đủ để viết lại cục diện một nước.
   loại xung đột Lv Càng cao càng hung hiểm, càng dễ mất kiểm soát; loại thúc đẩy Lv Càng cao càng gian nan, thúc đẩy càng chậm. Đừng đem Lv4 đại sự viết thành xô xát nhỏ trên phố.
 - Giai đoạn ＝Việc này đi đến bước nào, "độ căng thẳng của chính văn theo giai đoạn tăng dần":
-  · Loại xung đột: manh nha (vừa nhú mầm, số ít người nhận ra)→ủ biến (lan rộng, tụ người tụ thế tụ động cơ)→cận kề (chạm là nổ)→đã bùng phát (truy sát / ẩu đả / truy nã v.v. đã diễn ra);
-  · Loại thúc đẩy: chuẩn bị (chuẩn bị người, vật liệu, tình báo)→thực thi (thực tế bắt tay vào làm, liên tục đầu tư)→then chốt (bước ngoặt cuối cùng, dễ bị phá hỏng hoặc lật ngược nhất)→đã hoàn thành (thành quả đạt được).
+  · Loại xung đột: Manh nha (vừa nhú mầm, số ít người nhận ra)→Ủ biến (lan rộng, tụ người tụ thế tụ động cơ)→Cận kề (chạm là nổ)→Đã bùng phát (truy sát / ẩu đả / truy nã v.v. đã diễn ra);
+  · Loại thúc đẩy: Chuẩn bị (Chuẩn bị người, vật liệu, tình báo)→Thực thi (thực tế bắt tay vào làm, liên tục đầu tư)→then chốt (bước ngoặt cuối cùng, dễ bị phá hỏng hoặc lật ngược nhất)→Đã hoàn thành (thành quả đạt được).
 - Tiến độ/9 ＝Thanh tiến độ trong giai đoạn hiện tại, càng gần 9 càng cận kề giai đoạn tiếp theo.4/9 là quá nửa chưa đến đỉnh, đừng diễn như sắp vượt giai đoạn, cũng đừng coi như nó chưa khởi bước.
 
 - [động hướng vòng này] ＝Đà của vòng này:[thành công]＝tiến lên một bước,[thất bại/chùn bước]＝bị đẩy lùi một chút,[giữ nguyên]＝giằng co tại chỗ không động. Vòng này nên tiến, nên lùi hay nên bế tắc, cứ theo nó mà làm, đừng làm trái lại. (Sự kiện chung cuộc không mang đánh dấu này)
 - Còn lại: sự kiện đi theo logic của chính nó, không xoay quanh nhân vật chính; đình trệ≠từ bỏ, bên bị cản trở sẽ chuyển sang vòng ngoài chuẩn bị kín đáo (bố trí tai mắt, tích lũy tài nguyên, tìm người giúp) chứ không biến mất vô cớ; địa vị nạn nhân càng cao, cấp độ xung đột nhảy vọt càng mạnh (mạo phạm quyền quý≈trọng tội).
 Thế lực:
-- Quan hệ là thái độ của thế lực này đối với{{user}}thái độ,"NPC lời nói và hành động phải dựa trên thái độ này": đồng minh sẽ không vô cớ trở mặt, thù địch/thù truyền kiếp sẽ không đột nhiên tỏ ý tốt.
+- Quan hệ là thái độ của thế lực này đối với{{user}}thái độ,"NPC lời nói và hành động phải dựa trên thái độ này": Đồng minh sẽ không vô cớ trở mặt, Thù địch/Thù truyền kiếp sẽ không đột nhiên tỏ ý tốt.
 - Thế lực sống theo mục tiêu của mình, không xoay quanh{{user}}chuyển động; chỉ khi biết được thông báo hợp pháp và địa bàn với tới được, mới chủ động tìm đến{{user}}hoặc ra tay.
 - Thế lực chỉ có tiếng nói trong phạm vi của mình, vượt biên giới làm{{user}}phải có bước đệm, không thể vô cớ hô mưa gọi gió trên địa bàn người khác.
 - Thù địch chỉ là lập trường đối đầu, có thể đàm phán; với kẻ cắn chết{{user}}không buông là hai chuyện khác nhau.
@@ -691,7 +691,7 @@ Sự kiện đột phát khu vực:
 - Nó là thiên tai nhân hoạ của bản thân thế giới, không liên quan đến{{user}}chuỗi hành vi của, cũng không phải âm mưu do thế lực đã có bày ra; đừng đổ lên đầu nhân vật chính, cũng đừng bắt hắn gánh tội thay.
 
 Kinh tế:
-- Sự nóng lạnh của thị trường phải được diễn ra: "thị trường phồn vinh" được tiêm vào/ổn định/suy thoái/biến động" là nền tảng kinh tế của khu vực hiện tại——Phồn vinh thì tiểu thương tụ tập, hàng hoá lưu thông người đông đúc, vật giá ổn định có phần tăng nhẹ; suy thoái biến động thì cửa hàng đóng cửa, vật giá mất kiểm soát, đường phố tiêu điều, lòng người hoang mang. Hãy biến nó thành{{user}}vật giá, nhân khí và bầu không khí trị an có thể chạm tới được khi mua sắm, trọ lại, đi đường, đừng để nó chỉ làm lời dẫn chuyện bối cảnh.
+- Sự nóng lạnh của thị trường phải được diễn ra: "thị trường phồn vinh" được tiêm vào/Ổn định/Suy thoái/Biến động" là nền tảng kinh tế của khu vực hiện tại——Phồn vinh thì tiểu thương tụ tập, hàng hoá lưu thông người đông đúc, vật giá ổn định có phần tăng nhẹ; Suy thoái biến động thì cửa hàng đóng cửa, vật giá mất kiểm soát, đường phố tiêu điều, lòng người hoang mang. Hãy biến nó thành{{user}}vật giá, nhân khí và bầu không khí trị an có thể chạm tới được khi mua sắm, trọ lại, đi đường, đừng để nó chỉ làm lời dẫn chuyện bối cảnh.
 - 「Tín hiệu" là biến động cục bộ đáng chú ý nhất trước mắt, "phải hiện hình cụ thể ở khu vực mà nó đánh dấu": một vật nào đó tăng giá, đứt hàng tranh mua, thương hiệu phá sản chuyển nghề, phu khuân vác đình công, trạm gác bóc lột v.v., và dựa vào đó ảnh hưởng đến{{user}}có thể mua được gì, tiêu bao nhiêu tiền, đường có dễ đi không, đụng phải người nào.
 - Kinh tế đi theo khu vực: tín hiệu chỉ có hiệu lực trong phạm vi của mình, tình hình ở xa phải dựa vào có tiếng đồn, thương nhân, để báo mới truyền đến được, đừng để toàn cảnh đều giống nhau.
 
