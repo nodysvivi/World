@@ -167,10 +167,10 @@
           const recent = recentChat.map(m => (m.mes || '')).join(' ');
 
           const tags = [];
-          const namePattern = /([một-dụ]{2,4})(?:nói|đạo|giảng|hỏi|đáp)/g;
+          const namePattern = /([一-龥]{2,4})(?:说|道|讲|问|答)/g;
           let m;
           while ((m = namePattern.exec(recent)) !== null) {
-            if (!['cái gì','thế nào','cái này','cái kia','không có','có thể','biết','nhưng','bởi vì','cho nên'].includes(m[1])) {
+            if (!['什么','怎么','这个','那个','没有','可以','知道','但是','因为','所以'].includes(m[1])) {
               tags.push(m[1]);
             }
           }

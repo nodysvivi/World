@@ -773,7 +773,7 @@ Yêu cầu:
       } else {
         // [FIX thủ vệ] redo phải có điểm lưu làm cơ sở. Khi không có điểm lưu (sau lần suy diễn đầu tiên, hoặc chỉ mới làm redo chưa từng forward qua) từ chối thực thi,
         //   tránh âm thầm thoái hoá thành 'ở hiện tại state suy diễn lên'+ round++ giả của redo。tự động thử lại roll không nằm trong phạm vi thủ vệ này (xem nhánh dưới).
-        _lastError = 'không có điểm lưu, không thể thúc đẩy lại (redo）；vui lòng 'thúc đẩy tới trước' ít nhất một vòng rồi mới sử dụng 'thúc đẩy lại'';
+        _lastError = 'không có điểm lưu, không thể thúc đẩy lại (redo）；vui lòng "thúc đẩy tới trước" ít nhất một vòng rồi mới sử dụng "thúc đẩy lại"';
         console.warn('[World Engine] ⚠️ redo không có điểm lưu, đã từ chối (không thoái hoá thành giả forward）');
         return false;
       }

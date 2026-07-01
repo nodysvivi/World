@@ -1,185 +1,185 @@
-// world-engine-inject.js — Xây dựng tiêm ngữ cảnh (lọc điều kiện, chỉ tiêm ảnh hưởng RP thông tin then chốt)
+// world-engine-inject.js — 构建注入上下文（条件筛选，只注入影响RP的关键信息）
 window.WORLD_ENGINE_INJECT = (function() {
   const core = window.WORLD_ENGINE_CORE;
   const ledger = window.WORLD_ENGINE_LEDGER;
 
-  // Phán từ danh tiếng: dịch cấp độ thành ngôn ngữ tự nhiên cho model văn bản chính đọc, tránh tiêm các nhãn cấp độ trần trụi
-  const REP_DIM_NAME = { authority: 'Trên triều đình', common: 'Giữa thị tứ', shadow: 'Trong giang hồ', circuit: 'Giữa đồng đạo' };
+  // 声誉判词：把等级翻译成给正文模型看的人话，避免注入光秃秃的等级标签
+  const REP_DIM_NAME = { authority: '朝堂之上', common: '市井之间', shadow: '草莽之中', circuit: '同道之间' };
   const REP_VERDICT = {
-    authority: { // Trên triều đình —— Tuân thủ pháp luật/Phục tùng ↔ Khiêu khích/Nguy hiểm
-      trời giận người oán: 'Triều đình coi như cái gai trong mắt, đã bị truy nã hỏi tội, trên quan trường ai cũng đòi đánh',
-      "tai tiếng khắp nơi": 'Trên quan trường danh tiếng cực xấu, bị coi là phần tử rắc rối và nguy hiểm, đi đâu cũng bị đề phòng',
-      "vô danh": 'Triều đình không ai biết tên, không lọt vào mắt xanh của người nắm quyền',
-      "được kính trọng": 'Trên quan trường khá có danh vọng, được coi là người có thể dùng và đáng tin cậy',
-      "được vạn người ngưỡng mộ": 'Được người nắm quyền vô cùng trọng dụng, trên triều đình một lời nói nặng tựa chín đỉnh',
+    authority: { // 朝堂之上 —— 守法/顺从 ↔ 挑衅/危险
+      天怒人怨: '朝堂视为眼中钉，已被通缉问罪，官面上人人喊打',
+      声名狼藉: '在官场名声极坏，被当成麻烦与危险分子，处处提防',
+      默默无闻: '朝堂无人识其名，进不了当权者的眼',
+      受人尊敬: '官面上颇有声望，被视作可用可信之人',
+      万众敬仰: '深得当权者倚重，朝堂之上一言九鼎',
     },
-    common: { // Giữa thị tứ —— Nhân thiện/Bảo vệ ↔ Bạo lệ/Đe doạ
-      trời giận người oán: 'Bách tính hận thấu xương, nhắc đến là chửi rủa, tránh như rắn rết',
-      "tai tiếng khắp nơi": 'Thị tứ truyền miệng cực kém, bị coi là tai hoạ, hàng xóm thấy là đi đường vòng',
-      "vô danh": 'Trên phố không mấy ai nghe qua hắn, chìm nghỉm giữa đám đông',
-      "được kính trọng": 'Bách tính nhớ cái tốt của hắn, truyền miệng rất tốt, coi hắn là người trượng nghĩa',
-      "được vạn người ngưỡng mộ": 'Vạn dân ủng hộ, đi đến đâu bách tính xếp hàng chào đón, được tôn như cha mẹ tái sinh',
+    common: { // 市井之间 —— 仁善/保护 ↔ 暴戾/威胁
+      天怒人怨: '百姓恨之入骨，提起就唾骂，避之如蛇蝎',
+      声名狼藉: '市井口碑极差，被当成祸害，街坊见了绕道走',
+      默默无闻: '街面上没什么人听过他，泯然众人',
+      受人尊敬: '百姓念其好，口碑甚佳，当他是仗义之人',
+      万众敬仰: '万民拥戴，所到之处百姓夹道，被奉若再生父母',
     },
-    shadow: { // Trong giang hồ —— Có gan/Dám gánh vác ↔ Không có gan/Bắt nạt kẻ yếu
-      trời giận người oán: 'Giang hồ ai cũng đòi đánh, chợ đen báo tên hắn là có người muốn ra tay',
-      "tai tiếng khắp nơi": 'Giang hồ coi thường hắn, coi là kẻ hèn nhát bắt nạt kẻ yếu sợ kẻ mạnh, không ai muốn làm việc cùng',
-      "vô danh": 'Trên giang hồ không ai nhận ra hắn, giang hồ tra không ra người này',
-      "được kính trọng": 'Trên giang hồ có chút danh tiếng, người trong đạo kính hắn ba phần có gan',
-      "được vạn người ngưỡng mộ": 'Giang hồ tôn làm hào kiệt, một câu nói có thể điều động nhân mã giang hồ một phương',
+    shadow: { // 草莽之中 —— 有种/敢扛 ↔ 没种/欺弱
+      天怒人怨: '江湖人人喊打，黑市报他名字就有人想动手',
+      声名狼藉: '草莽看不起他，当成欺软怕硬的怂货，没人愿与之共事',
+      默默无闻: '道上没人认得他，江湖查无此人',
+      受人尊敬: '江湖上有几分名头，道上的人敬他三分有种',
+      万众敬仰: '草莽奉为豪杰，一句话能调动一方江湖人马',
     },
-    circuit: { // Giữa đồng đạo —— Kỹ nghệ/Giữ quy củ/Cống hiến ↔ Đập biển hiệu/Phản bội
-      trời giận người oán: 'Đồng hành coi là cặn bã trong nghề, bị đuổi khỏi giới, ai cũng đòi đánh',
-      "tai tiếng khắp nơi": 'Đồng đạo khinh bỉ tay nghề và nhân phẩm, mang tiếng đập biển hiệu, bán đứng đồng hành',
-      "vô danh": 'Trong nghề không ai biết nhân vật này',
-      "được kính trọng": 'Đồng hành kính trọng kỹ nghệ và đức hạnh, là nhân vật có số má trong nghề',
-      "được vạn người ngưỡng mộ": 'Được tôn làm một thế hệ tông sư, đồng đạo coi là tiêu chuẩn',
+    circuit: { // 同道之间 —— 技艺/守规/贡献 ↔ 砸招牌/背叛
+      天怒人怨: '同行视为行业败类，被逐出圈子，人人喊打',
+      声名狼藉: '同道鄙其手艺与人品，背了砸招牌、卖同行的名声',
+      默默无闻: '行当里没人知道这号人',
+      受人尊敬: '同行敬重其技艺与德行，是行里数得上的人物',
+      万众敬仰: '被尊为一代宗师，同道奉其为标杆',
     },
   };
-  // Tương thích bản lưu cũ: thời kỳ sáu cấp độ"có chút danh tiếng"đưa vào"được kính trọng"
-  const REP_LEGACY = { "có chút danh tiếng": 'được kính trọng' };
+  // 旧存档兼容：六级时期的"小有名气"归入"受人尊敬"
+  const REP_LEGACY = { 小有名气: '受人尊敬' };
 
-  // Lời phán vận thế thế lực: dịch từ vận thế thành "thế lực này hiện tại đang ở hoàn cảnh nào, nội bộ có đoàn kết hay không"
+  // 势力运势判词：把运势词翻译成「这势力眼下什么处境、内部团不团结」
   const STATUS_VERDICT = {
-    "cực thịnh": 'Tiền lương dồi dào, nhân thủ cực thịnh, nội bộ trên dưới một lòng, vững như khối sắt, hành sự mang theo sự tự tin và phô trương không thể nghi ngờ',
-    "vững chắc": 'Vận hành như thường, nền tảng vững vàng, không có nội ưu ngoại hoạn rõ ràng, tiến hành các công việc đã định theo từng bước',
-    "chèn ép lẫn nhau": 'Bề ngoài vẫn chống đỡ, nhưng bên trong phe phái chèn ép lẫn nhau, cốt lõi bất hòa, nhiều quyết sách bị đình trệ do nội đấu, tự cản trở lẫn nhau',
-    "khốn đốn": 'Tài nguyên cạn kiệt hoặc bị bên ngoài phong tỏa, đang cắn răng chống đỡ, khắp nơi thiếu hụt, không chịu nổi đả kích thêm nữa',
-    "suy tàn": 'Đã mất đi trụ cột then chốt, địa bàn hoặc nhân vật trọng yếu, lòng người dao động, liên tục thất bại, đang từng bước trượt tới bờ vực tan rã',
-    "tan rã": 'Tồn tại trên danh nghĩa, chỉ còn cái vỏ rỗng, khó ra hiệu lệnh, chúng bạn xa lánh, có thể giải tán hoàn toàn bất cứ lúc nào',
+    鼎盛: '钱粮充裕、人手鼎盛，内部上下一心、铁板一块，行事带着不容置疑的底气与排场',
+    稳固: '运转如常、根基稳健，无明显内忧外患，按部就班地推进既定事务',
+    倾轧: '架子还撑着，内里却派系倾轧、核心不和，许多决策都因内斗而迟滞、自相掣肘',
+    困顿: '资源枯竭或被外部封锁，正咬牙硬撑，处处捉襟见肘，经不起再受打击',
+    衰落: '已失去关键支柱、地盘或核心人物，人心浮动、节节败退，正一步步滑向瓦解',
+    瓦解: '名存实亡、只剩空架子，号令难出、众叛亲离，随时可能彻底散伙',
   };
 
-  // Lời phán quan hệ thế lực: dịch từ quan hệ thành "thế lực này đối với{{user}}khuynh hướng hành vi của"
+  // 势力关系判词：把关系词翻译成「这势力对{{user}}的行为倾向」
   const RELATION_VERDICT = {
-    huyết minh: 'với{{user}}Sinh tử có nhau, tin tưởng tuyệt đối, sẽ giúp đỡ bằng mọi giá, xem an nguy của đối phương như sự tồn vong của chính mình',
-    "đồng minh": 'với{{user}}Địa vị bình đẳng, hỗ trợ lẫn nhau, chủ động chi viện và chia sẻ tình báo trên lợi ích chung, nhưng mỗi bên đều có giới hạn riêng',
-    "thân thiện": 'công nhận{{user}}，Sẵn sàng ưu tiên hợp tác, tạo điều kiện, thể hiện thiện ý, nhưng chưa đến mức kết minh giao tâm',
-    "trung lập": 'đối với{{user}}Không thân không sơ, mọi việc hành sự theo lợi hại của bản thân, không có lập trường định sẵn',
-    "lạnh nhạt": 'đã chú ý tới{{user}}nhưng thiếu hứng thú, giữ khoảng cách, không muốn giao du sâu, tạm thời không có ý định hành động chủ động',
-    "thù địch": 'với{{user}}Công khai đối lập, sẽ gây áp lực, cản trở, làm khó dễ ở ngoài sáng, thậm chí tìm cơ hội xung đột trực diện',
-    "thù truyền kiếp": 'với{{user}}Không chết không thôi, nhất quyết phải diệt trừ cho bằng được, sẽ không từ thủ đoạn, liên tục tìm sơ hở để ra tay tàn độc',
+    血盟: '与{{user}}生死与共、绝对信任，会不惜代价相助，视其安危如自身存亡',
+    盟友: '与{{user}}地位平等、互为奥援，在共同利益上主动支援、共享情报，但各有底线',
+    友好: '认可{{user}}，愿意优先合作、行个方便、释放善意，尚未到结盟交心的地步',
+    中立: '对{{user}}不亲不疏，一切按自身利害行事，无既定立场',
+    冷淡: '已注意到{{user}}但兴致缺缺，保持距离、不愿深交，暂无主动行动的打算',
+    敌对: '与{{user}}公开对立，会在明处施压、阻挠、为难，乃至寻机正面冲突',
+    世仇: '与{{user}}不死不休，必欲除之而后快，会不择手段、持续寻隙下死手',
   };
 
-  // Lời phán khí hậu kinh tế: dịch từng từ khí hậu thành mô tả thị trường cho model văn bản chính xem
+  // 经济气候判词：把单个气候词翻译成给正文模型看的市面描述
   const CLIMATE_VERDICT = {
-    "phồn vinh": 'Thị trường phồn thịnh, thương lộ thông suốt, trăm nghề hưng vượng, tiền hàng lưu chuyển thuận lợi, vật giá ổn định ở mức hơi cao',
-    "ổn định": 'Thị trường như thường, vật giá lên xuống tự nhiên theo mùa, không có biến động lớn',
-    "suy thoái": 'Thị trường tiêu điều, nhu cầu thu hẹp, thương hiệu liên tiếp phá sản, một số ít nhu yếu phẩm lại khan hiếm tăng giá',
-    "biến động": 'Trật tự kinh tế sắp sụp đổ, vật giá mất kiểm soát, thương lộ bị cản trở, lòng người hoang mang, trao đổi hàng hóa',
+    繁荣: '市面繁盛，商路通畅、百业兴旺，钱货流转顺畅，物价稳中偏高',
+    平稳: '市面如常，物价随时节自然起落，没有大的波动',
+    衰退: '市面萧条，需求萎缩、商号接连倒闭，少数刚需之物反而紧俏涨价',
+    动荡: '经济秩序濒临崩坏，物价失控、商路受阻，人心惶惶，以物易物回潮',
   };
 
   function buildContext(worldState, tags) {
     const rulesLoader = window.WORLD_ENGINE_RULES;
     const rulesSummary = rulesLoader ? rulesLoader.getCoreRulesSummary() : '';
 
-    // Chuỗi sự kiện:Lv3/4 Tiêm toàn bộ,Lv1/2 Chỉ đã bùng phát/Đã hoàn thành tiêm chung cuộc
+    // 事件链：Lv3/4 全注入，Lv1/2 仅已爆发/已完成终局注入
     const visibleEvents = (worldState.events || []).filter(e => {
       if (e.level >= 3) return true;
-      return e.stage === 'Đã bùng phát' || e.stage === 'Đã hoàn thành';
+      return e.stage === '已爆发' || e.stage === '已完成';
     });
     const eventsText = visibleEvents.map(e => {
-      const typeName = e.type === 'progress' ? 'loại thúc đẩy' : 'loại xung đột';
+      const typeName = e.type === 'progress' ? '推进型' : '冲突型';
       let txt = `${e.name}(${typeName}, Lv.${e.level}) ${e.stage} ${e.stageRound||1}/9`;
       if (e.evolveResult) txt += ` [${e.evolveResult}]`;
       return txt;
-    }).join('；') || 'không';
+    }).join('；') || '无';
 
-    // Thế lực: tất cả 7 cấp quan hệ đều được tiêm, render thành câu tự nhiên, vận thế/quan hệ đều mang lời phán
+    // 势力：全部7级关系都注入，渲染成自然语句，运势/关系各带判词
     const formatPillars = (arr) => arr.length === 1
       ? arr[0]
-      : arr.slice(0, -1).join('、') + 'với' + arr[arr.length - 1];
+      : arr.slice(0, -1).join('、') + '与' + arr[arr.length - 1];
     const allFactions = worldState.factions || [];
     const factionsText = allFactions.length
       ? '\n' + allFactions.map(f => {
-          const statusDesc = STATUS_VERDICT[f.status] || (f.status ? `đang ở trong 「${f.status}」」` : 'tình cảnh không rõ');
-          const relation = f.relation || 'trung lập';
-          const relationDesc = RELATION_VERDICT[relation] || `đối với{{user}}có thái độ là 「${relation}」`;
-          let s = `- ${f.name}trước mắt${statusDesc}；nó đối với{{user}}có thái độ là${relation}——${relationDesc}。`;
-          if (f.scope) s += `phạm vi thế lực của nó bao phủ${f.scope}。`;
-          if (f.currentGoal) s += `hiện đang dốc sức vào${f.currentGoal}。`;
+          const statusDesc = STATUS_VERDICT[f.status] || (f.status ? `处于「${f.status}」之中` : '处境不明');
+          const relation = f.relation || '中立';
+          const relationDesc = RELATION_VERDICT[relation] || `对{{user}}的态度为「${relation}」`;
+          let s = `- ${f.name}眼下${statusDesc}；它对{{user}}的态度是${relation}——${relationDesc}。`;
+          if (f.scope) s += `其势力范围覆盖${f.scope}。`;
+          if (f.currentGoal) s += `当前正致力于${f.currentGoal}。`;
           const tail = [];
-          if (f.core_person) tail.push(`nhân vật trọng yếu là${f.core_person}`);
-          if (f.powerPillars?.length) tail.push(`nền tảng vận hành dựa vào là${formatPillars(f.powerPillars)}`);
+          if (f.core_person) tail.push(`核心人物是${f.core_person}`);
+          if (f.powerPillars?.length) tail.push(`赖以运转的根基是${formatPillars(f.powerPillars)}`);
           if (tail.length) s += tail.join('，') + '。';
           return s;
         }).join('\n')
-      : 'không';
+      : '无';
 
-    // có tiếng đồn: chỉ tiêm Lv3/4
-    const windTypeNames = { announcement: 'thông báo', report: 'thông báo/tin nhắn', rumor: 'tin đồn', sentiment: 'dư luận' };
+    // 风声：只注入 Lv3/4
+    const windTypeNames = { announcement: '公告', report: '消息', rumor: '流言', sentiment: '舆情' };
     const visibleWinds = (worldState.winds || []).filter(w => (w.level || 0) >= 3);
     const windsText = visibleWinds.map(w =>
-      `[${windTypeNames[w.type] || 'có tiếng đồn'} Lv.${w.level || 1} ${w.scope || '?'}] ${w.content}`
-    ).join('；') || 'không';
+      `[${windTypeNames[w.type] || '风声'} Lv.${w.level || 1} ${w.scope || '?'}] ${w.content}`
+    ).join('；') || '无';
 
-    // đại thế thiên hạ
-    const trendsText = (worldState.worldTrends || []).filter(t => t.status !== 'đã kết thúc').map(t =>
-      `${t.name}（${t.scope || 'thiên hạ'}）：${t.description}`
-    ).join('；') || 'không';
+    // 天下大势
+    const trendsText = (worldState.worldTrends || []).filter(t => t.status !== '已结束').map(t =>
+      `${t.name}（${t.scope || '天下'}）：${t.description}`
+    ).join('；') || '无';
 
-    // danh tiếng: tiêm lời phán tự nhiên, chứ không phải nhãn cấp độ trần trụi
+    // 声誉：注入人话判词，而非光秃秃的等级标签
     const rep = worldState.reputation || {};
     const repText = ['authority', 'common', 'shadow', 'circuit'].map(k => {
       const lv = REP_LEGACY[rep[k]] || rep[k];
       const verdict = REP_VERDICT[k] && REP_VERDICT[k][lv];
       if (!verdict) return '';
-      return `tại${REP_DIM_NAME[k]}${lv}，${verdict}`;
+      return `在${REP_DIM_NAME[k]}${lv}，${verdict}`;
     }).filter(Boolean).join('。') + '。';
     const repChange = rep.lastChange ? `（${rep.lastChange}）` : '';
 
-    // tín hiệu kinh tế: tiêm toàn bộ
+    // 经济信号：全注入
     const econ = worldState.economy || {};
     const signalsText = (econ.signals || []).map(s => `${s.summary}（${s.scope}）`).join('；');
-    const climate = econ.climate || 'ổn định';
-    const climateText = `thị trường${climate}，${CLIMATE_VERDICT[climate] || CLIMATE_VERDICT['ổn định']}`;
-    const econText = `${climateText}${signalsText ? '。tín hiệu:' + signalsText : ''}`;
+    const climate = econ.climate || '平稳';
+    const climateText = `市面${climate}，${CLIMATE_VERDICT[climate] || CLIMATE_VERDICT['平稳']}`;
+    const econText = `${climateText}${signalsText ? '。信号:' + signalsText : ''}`;
 
-    // sổ kẻ thù
-    let enemiesText = 'không';
+    // 仇敌录
+    let enemiesText = '无';
     if (worldState.enemies && worldState.enemies.length) {
       enemiesText = worldState.enemies.map(e =>
-        `${e.name}（${e.type==='blood'?'huyết cừu':'ân oán'}，${e.status}，lý do:${e.reason}）`
+        `${e.name}（${e.type==='blood'?'血仇':'恩怨'}，${e.status}，原因：${e.reason}）`
       ).join('；');
     }
 
-    // sự kiện đột phát khu vực
+    // 区域突发事件
     const ri = worldState.regionalIncident || {};
     let riText = '';
     if (ri.active) {
-      riText = `⚠️ ${ri.title || 'sự kiện đột phát khu vực'}（${ri.type || '?'}，${ri.scope || '?'}）— ${ri.impact || ''}`;
+      riText = `⚠️ ${ri.title || '区域突发事件'}（${ri.type || '?'}，${ri.scope || '?'}）— ${ri.impact || ''}`;
     } else {
-      riText = ri.title && ri.title.includes('thử lại') ? `⚠️ ${ri.title}` : 'vòng này không có sự kiện đột phát khu vực';
+      riText = ri.title && ri.title.includes('重试') ? `⚠️ ${ri.title}` : '本轮无区域突发事件';
     }
 
-    // hộp đen thông tin: hiển thị nội dung cụ thể
+    // 信息黑盒：展示具体内容
     const blackbox = worldState.blackbox || {};
     const boxParts = [];
     if (blackbox.secretActions?.length) {
       const actionsText = blackbox.secretActions.map(a =>
-        `[hành vi] ${a.action || '?'}（chứng kiến:${a.witnesses || 'không'}）`
+        `[行为] ${a.action || '?'}（目击:${a.witnesses || '无'}）`
       ).join('；');
-      boxParts.push(`hành vi bí mật(${blackbox.secretActions.length}): ${actionsText}`);
+      boxParts.push(`隐秘行为(${blackbox.secretActions.length}): ${actionsText}`);
     }
     if (blackbox.secretAssets?.length) {
       const assetsText = blackbox.secretAssets.map(a =>
-        `[tài sản] ${a.name || '?'}（bị lộ:${a.exposure || 0}%，${a.status || 'hợp lệ'}）`
+        `[资产] ${a.name || '?'}（暴露:${a.exposure || 0}%，${a.status || '有效'}）`
       ).join('；');
-      boxParts.push(`tài sản bí mật(${blackbox.secretAssets.length}): ${assetsText}`);
+      boxParts.push(`隐秘资产(${blackbox.secretAssets.length}): ${assetsText}`);
     }
-    const blackboxText = boxParts.length ? boxParts.join(' | ') : 'không có thông tin mặt tối';
+    const blackboxText = boxParts.length ? boxParts.join(' | ') : '无暗面信息';
 
     const context = `
-【trạng thái thế giới】
-vòng:${worldState.round}
-tóm tắt:${worldState.worldDigest}
-Đại thế thiên hạ:${trendsText}
-Chuỗi sự kiện:${eventsText}
-Thế lực:${factionsText}
-Có tiếng đồn:${windsText}
-Kẻ thù:${enemiesText}
-Danh tiếng:${repText}${repChange}
-Kinh tế:${econText}
-Sự kiện khu vực:${riText}
-Hộp đen:${blackboxText}
+【世界状态】
+轮次：${worldState.round}
+摘要：${worldState.worldDigest}
+天下大势：${trendsText}
+事件链：${eventsText}
+势力：${factionsText}
+风声：${windsText}
+仇敌：${enemiesText}
+声誉：${repText}${repChange}
+经济：${econText}
+区域事件：${riText}
+黑盒：${blackboxText}
 
 ${rulesSummary}
     `.trim();
