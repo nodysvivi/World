@@ -1,0 +1,10 @@
+{
+  "display_name": "🌍 World Engine",
+  "author": "Disnight",
+  "description": "Engine suy diễn thế giới API độc lập: tự động suy diễn trạng thái thế giới sau hội thoại, tiêm ngữ cảnh vào prompt; hỗ trợ lưu bản lưu cùng với chat vào Tavern, đồng bộ đa thiết bị và bản lưu chống mất mát; Worldbook hỗ trợ kích hoạt đèn xanh/lam (thường trú/khớp từ khoá); hỗ trợ backfill hàng loạt suy diễn thế giới (suy diễn theo lô từ tầng AI đầu tiên đến tầng chỉ định); sửa lỗi các vấn đề ổn định như phình bộ nhớ sau khi nâng cấp, ô nhiễm bản lưu khi chuyển chat trong lúc backfill hàng loạt",
+  "version": "2.3.19",
+  "license": "MIT",
+  "type": "extension",
+  "js": "world-engine.js",
+  "css": "style.css"
+}
