@@ -36,6 +36,13 @@ window.WORLD_ENGINE_UI = (function() {
     }[m] || m));
   }
 
+  /** Viết hoa chữ cái đầu tiên của chuỗi (Unicode-safe, hỗ trợ ký tự có dấu tiếng Việt) */
+  function cap(str) {
+    if (!str) return '';
+    const s = String(str);
+    return s.charAt(0).toLocaleUpperCase('vi-VN') + s.slice(1);
+  }
+
   /** Render văn bản hiển thị cho người dùng: thay thế {{user}} thành tên nhân vật hiện tại, và escape HTML */
   function u(text) {
     return h(core.renderUserName(text));
@@ -73,7 +80,7 @@ window.WORLD_ENGINE_UI = (function() {
     const motto = SECTION_MOTTOS[sectionId.replace(/^cp-/, '')];
     const mottoHtml = motto ? `<span class="we-section-motto">— ${motto}</span>` : '';
     return `<span class="we-section-toggle" data-section="${sectionId}">
-      <span class="we-section-arrow" id="we-section-arrow-${sectionId}">${collapsed ? '▶' : '▼'}</span>${title}${mottoHtml}
+      <span class="we-section-arrow" id="we-section-arrow-${sectionId}">${collapsed ? '▶' : '▼'}</span>${cap(title)}${mottoHtml}
     </span>`;
   }
 
@@ -361,9 +368,9 @@ window.WORLD_ENGINE_UI = (function() {
       const botLine = i === rows.length - 1 ? '<div class="we-nav-line we-nav-line-hidden"></div>' : '<div class="we-nav-line"></div>';
       const sel = _selectedNavView === r.view ? ' we-nav-row--selected' : '';
       return '<div class="we-nav-row' + sel + '" data-view="' + r.view + '">'
-        + '<div class="we-nav-label">' + r.label + '</div>'
+        + '<div class="we-nav-label">' + cap(r.label) + '</div>'
         + '<div class="we-nav-track">' + topLine + '<div class="we-nav-dot"></div>' + botLine + '</div>'
-        + '<div class="we-nav-content"><span class="we-nav-sub">' + r.sub + '</span><span class="we-nav-poem">' + r.poem + '</span></div>'
+        + '<div class="we-nav-content"><span class="we-nav-sub">' + cap(r.sub) + '</span><span class="we-nav-poem">' + r.poem + '</span></div>'
         + '<i class="fa-solid fa-chevron-right we-nav-arrow"></i>'
         + '</div>';
     }).join('');
@@ -410,7 +417,7 @@ window.WORLD_ENGINE_UI = (function() {
     }
     return '<div class="we-sub-topbar">'
       + '<button class="we-icon-btn" id="we-btn-back" title="trả về"><i class="fa-solid fa-arrow-left"></i></button>'
-      + '<span class="we-sub-title">' + (VIEW_TITLES[viewKey] || viewKey) + '</span>'
+      + '<span class="we-sub-title">' + cap(VIEW_TITLES[viewKey] || viewKey) + '</span>'
       + '</div>' + content;
   }
 
@@ -448,12 +455,12 @@ window.WORLD_ENGINE_UI = (function() {
 
   // [FIX] định nghĩa tab:label + bao gồm những đoạn nào. chỉ phân loại hiện có section，không thêm mới/không xoá tính năng.
   const SETTINGS_TABS = [
-    { key: 'common',    label: 'thường dùng' },
-    { key: 'advanced',  label: 'nâng cao' },
-    { key: 'archive',   label: 'bản lưu' },
+    { key: 'common',    label: 'Thường dùng' },
+    { key: 'advanced',  label: 'Nâng cao' },
+    { key: 'archive',   label: 'Bản lưu' },
     { key: 'worldbook', label: 'Worldbook' },
-    { key: 'debug',     label: 'gỡ lỗi' },
-    { key: 'about',     label: 'về' }
+    { key: 'debug',     label: 'Gỡ lỗi' },
+    { key: 'about',     label: 'Về' }
   ];
   let _settingsTab = 'common';
 
@@ -471,9 +478,9 @@ window.WORLD_ENGINE_UI = (function() {
 
     // gỡ lỗi section（giữ nguyên, gồm nút gói chẩn đoán + renderDebug，chuyển vào tab 「gỡ lỗi」)
     const debugSection = '<div class="we-section we-debug-section">'
-      + '<div class="we-section-title"><span class="we-debug-toggle" title="mở rộng hoặc thu gọn thông tin gỡ lỗi"><span class="we-toggle-arrow">▶</span>gỡ lỗi</span></div>'
+      + '<div class="we-section-title"><span class="we-debug-toggle" title="mở rộng hoặc thu gọn thông tin gỡ lỗi"><span class="we-toggle-arrow">▶</span>Gỡ lỗi</span></div>'
       + '<div id="we-debug-body" style="display:none;">'
-      + '<button class="we-btn" id="we-export-diag" style="width:100%;margin-bottom:8px;">xuất gói chẩn đoán</button><!-- [FIX] gói chẩn đoán: không liên quan đến việc đã suy diễn hay chưa, luôn có thể xuất -->'
+      + '<button class="we-btn" id="we-export-diag" style="width:100%;margin-bottom:8px;">Xuất gói chẩn đoán</button><!-- [FIX] gói chẩn đoán: không liên quan đến việc đã suy diễn hay chưa, luôn có thể xuất -->'
       + '<div id="we-debug-render">' + renderDebug() + '</div>'
       // [MAP] Quản lý preset engine: Cùng với PR#12 hiển thị phân đoạn chỉ đọc ở cùng thẻ gỡ lỗi, đưa 4 đoạn hardcode nâng cấp thành có thể chỉnh sửa+preset hoá.
       // Điểm neo độc lập #we-preset-manage，làm mới cục bộ; lưu theo độc lập storage key，không vào we-save-settings。
@@ -620,10 +627,10 @@ window.WORLD_ENGINE_UI = (function() {
     }
 
     const stats = [
-      ['sự kiện', (s.events || []).length],
-      ['thế lực', (s.factions || []).length],
-      ['có tiếng đồn', (s.winds || []).length],
-      ['đại thế', (s.worldTrends || []).length],
+      ['Sự kiện', (s.events || []).length],
+      ['Thế lực', (s.factions || []).length],
+      ['Có tiếng đồn', (s.winds || []).length],
+      ['Đại thế', (s.worldTrends || []).length],
     ].map(([k, v]) => `<div class="we-core-stat"><div class="we-core-stat-k">${k}</div><div class="we-core-stat-v">${v}</div></div>`).join('');
 
     return `
@@ -652,11 +659,11 @@ window.WORLD_ENGINE_UI = (function() {
             </svg>
             <div class="we-core-center">
               <div class="we-core-title">Lõi thế giới</div>
-              <div class="we-core-sub">độ ổn định</div>
+              <div class="we-core-sub">Độ ổn định</div>
               <div class="we-core-pct" style="color:${tierColor};">${stab.stability.toFixed(1)}<span>%</span></div>
-              <div class="we-core-tier" style="color:${tierColor};">${stab.tier}</div>
             </div>
           </div>
+          <div class="we-core-tier" style="color:${tierColor};">${stab.tier}</div>
           <div class="we-core-stats">${stats}</div>
         </div>
       </div>`;
@@ -1032,7 +1039,7 @@ window.WORLD_ENGINE_UI = (function() {
     const levels = ['trời giận người oán','tai tiếng khắp nơi','vô danh','được kính trọng','được vạn người ngưỡng mộ'];
     const levelColors = { 'trời giận người oán':'#e05555', 'tai tiếng khắp nơi':'#d97a5a', 'vô danh':'#7a8a9a', 'được kính trọng':'#6cae8e', 'được vạn người ngưỡng mộ':'#c9a45c' };
     const legacyMap = { 'có chút danh tiếng':'được kính trọng' };
-    const dimLabels = { authority:'triều đình', common:'thị tứ', shadow:'giang hồ', circuit:'đồng đạo' };
+    const dimLabels = { authority:'Triều đình', common:'Thị tứ', shadow:'Giang hồ', circuit:'Đồng đạo' };
     // Các chiều × Cổ văn đính kèm các cấp độ (lược bỏ xuất xứ)
     const quotes = {
       authority: { 'trời giận người oán':'Trên dưới ghét như kẻ thù', 'tai tiếng khắp nơi':'Người tại vị đều nói về cái ác của hắn', 'vô danh':'Chìm trong hạ liêu không ai biết', 'được kính trọng':'Quần thần không ai không kính sợ', 'được vạn người ngưỡng mộ':'Thiên hạ mong ngóng phong thái' },
@@ -1069,10 +1076,10 @@ window.WORLD_ENGINE_UI = (function() {
     const cColor = climateColors[climate] || '#7a8a9a';
     let html = '<div class="we-climate-bar" style="background:' + (climateBg[climate]||'rgba(122,138,154,0.06)') + ';">';
     html += '<span class="we-climate-dot" style="background:' + cColor + ';box-shadow:0 0 8px ' + cColor + '88;"></span>';
-    html += '<span class="we-climate-label" style="color:' + cColor + '">' + climate + '</span>';
+    html += '<span class="we-climate-label" style="color:' + cColor + '">' + cap(climate) + '</span>';
     html += '<div class="we-climate-btns">';
     for (const c of climates) {
-      html += '<span class="we-climate-btn' + (c === climate ? ' we-climate-btn-on' : '') + '" style="' + (c === climate ? ('color:'+(climateColors[c]||'#7a8a9a')+';border-color:'+(climateColors[c]||'#7a8a9a')) : '') + '" data-climate-scope="' + sc + '" data-climate="' + c + '">' + c + '</span>';
+      html += '<span class="we-climate-btn' + (c === climate ? ' we-climate-btn-on' : '') + '" style="' + (c === climate ? ('color:'+(climateColors[c]||'#7a8a9a')+';border-color:'+(climateColors[c]||'#7a8a9a')) : '') + '" data-climate-scope="' + sc + '" data-climate="' + c + '">' + cap(c) + '</span>';
     }
     html += '</div></div>';
     if (econ.signals?.length) {

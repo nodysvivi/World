@@ -665,11 +665,12 @@
 
 .we-core-tier {
   font-family: "SimSun", "font Tống", "Songti SC", "STSong", serif;
-  font-size: 12px;
-  font-weight: 400;
+  font-size: 13px;
+  font-weight: 500;
   letter-spacing: 1px;
-  margin-top: 3px;
+  text-align: center;
   opacity: 0.9;
+  margin-top: -4px;
 }
 
 .we-core-stats {
@@ -2533,15 +2534,16 @@
 }
 .we-nav-label {
   font-family: "SimSun", "font Tống", "Songti SC", "STSong", serif;
-  width: 48px;
+  width: 64px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  font-size: 20px;
+  text-align: right;
+  font-size: 14px;
   font-weight: 500;
   color: var(--we-beige);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
   transition: color 0.18s;
 }
 .we-nav-row--selected .we-nav-label {
@@ -2614,7 +2616,7 @@
 /* Tiêu đề — Cảm giác hoành phi: Chữ lớn, màu vàng, font Tống, khoảng cách rộng, ép dưới một đường chỉ vàng mỏng */
 #we-sec-trends > .we-section-title {
   font-family: "SimSun", "font Tống", "Songti SC", "STSong", serif;
-  font-size: 20px;
+  font-size: 15px;
   font-weight: 600;
   letter-spacing: 0.04em;
   color: var(--we-gold);
@@ -2659,10 +2661,10 @@
 /* ===== Tiêu đề phân trang (Cục diện / Sự kiện / Quan hệ / Tài nguyên) Chữ lớn font Tống hồi chương ===== */
 .we-sub-title {
   font-family: "SimSun", "font Tống", "Songti SC", "STSong", serif;
-  font-size: 20px;
-  font-weight: 400;
+  font-size: 15px;
+  font-weight: 600;
   color: var(--we-beige);
-  letter-spacing: 0.18em;
+  letter-spacing: 0.1em;
   line-height: 1;
 }
 
@@ -2672,7 +2674,7 @@
 #we-sec-regional > .we-section-title,
 #we-sec-cp-regional > .we-section-title {
   font-family: "SimSun", "font Tống", "Songti SC", "STSong", serif;
-  font-size: 17px;
+  font-size: 14px;
   font-weight: 400;
   letter-spacing: 0.08em;
   color: #b85f54;
@@ -2741,7 +2743,7 @@
 /* ===== tóm tắt thế giới: Bản thảo học giả ===== */
 #we-sec-digest > .we-section-title {
   font-family: "SimSun", "font Tống", "Songti SC", "STSong", serif;
-  font-size: 17px;
+  font-size: 14px;
   font-weight: 400;
   letter-spacing: 0.14em;
   color: var(--we-text2);
@@ -2807,7 +2809,7 @@
 #we-sec-ledger > .we-section-title,
 #we-sec-cp-ledger > .we-section-title {
   font-family: "SimSun", "font Tống", "Songti SC", "STSong", serif;
-  font-size: 17px;
+  font-size: 14px;
   font-weight: 400;
   letter-spacing: 0.16em;
   color: #7a9fbb;
@@ -2831,7 +2833,7 @@
 #we-sec-events > .we-section-title,
 #we-sec-cp-events > .we-section-title {
   font-family: "SimSun", "font Tống", "Songti SC", "STSong", serif;
-  font-size: 17px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.08em;
   color: #c0814a;
@@ -2847,7 +2849,7 @@
 #we-sec-winds > .we-section-title,
 #we-sec-cp-winds > .we-section-title {
   font-family: "SimSun", "font Tống", "Songti SC", "STSong", serif;
-  font-size: 17px;
+  font-size: 14px;
   font-weight: 400;
   letter-spacing: 0.16em;
   color: #9b8fb0;
@@ -2862,7 +2864,7 @@
 #we-sec-influence > .we-section-title,
 #we-sec-cp-influence > .we-section-title {
   font-family: "SimSun", "font Tống", "Songti SC", "STSong", serif;
-  font-size: 17px;
+  font-size: 14px;
   font-weight: 400;
   letter-spacing: 0.10em;
   color: #5e98a6;
@@ -2877,7 +2879,7 @@
 #we-sec-reputation > .we-section-title,
 #we-sec-cp-reputation > .we-section-title {
   font-family: "SimSun", "font Tống", "Songti SC", "STSong", serif;
-  font-size: 17px;
+  font-size: 14px;
   font-weight: 500;
   letter-spacing: 0.12em;
   color: #b6975f;
@@ -2892,7 +2894,7 @@
 #we-sec-factions > .we-section-title,
 #we-sec-cp-factions > .we-section-title {
   font-family: "SimSun", "font Tống", "Songti SC", "STSong", serif;
-  font-size: 17px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.08em;
   color: #8c6fa8;
@@ -2907,7 +2909,7 @@
 #we-sec-enemies > .we-section-title,
 #we-sec-cp-enemies > .we-section-title {
   font-family: "SimSun", "font Tống", "Songti SC", "STSong", serif;
-  font-size: 17px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.18em;
   color: #a64b48;
@@ -2923,7 +2925,7 @@
 #we-sec-economy > .we-section-title,
 #we-sec-cp-economy > .we-section-title {
   font-family: "SimSun", "font Tống", "Songti SC", "STSong", serif;
-  font-size: 17px;
+  font-size: 14px;
   font-weight: 500;
   letter-spacing: 0.12em;
   color: #bf9c46;
@@ -2938,7 +2940,7 @@
 #we-sec-blackbox > .we-section-title,
 #we-sec-cp-blackbox > .we-section-title {
   font-family: "SimSun", "font Tống", "Songti SC", "STSong", serif;
-  font-size: 17px;
+  font-size: 14px;
   font-weight: 400;
   letter-spacing: 0.24em;
   color: #79709a;
@@ -2959,7 +2961,7 @@
 /* tiêu đề đại thế thiên hạ trong điểm lưu sử dụng kiểu tiêu đề phân trang */
 #we-sec-cp-trends > .we-section-title {
   font-family: "SimSun", "font Tống", "Songti SC", "STSong", serif;
-  font-size: 20px;
+  font-size: 15px;
   font-weight: 400;
   color: var(--we-beige);
   letter-spacing: 0.18em;
